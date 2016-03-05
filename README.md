@@ -14,4 +14,4 @@ https://google.github.io/styleguide/javaguide.html
 
 ## IMPORTANT
 Pour éviter de créer des branches useless lors d'un pull :
-git config --global pull.rebase true
+`git config --global pull.rebase true`
