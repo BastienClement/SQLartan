@@ -7,22 +7,17 @@ public class Main {
 		System.out.println("Hello, world!");
 	}
 
+	/**
+	 * Returns the current SQLite version.
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
 	public static String sqliteVersion() throws SQLException {
-		Connection c = null;
-		try {
-			c = DriverManager.getConnection("jdbc:sqlite::memory:");
-			ResultSet rs = c.createStatement().executeQuery("select sqlite_version();");
-			rs.next();
+		try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
+		     Statement statement = connection.createStatement();
+		     ResultSet rs = statement.executeQuery("select sqlite_version();")) {
 			return rs.getString(1);
-		} finally {
-			if (c != null) {
-				try {
-					c.close();
-				} catch (SQLException e) {
-					// close failed ?!
-				}
-			}
 		}
-
 	}
 }
