@@ -1,0 +1,36 @@
+package sqlartan.core;
+
+import java.util.TreeMap;
+
+public enum Affinity {
+	Text, Numeric, Integer, Real, Blob;
+
+	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
+
+	public static Affinity forType(String type) {
+		type = type.toUpperCase().trim();
+
+		if (affinityCache.containsKey(type)) {
+			return affinityCache.get(type);
+		}
+
+		Affinity a = parseType(type);
+		affinityCache.put(type, a);
+		return a;
+	}
+
+	private static Affinity parseType(String type) {
+		// https://www.sqlite.org/datatype3.html
+		if (type.contains("INT")) {
+			return Affinity.Integer;
+		} else if (type.contains("CHAR") || type.contains("CLOB") || type.contains("TEXT")) {
+			return Affinity.Text;
+		} else if (type.contains("BLOB") || type.equals("")) {
+			return Affinity.Blob;
+		} else if (type.contains("REAL") || type.contains("FLOA") || type.contains("DOUB")) {
+			return Affinity.Real;
+		} else {
+			return Affinity.Numeric;
+		}
+	}
+}
