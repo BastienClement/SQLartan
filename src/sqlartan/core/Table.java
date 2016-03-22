@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
@@ -23,7 +24,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	@Override
-	public TableColumn[] columns() {
+	public List<TableColumn> columns() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 

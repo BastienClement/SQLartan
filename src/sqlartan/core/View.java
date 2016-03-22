@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import java.util.List;
 import java.util.Optional;
 
 public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
@@ -21,12 +22,12 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 	}
 
 	@Override
-	public PersistentStructure<GeneratedColumn>[] sources() {
+	public List<PersistentStructure<GeneratedColumn>> sources() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	@Override
-	public GeneratedColumn[] columns() {
+	public List<GeneratedColumn> columns() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 

@@ -1,26 +1,28 @@
 package sqlartan.core;
 
 public class GeneratedColumn extends Column {
-	private boolean computed;
-	private TableColumn sourceColumn;
-	private String sourceExpr;
+	public static interface Properties extends Column.Properties {
+		boolean computed();
+		TableColumn sourceColumn();
+		String sourceExpr();
+	}
 
-	GeneratedColumn(String name, String type, boolean notNull, TableColumn sourceColumn, String sourceExpr) {
-		super(name, type, notNull);
-		this.computed = sourceExpr != null;
-		this.sourceColumn = sourceColumn;
-		this.sourceExpr = sourceExpr;
+	private Properties props;
+
+	GeneratedColumn(Properties props) {
+		super(props);
+		this.props = props;
 	}
 
 	public boolean isComputed() {
-		return computed;
+		return props.computed();
 	}
 
 	public TableColumn sourceColumn() {
-		return sourceColumn;
+		return props.sourceColumn();
 	}
 
 	public String sourceExpr() {
-		return sourceExpr;
+		return props.sourceExpr();
 	}
 }

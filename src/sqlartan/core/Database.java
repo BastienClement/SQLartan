@@ -1,9 +1,7 @@
 package sqlartan.core;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 
 public class Database implements AutoCloseable {
@@ -129,14 +127,7 @@ public class Database implements AutoCloseable {
 		return path.getName().equals(":memory:");
 	}
 
-	public class AttachedDatabase extends Database {
-		protected AttachedDatabase(File path) throws SQLException {
-			super(path, name);
-			throw new UnsupportedOperationException("Not implemented");
-		}
-
-		public Database mainDatabase() {
-			return Database.this;
-		}
+	public Results execute(String query) throws SQLException {
+		return new Results(connection, query);
 	}
 }

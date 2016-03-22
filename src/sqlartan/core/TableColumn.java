@@ -3,26 +3,29 @@ package sqlartan.core;
 import java.util.Optional;
 
 public class TableColumn extends Column {
-	private Table table;
-	private boolean unique;
-	private String check;
+	public static interface Properties extends Column.Properties {
+		boolean unique();
+		String check();
+	}
 
-	TableColumn(Table table, String name, String type, boolean notNull, boolean unique, String check) {
-		super(name, type, notNull);
-		this.table = table;
-		this.unique = unique;
-		this.check = check;
+	private Table parent;
+	private Properties props;
+
+	TableColumn(Table table, Properties props) {
+		super(props);
+		this.parent = table;
+		this.props = props;
 	}
 
 	public Table parentTable() {
-		return table;
+		return parent;
 	}
 
 	public boolean unique() {
-		return unique;
+		return props.unique();
 	}
 
 	public Optional<String> check() {
-		return Optional.ofNullable(check);
+		return Optional.ofNullable(props.check());
 	}
 }

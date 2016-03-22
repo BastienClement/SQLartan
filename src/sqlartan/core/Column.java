@@ -1,31 +1,31 @@
 package sqlartan.core;
 
 public abstract class Column {
-	private String name;
-	private String type;
-	private Affinity affinity;
-	private boolean notNull;
+	public static interface Properties {
+		String name();
+		String type();
+		boolean nullable();
+	}
 
-	protected Column(String name, String type, boolean notNull) {
-		this.name = name;
-		this.type = type;
-		this.affinity = Affinity.forType(type);
-		this.notNull = notNull;
+	private Properties props;
+
+	protected Column(Properties props) {
+		this.props = props;
 	}
 
 	public String name() {
-		return name;
+		return props.name();
 	}
 
 	public String type() {
-		return type;
+		return props.type();
 	}
 
 	public Affinity affinity() {
-		return affinity;
+		return Affinity.forType(props.type());
 	}
 
-	public boolean isNotNull() {
-		return notNull;
+	public boolean nullable() {
+		return props.nullable();
 	}
 }
