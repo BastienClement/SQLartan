@@ -2,7 +2,7 @@ package sqlartan;
 
 import java.sql.*;
 
-public class Main {
+public class Sqlartan {
 	public static void main(String[] args) {
 		System.out.println("Hello, world!");
 	}
