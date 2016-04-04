@@ -129,7 +129,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public void vacuum() throws SQLException {
-
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -190,7 +190,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public void prepare(String query) throws SQLException {
-
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -200,7 +200,7 @@ public class Database implements AutoCloseable {
 	 * @return the attached database
 	 */
 	public AttachedDatabase attach(String name) {
-		return null;
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -228,6 +228,6 @@ public class Database implements AutoCloseable {
 	 * @param name
 	 */
 	public void detach(String name) {
-
+		throw new UnsupportedOperationException("Not implemented");
 	}
 }
