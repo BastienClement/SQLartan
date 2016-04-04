@@ -1,6 +1,5 @@
 package sqlartan.core;
 
-import org.sqlite.ExtendedCommand;
 import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
@@ -182,17 +181,6 @@ public class Database implements AutoCloseable {
 	 */
 	public Results execute(String query) throws SQLException {
 		return new Results(connection, query);
-	}
-
-	/**
-	 * Executes a query on the database.
-	 *
-	 * @param query
-	 * @return A ResultSet containing the result
-	 * @throws SQLException
-	 */
-	public ResultSet query(String query) throws SQLException {
-		return null;
 	}
 
 	/**
