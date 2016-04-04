@@ -29,8 +29,6 @@ public class SqlartanController {
 		mainTreeItem.getChildren().add(new TreeItem<String>("Une table"));
 		mainTreeItem.getChildren().add(new TreeItem<String>("Une vue"));
 
-		treeView.set
-
 	}
 
 }
