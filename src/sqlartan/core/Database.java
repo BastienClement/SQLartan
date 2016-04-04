@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import org.sqlite.ExtendedCommand;
 import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
@@ -20,6 +21,12 @@ public class Database implements AutoCloseable {
 
 	/** The underlying JDBC connection */
 	private Connection connection;
+
+	/** Set of tables */
+	private HashMap<String, Table> tables = new HashMap<>();
+
+	/** Set of views */
+	private HashMap<String, View> views = new HashMap<>();
 
 	/** Set of attached database */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
@@ -88,10 +95,49 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Returns the hashmap containing every tables.
+	 *
+	 * @return the hashmap containing the tables
+	 */
+	public HashMap<String, Table> tables(){ return tables; }
+
+	/**
+	 * Returns a table with a specific name.
+	 *
+	 * @param name
+	 * @return the table contained in the hashmap under the key name, null if it doesn't exist
+	 */
+	public Table table(String name){ return tables.get(name); }
+
+	/**
+	 * Returns the hashmap containing every views.
+	 *
+	 * @return the hashmap containing the views
+	 */
+	public HashMap<String, View> views(){ return views; }
+
+	/**
+	 * Returns a view with a specific name.
+	 *
+	 * @param name
+	 * @return the view contained in the hashmap under the key name, null if it doesn't exist
+	 */
+	public View view(String name){ return views.get(name); }
+
+	/**
+	 * Clean up the database by rebuilding it entirely.
+	 *
+	 * @throws SQLException
+	 */
+	public void vacuum() throws SQLException {
+
+	}
+
+	/**
 	 * Closes the underlying JDBC Connection object.
 	 * Once this method is called, this object must no longer be used.
 	 *
-	 * ALso closes all attached databases.
+	 * Also closes all attached databases.
 	 *
 	 * @throws SQLException
 	 */
@@ -127,7 +173,73 @@ public class Database implements AutoCloseable {
 		return path.getName().equals(":memory:");
 	}
 
+	/**
+	 * Executes a query on the database.
+	 *
+	 * @param query
+	 * @return the result of the query
+	 * @throws SQLException
+	 */
 	public Results execute(String query) throws SQLException {
 		return new Results(connection, query);
+	}
+
+	/**
+	 * Executes a query on the database.
+	 *
+	 * @param query
+	 * @return A ResultSet containing the result
+	 * @throws SQLException
+	 */
+	public ResultSet query(String query) throws SQLException {
+		return null;
+	}
+
+	/**
+	 * Prepares a query for execution.
+	 *
+	 * @param query
+	 * @throws SQLException
+	 */
+	public void prepare(String query) throws SQLException {
+
+	}
+
+	/**
+	 * Attaches a database with the name passed in parameters.
+	 *
+	 * @param name
+	 * @return the attached database
+	 */
+	public AttachedDatabase attach(String name) {
+		return null;
+	}
+
+	/**
+	 * Returns the hashmap containing the attachedDatabases.
+	 *
+	 * @return the attached databases
+	 */
+	public HashMap<String, AttachedDatabase> attached() {
+		return attached;
+	}
+
+	/**
+	 * Returns a attached database with a specific name.
+	 *
+	 * @param name
+	 * @return the attached database contained in the hashmap under the key name, null if it doesn't exist
+	 */
+	public AttachedDatabase attached(String name) {
+		return attached.get(name);
+	}
+
+	/**
+	 * Detach an attached database with a specific name.
+	 *
+	 * @param name
+	 */
+	public void detach(String name) {
+
 	}
 }
