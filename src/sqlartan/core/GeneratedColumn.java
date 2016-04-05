@@ -2,8 +2,7 @@ package sqlartan.core;
 
 public class GeneratedColumn extends Column {
 	public static interface Properties extends Column.Properties {
-		boolean computed();
-		TableColumn sourceColumn();
+		String sourceTable();
 		String sourceExpr();
 	}
 
@@ -15,11 +14,11 @@ public class GeneratedColumn extends Column {
 	}
 
 	public boolean isComputed() {
-		return props.computed();
+		return props.sourceTable() == null;
 	}
 
 	public TableColumn sourceColumn() {
-		return props.sourceColumn();
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	public String sourceExpr() {

@@ -176,11 +176,23 @@ public class Database implements AutoCloseable {
 	 * Executes a query on the database.
 	 *
 	 * @param query
+	 * @param storedResults
+	 * @return the result of the query
+	 * @throws SQLException
+	 */
+	public Results execute(String query, boolean storedResults) throws SQLException {
+		return new Results(connection, query, storedResults);
+	}
+
+	/**
+	 * Executes a query on the database.
+	 *
+	 * @param query
 	 * @return the result of the query
 	 * @throws SQLException
 	 */
 	public Results execute(String query) throws SQLException {
-		return new Results(connection, query);
+		return execute(query, false);
 	}
 
 	/**
