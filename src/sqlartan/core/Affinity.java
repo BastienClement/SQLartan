@@ -3,7 +3,17 @@ package sqlartan.core;
 import java.util.TreeMap;
 
 public enum Affinity {
-	Text, Numeric, Integer, Real, Blob;
+	Text(Type.Text),
+	Numeric(Type.Real),
+	Integer(Type.Integer),
+	Real(Type.Real),
+	Blob(Type.Blob);
+
+	public final Type type;
+
+	Affinity(Type type) {
+		this.type = type;
+	}
 
 	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
 
