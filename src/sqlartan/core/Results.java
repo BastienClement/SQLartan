@@ -1,36 +1,40 @@
 package sqlartan.core;
 
-import sun.plugin.dom.exception.InvalidStateException;
+import sqlartan.core.util.RowStreamOps;
+import sqlartan.core.util.Streamable;
 import java.sql.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public class Results implements QueryStructure<GeneratedColumn>, Iterable<Results.Row>, AutoCloseable {
+public class Results implements QueryStructure<GeneratedColumn>, Iterable<Row>, Streamable<Row>, RowStreamOps, AutoCloseable {
 	/** Type of the Results object */
 	private enum Type {
 		Update, Query
 	}
 
+	private Statement statement;
 	private Results.Type type;
 
 	private int updateCount = 0;
 
-	private ResultSet resultSet;
-	private boolean consumed = false;
-
 	private ArrayList<GeneratedColumn> columns;
 	private HashMap<String, GeneratedColumn> columnsIndex;
 
+	private ResultSet resultSet;
+	private Row row;
+
 	Results(Connection connection, String query) throws SQLException {
-		try (Statement statement = connection.createStatement()) {
-			if (statement.execute(query)) {
-				type = Type.Query;
-				resultSet = statement.getResultSet();
-				readMetadata();
-			} else {
-				type = Type.Update;
-				updateCount = statement.getUpdateCount();
-			}
+		statement = connection.createStatement();
+		if (statement.execute(query)) {
+			type = Type.Query;
+			resultSet = statement.getResultSet();
+			readMetadata();
+		} else {
+			type = Type.Update;
+			updateCount = statement.getUpdateCount();
+			close();
 		}
 	}
 
@@ -81,11 +85,15 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 	 * @return
 	 */
 	public boolean isQueryResults() {
-		return type == Type.Update;
+		return type == Type.Query;
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	public boolean isConsumed() {
-		return consumed;
+		return row != null;
 	}
 
 	/**
@@ -143,24 +151,60 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 		return type == Type.Query ? Optional.of(columns.get(idx)) : Optional.empty();
 	}
 
-	private void checkConsumed() {
-		if (consumed) throw new InvalidStateException("Stream has already been consumed");
-		consumed = true;
-	}
-
-	@Override
-	public Iterator<Row> iterator() {
-		this.checkConsumed();
-		return new ResultsIterator();
-	}
-
-	public Stream<Row> stream() {
-		this.checkConsumed();
-		return Stream.empty();
+	/**
+	 * Inits the row field.
+	 */
+	private void initRow() {
+		if (type != Type.Query) throw new IllegalStateException("Results must be of Query type");
+		if (row != null) throw new IllegalStateException("Stream has already been consumed");
+		row = new Row(this, resultSet);
 	}
 
 	/**
-	 * Closes the Results. Freeing the underlying ResultSet if applicable.
+	 * Constructs an iterator allowing to iterate over the rows of this Results set.
+	 *
+	 * @return
+	 */
+	@Override
+	public Iterator<Row> iterator() {
+		this.initRow();
+		return new ResultsIterator(row);
+	}
+
+	/**
+	 * Constructs a stream of rows.
+	 *
+	 * @return
+	 */
+	public Stream<Row> stream() {
+		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL;
+		Spliterator<Row> split = Spliterators.spliteratorUnknownSize(this.iterator(), characteristics);
+		return StreamSupport.stream(split, false);
+	}
+
+	/**
+	 *
+	 * @param mapper
+	 * @param <R>
+	 * @return
+	 */
+	@Override
+	public <R> Optional<R> firstOptional(Function<? super Row, ? extends R> mapper) {
+		Optional<R> res = RowStreamOps.super.firstOptional(mapper);
+		try {
+			close();
+		} catch (SQLException e) {
+			// Ignore ?
+		}
+		return res;
+	}
+
+	/**
+	 * Closes the Results, freeing the underlying ResultSet if applicable.
+	 *
+	 * If this Results is fully consumed by an Iterator or a Stream, this function will
+	 * automatically be called. You should not rely on this behavior if it is possible for
+	 * the iteration to be stopped before having consumed the whole data set.
 	 *
 	 * @throws SQLException
 	 */
@@ -170,32 +214,104 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 			resultSet.close();
 			resultSet = null;
 		}
+
+		if (statement != null) {
+			statement.close();
+			statement = null;
+		}
 	}
 
-	private enum HasNext { No, Yes, Maybe }
-	private class ResultsIterator implements Iterator<Row> {
-		private HasNext hasNext = HasNext.Maybe;
-		private Row theRow = new Row();
+	/**
+	 * Checks if this Results object has been properly closed and does no longer hold
+	 * any internal Closable objects.
+	 *
+	 * @return
+	 */
+	public boolean isClosed() {
+		return resultSet == null;
+	}
 
+	/**
+	 * Indicates if a next row is available in the ResultsIterator.
+	 * Since inner classes cannot declare static structure, it is declared here instead.
+	 *
+	 * [No]
+	 * There is no more rows in the ResultSet.
+	 *
+	 * [Yes]
+	 * There is at least one more row in the Result set.
+	 *
+	 * [Maybe]
+	 * It is unknown whether there is a next row or not.
+	 * next() will be called on the ResultSet to change the state to Yes or No.
+	 */
+	private enum HasNext {
+		No,
+		Yes,
+		Maybe
+	}
+
+	/**
+	 * Iterator over the Rows of this result set.
+	 */
+	private class ResultsIterator implements Iterator<Row> {
+		/**
+		 * Keep track of the state of the underlying ResultSet.
+		 * The ternary logic used here is to prevent multiple calls to hasNext() to
+		 * advance the ResultSet of more than one row.
+		 */
+		private HasNext hasNext = HasNext.Maybe;
+
+		/**
+		 * The Row object that will be returned by next().
+		 */
+		private Row row;
+
+		/**
+		 * @param row The Row object to return from next()
+		 */
+		private ResultsIterator(Row row) {
+			this.row = row;
+		}
+
+		/**
+		 * Checks if there is a next row to iterate on.
+		 *
+		 * The first time this function returns false, the iterated Results object will be
+		 * automatically closed. This means that if you iterate over the whole set of results,
+		 * there is no need to manually call the close() method or use try-with-resource block.
+		 *
+		 * @return true if there is a row left to iterate on, false otherwise
+		 */
 		@Override
 		public boolean hasNext() {
 			if (hasNext == HasNext.Maybe) {
 				try {
-					hasNext = resultSet.next() ? HasNext.Yes : HasNext.No;
+					if (resultSet.next()) {
+						hasNext = HasNext.Yes;
+						row.reset();
+					} else {
+						hasNext = HasNext.No;
+						close();
+					}
 				} catch (SQLException e) {
-					hasNext = HasNext.No;
+					throw new IllegalStateException("Unable to fetch next row", e);
 				}
 			}
 			return hasNext == HasNext.Yes;
 		}
 
+		/**
+		 * Returns the next row from the Results object.
+		 *
+		 * @return the next row from the Results set
+		 * @throws IllegalStateException if there is no more rows available
+		 */
 		@Override
 		public Row next() {
-			if (!hasNext()) throw new InvalidStateException("No more rows in the results");
-			return theRow;
+			if (hasNext != HasNext.Yes) throw new IllegalStateException("HasNext: " + hasNext);
+			hasNext = HasNext.Maybe;
+			return row;
 		}
-	}
-
-	class Row {
 	}
 }
