@@ -16,21 +16,17 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 	private int updateCount = 0;
 
 	private ResultSet resultSet;
-	private boolean storedResults = false;
 	private boolean consumed = false;
-	private ArrayList<Row> rows;
-	private int currentRow = -1;
 
 	private ArrayList<GeneratedColumn> columns;
 	private HashMap<String, GeneratedColumn> columnsIndex;
 
-	Results(Connection connection, String query, boolean storedResults) throws SQLException {
+	Results(Connection connection, String query) throws SQLException {
 		try (Statement statement = connection.createStatement()) {
 			if (statement.execute(query)) {
 				type = Type.Query;
 				resultSet = statement.getResultSet();
 				readMetadata();
-				this.storedResults = storedResults;
 			} else {
 				type = Type.Update;
 				updateCount = statement.getUpdateCount();
@@ -148,15 +144,8 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 	}
 
 	private void checkConsumed() {
-		if (storedResults) return;
 		if (consumed) throw new InvalidStateException("Stream has already been consumed");
 		consumed = true;
-	}
-
-	public void enableStorage() {
-		this.checkConsumed();
-		storedResults = true;
-		rows = new ArrayList<>();
 	}
 
 	@Override
@@ -183,28 +172,30 @@ public class Results implements QueryStructure<GeneratedColumn>, Iterable<Result
 		}
 	}
 
-	class Row {
-		public Row() {
-			// consume data here
-		}
-	}
-
-	class ResultsIterator implements Iterator<Row> {
-		private int currentRow = 0;
+	private enum HasNext { No, Yes, Maybe }
+	private class ResultsIterator implements Iterator<Row> {
+		private HasNext hasNext = HasNext.Maybe;
+		private Row theRow = new Row();
 
 		@Override
 		public boolean hasNext() {
-			return false;
+			if (hasNext == HasNext.Maybe) {
+				try {
+					hasNext = resultSet.next() ? HasNext.Yes : HasNext.No;
+				} catch (SQLException e) {
+					hasNext = HasNext.No;
+				}
+			}
+			return hasNext == HasNext.Yes;
 		}
 
 		@Override
 		public Row next() {
-			return null;
+			if (!hasNext()) throw new InvalidStateException("No more rows in the results");
+			return theRow;
 		}
+	}
 
-		@Override
-		public void remove() {
-
-		}
+	class Row {
 	}
 }
