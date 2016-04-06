@@ -1,11 +1,18 @@
 package sqlartan.core;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.function.BiConsumer;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 
 public class ResultsTests {
+	@Rule
+	public final ExpectedException exception = ExpectedException.none();
+
 	@Test
 	@SuppressWarnings("StatementWithEmptyBody")
 	public void resultShouldCloseWhenFullyConsumed() throws SQLException {
@@ -40,7 +47,7 @@ public class ResultsTests {
 	}
 
 	@Test
-	public void resultsShouldHaveCorrectTypes() throws SQLException {
+	public void resultShouldHaveCorrectType() throws SQLException {
 		try (Database db = new Database()) {
 			BiConsumer<String, Boolean> test = (sql, query) -> {
 				try {
@@ -62,7 +69,7 @@ public class ResultsTests {
 	}
 
 	@Test
-	public void updateResultsShouldAlreadyBeClosed() throws SQLException {
+	public void updateResultShouldAlreadyBeClosed() throws SQLException {
 		try (Database db = new Database()) {
 			Result r = db.execute("CREATE TABLE foo (a INT)");
 			assertTrue(r.isClosed());
@@ -70,7 +77,7 @@ public class ResultsTests {
 	}
 
 	@Test
-	public void resultsIterationIsOrdered() throws SQLException {
+	public void resultIterationIsOrdered() throws SQLException {
 		try (Database db = new Database()) {
 			db.execute("CREATE TABLE foo (bar INT)");
 			db.execute("INSERT INTO foo VALUES (1),(2),(5),(3),(4),(8),(7),(9),(6)");
@@ -97,6 +104,32 @@ public class ResultsTests {
 			assertEquals(2, db.execute("UPDATE foo SET baz = 'z' WHERE bar < 3").updateCount());
 			assertEquals(2, db.execute("DELETE FROM foo WHERE baz = 'z'").updateCount());
 			assertEquals(1, db.execute("DELETE FROM foo").updateCount());
+		}
+	}
+
+	@Test
+	public void storedResultCanBeIteratedMultipleTimes() throws SQLException {
+		try (Database db = new Database()) {
+			db.execute("CREATE TABLE foo (bar INT)");
+			db.execute("INSERT INTO foo VALUES (1),(2),(3),(4),(5)");
+
+			Result res = db.execute("SELECT * FROM foo ORDER BY bar ASC").stored();
+
+			List<Integer> l1 = res.map(Row::getInt).collect(toList());
+			List<Integer> l2 = res.map(Row::getInt).collect(toList());
+
+			assertEquals(l1, l2);
+		}
+	}
+
+	@Test
+	public void nonStoredResultCannotBeIteratedMultipleTimes() throws SQLException {
+		try (Database db = new Database()) {
+			Result res = db.execute("SELECT 1, 2, 3");
+			res.forEach(row -> {});
+
+			exception.expect(IllegalStateException.class);
+			res.forEach(row -> {});
 		}
 	}
 }
