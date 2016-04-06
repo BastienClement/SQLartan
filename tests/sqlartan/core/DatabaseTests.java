@@ -20,7 +20,7 @@ public class DatabaseTests {
 	@Test
 	public void sqliteVersionIsThreeEightEleven() throws SQLException {
 		try (Database db = new Database()) {
-			assertEquals("3.8.11", db.execute("SELECT sqlite_version()").first(Row::getString));
+			assertEquals("3.8.11", db.execute("SELECT sqlite_version()").mapFirst(Row::getString));
 		}
 	}
 

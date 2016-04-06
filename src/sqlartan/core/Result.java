@@ -79,7 +79,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 *
 	 * @return
 	 */
-	public boolean isUpdateResults() {
+	public boolean isUpdateResult() {
 		return type == Type.Update;
 	}
 
@@ -88,8 +88,12 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 *
 	 * @return
 	 */
-	public boolean isQueryResults() {
+	public boolean isQueryResult() {
 		return type == Type.Query;
+	}
+
+	private void requireQueryResult() {
+		if (type != Type.Query) throw new IllegalStateException("Result must be of Query type");
 	}
 
 	/**
@@ -133,6 +137,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 */
 	@Override
 	public List<PersistentStructure<GeneratedColumn>> sources() {
+		requireQueryResult();
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -144,7 +149,8 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 */
 	@Override
 	public List<GeneratedColumn> columns() {
-		return type == Type.Query ? Collections.unmodifiableList(columns) : Collections.EMPTY_LIST;
+		requireQueryResult();
+		return Collections.unmodifiableList(columns);
 	}
 
 	/**
@@ -156,7 +162,8 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 */
 	@Override
 	public Optional<GeneratedColumn> column(String name) {
-		return type == Type.Query ? Optional.ofNullable(columnsIndex.get(name)) : Optional.empty();
+		requireQueryResult();
+		return Optional.ofNullable(columnsIndex.get(name));
 	}
 
 	/**
@@ -168,8 +175,8 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 */
 	@Override
 	public Optional<GeneratedColumn> column(int idx) {
-		if (idx < 0 || idx >= columns.size()) return Optional.empty();
-		return type == Type.Query ? Optional.of(columns.get(idx)) : Optional.empty();
+		requireQueryResult();
+		return (idx < 0 || idx >= columns.size()) ? Optional.empty() : Optional.of(columns.get(idx));
 	}
 
 	//###################################################################
@@ -201,7 +208,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 *
 	 */
 	private void consume() {
-		if (type != Type.Query) throw new IllegalStateException("Result must be of Query type");
+		requireQueryResult();
 		if (isClosed()) throw new IllegalStateException("Result object is closed");
 		if (!canBeConsumed()) throw new IllegalStateException("Stream has already been consumed");
 		consumed = true;
@@ -237,7 +244,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 		} else if (idx < currentRowIdx && rows != null) {
 			return rows.get(idx - 1);
 		} else {
-			return null;
+			throw new IllegalStateException("Unordered access to result rows without storage enabled");
 		}
 	}
 
@@ -270,8 +277,8 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 * @return
 	 */
 	@Override
-	public <R> Optional<R> firstOptional(Function<? super Row, ? extends R> mapper) {
-		Optional<R> res = RowStreamOps.super.firstOptional(mapper);
+	public <R> Optional<R> mapFirstOptional(Function<? super Row, ? extends R> mapper) {
+		Optional<R> res = RowStreamOps.super.mapFirstOptional(mapper);
 		close();
 		return res;
 	}

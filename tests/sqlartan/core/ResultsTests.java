@@ -17,8 +17,7 @@ public class ResultsTests {
 
 			// Test stream interface
 			Result r2 = db.execute("SELECT sqlite_version()");
-			r2.forEach(row -> {
-			});
+			r2.forEach(row -> {});
 			assertTrue(r2.isClosed());
 
 			// Create test table with dummy data
@@ -26,13 +25,12 @@ public class ResultsTests {
 			db.execute("INSERT INTO foo VALUES (1, 'a'), (2, 'b'), (3, 'c')");
 
 			// We have more than one row in the table
-			int count = db.execute("SELECT COUNT(*) FROM foo").first(Row::getInt);
+			int count = db.execute("SELECT COUNT(*) FROM foo").mapFirst(Row::getInt);
 			assertTrue(count > 1);
 
 			// Limit the stream
 			Result r3 = db.execute("SELECT * FROM foo");
-			r3.stream().limit(1).forEach(row -> {
-			});
+			r3.stream().limit(1).forEach(row -> {});
 			assertFalse(r3.isClosed());
 
 			// Manual close
@@ -42,21 +40,13 @@ public class ResultsTests {
 	}
 
 	@Test
-	public void updateResultsShouldAlreadyBeClosed() throws SQLException {
-		try (Database db = new Database()) {
-			Result r = db.execute("CREATE TABLE foo (a INT)");
-			assertTrue(r.isClosed());
-		}
-	}
-
-	@Test
 	public void resultsShouldHaveCorrectTypes() throws SQLException {
 		try (Database db = new Database()) {
 			BiConsumer<String, Boolean> test = (sql, query) -> {
 				try {
 					Result res = db.execute(sql);
-					assertEquals(query, res.isQueryResults());
-					assertEquals(!query, res.isUpdateResults());
+					assertEquals(query, res.isQueryResult());
+					assertEquals(!query, res.isUpdateResult());
 				} catch (SQLException e) {
 					fail(e.getMessage());
 				}
@@ -68,6 +58,14 @@ public class ResultsTests {
 
 			test.accept("SELECT 2", true);
 			test.accept("PRAGMA table_info(foo)", true);
+		}
+	}
+
+	@Test
+	public void updateResultsShouldAlreadyBeClosed() throws SQLException {
+		try (Database db = new Database()) {
+			Result r = db.execute("CREATE TABLE foo (a INT)");
+			assertTrue(r.isClosed());
 		}
 	}
 
