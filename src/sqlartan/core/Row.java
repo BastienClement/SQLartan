@@ -11,45 +11,43 @@ import java.util.*;
  */
 public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	private Result res;
-
-	private Object[] values;
-	private TreeMap<String, Object> valuesIndex = new TreeMap<>();
-
+	private RowData data;
 	private int currentColumn = 1;
 
 	Row(Result res, ResultSet rs) {
-		List<GeneratedColumn> columns = res.columns();
-		values = new Object[columns.size()];
-
-		columns.forEach(col -> {
-			try {
-				Object value = rs.getObject(currentColumn);
-				values[currentColumn - 1] = value;
-				valuesIndex.put(col.name(), value);
-				currentColumn++;
-			} catch (SQLException e) {
-				throw new RuntimeSQLException(e);
-			}
-		});
-
 		this.res = res;
-		reset();
+		this.data = new RowData(res, rs);
+	}
+
+	private Row(Result res, RowData rd) {
+		this.res = res;
+		this.data = rd;
 	}
 
 	public void reset() {
 		currentColumn = 1;
 	}
 
+	/**
+	 * Returns a new view of this row with an independent currentColumn counter.
+	 * Both Rows are backed by the same data object.
+	 *
+	 * @return
+	 */
+	public Row view() {
+		return new Row(res, data);
+	}
+
 	public List<Object> asList() {
-		return Collections.unmodifiableList(Arrays.asList(values));
+		return Collections.unmodifiableList(Arrays.asList(data.values));
 	}
 
 	public List<Object> asMutableList() {
-		return new ArrayList<>(Arrays.asList(values));
+		return new ArrayList<>(Arrays.asList(data.values));
 	}
 
 	public Object[] asArray() {
-		return Arrays.copyOf(values, values.length);
+		return Arrays.copyOf(data.values, data.values.length);
 	}
 
 	@Override
@@ -59,12 +57,12 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 
 			@Override
 			public boolean hasNext() {
-				return current < values.length;
+				return current < data.values.length;
 			}
 
 			@Override
 			public Object next() {
-				return values[current++];
+				return data.values[current++];
 			}
 		};
 	}
@@ -84,6 +82,11 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	}
 
 	@Override
+	public int columnCount() {
+		return res.columnCount();
+	}
+
+	@Override
 	public Optional<GeneratedColumn> column(String name) {
 		return res.column(name);
 	}
@@ -98,22 +101,22 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	//###################################################################
 
 	public Object getObject(String label) {
-		return valuesIndex.get(label);
+		return data.valuesIndex.get(label);
 	}
 
 	public <T> T getObject(String label, Class<T> tClass) {
 		return DataConverter.convert(getObject(label), tClass);
 	}
 
-	public int getInt(String label) {
+	public Integer getInt(String label) {
 		return getObject(label, Integer.class);
 	}
 
-	public long getLong(String label) {
+	public Long getLong(String label) {
 		return getObject(label, Long.class);
 	}
 
-	public double getDouble(String label) {
+	public Double getDouble(String label) {
 		return getObject(label, Double.class);
 	}
 
@@ -130,22 +133,22 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	//###################################################################
 
 	public Object getObject(int index) {
-		return (index > 0 && index <= values.length) ? values[index - 1] : null;
+		return (index > 0 && index <= data.values.length) ? data.values[index - 1] : null;
 	}
 
 	public <T> T getObject(int index, Class<T> tClass) {
 		return DataConverter.convert(getObject(index), tClass);
 	}
 
-	public int getInt(int index) {
+	public Integer getInt(int index) {
 		return getObject(index, Integer.class);
 	}
 
-	public long getLong(int index) {
+	public Long getLong(int index) {
 		return getObject(index, Long.class);
 	}
 
-	public double getDouble(int index) {
+	public Double getDouble(int index) {
 		return getObject(index, Double.class);
 	}
 
@@ -169,15 +172,15 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 		return getObject(currentColumn++, tClass);
 	}
 
-	public int getInt() {
+	public Integer getInt() {
 		return getInt(currentColumn++);
 	}
 
-	public long getLong() {
+	public Long getLong() {
 		return getLong(currentColumn++);
 	}
 
-	public double getDouble() {
+	public Double getDouble() {
 		return getDouble(currentColumn++);
 	}
 
@@ -187,5 +190,31 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 
 	public byte[] getBytes() {
 		return getBytes(currentColumn++);
+	}
+
+	//###################################################################
+	// Data storage
+	//###################################################################
+
+	private class RowData {
+		private Object[] values;
+		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
+
+		private RowData(Result res, ResultSet rs) {
+			List<GeneratedColumn> columns = res.columns();
+			values = new Object[columns.size()];
+
+			int currentColumn = 1;
+			for (GeneratedColumn col : columns) {
+				try {
+					Object value = rs.getObject(currentColumn);
+					values[currentColumn - 1] = value;
+					valuesIndex.put(col.name(), value);
+					currentColumn++;
+				} catch (SQLException e) {
+					throw new RuntimeSQLException(e);
+				}
+			}
+		}
 	}
 }

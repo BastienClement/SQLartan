@@ -55,6 +55,11 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	@Override
+	public int columnCount() {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
 	public Optional<TableColumn> column(String name) {
 		throw new UnsupportedOperationException("Not implemented");
 	}

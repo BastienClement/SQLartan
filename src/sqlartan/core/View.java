@@ -30,7 +30,10 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 	public List<GeneratedColumn> columns() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-
+	@Override
+	public int columnCount() {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 	@Override
 	public Optional<GeneratedColumn> column(String name) {
 		throw new UnsupportedOperationException("Not implemented");

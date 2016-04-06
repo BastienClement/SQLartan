@@ -87,4 +87,16 @@ public class ResultsTests {
 			assertTrue(res.isClosed());
 		}
 	}
+
+	@Test
+	public void updateCountIsCorrect() throws SQLException {
+		try (Database db = new Database()) {
+			db.execute("CREATE TABLE foo (bar INT, baz TEXT)");
+
+			assertEquals(3, db.execute("INSERT INTO foo VALUES (1, 'a'), (2, 'b'), (3, 'c')").updateCount());
+			assertEquals(2, db.execute("UPDATE foo SET baz = 'z' WHERE bar < 3").updateCount());
+			assertEquals(2, db.execute("DELETE FROM foo WHERE baz = 'z'").updateCount());
+			assertEquals(1, db.execute("DELETE FROM foo").updateCount());
+		}
+	}
 }
