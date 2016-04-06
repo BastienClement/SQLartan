@@ -4,14 +4,12 @@ import sqlartan.core.exception.RuntimeSQLException;
 import sqlartan.core.util.DataConverter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A results row.
  */
-public class Row implements QueryStructure<GeneratedColumn> {
+public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	private Result res;
 
 	private Object[] values;
@@ -40,6 +38,35 @@ public class Row implements QueryStructure<GeneratedColumn> {
 
 	public void reset() {
 		currentColumn = 1;
+	}
+
+	public List<Object> asList() {
+		return Collections.unmodifiableList(Arrays.asList(values));
+	}
+
+	public List<Object> asMutableList() {
+		return new ArrayList<>(Arrays.asList(values));
+	}
+
+	public Object[] asArray() {
+		return Arrays.copyOf(values, values.length);
+	}
+
+	@Override
+	public Iterator<Object> iterator() {
+		return new Iterator<Object>() {
+			private int current = 0;
+
+			@Override
+			public boolean hasNext() {
+				return current < values.length;
+			}
+
+			@Override
+			public Object next() {
+				return values[current++];
+			}
+		};
 	}
 
 	//###################################################################
