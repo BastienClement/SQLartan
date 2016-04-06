@@ -11,12 +11,12 @@ public class ResultsTests {
 	public void resultShouldCloseWhenFullyConsumed() throws SQLException {
 		try (Database db = new Database()) {
 			// Test iterator interface
-			Results r1 = db.execute("SELECT sqlite_version()");
+			Result r1 = db.execute("SELECT sqlite_version()");
 			for (Row row : r1) {}
 			assertTrue(r1.isClosed());
 
 			// Test stream interface
-			Results r2 = db.execute("SELECT sqlite_version()");
+			Result r2 = db.execute("SELECT sqlite_version()");
 			r2.forEach(row -> {
 			});
 			assertTrue(r2.isClosed());
@@ -30,7 +30,7 @@ public class ResultsTests {
 			assertTrue(count > 1);
 
 			// Limit the stream
-			Results r3 = db.execute("SELECT * FROM foo");
+			Result r3 = db.execute("SELECT * FROM foo");
 			r3.stream().limit(1).forEach(row -> {
 			});
 			assertFalse(r3.isClosed());
@@ -44,7 +44,7 @@ public class ResultsTests {
 	@Test
 	public void updateResultsShouldAlreadyBeClosed() throws SQLException {
 		try (Database db = new Database()) {
-			Results r = db.execute("CREATE TABLE foo (a INT)");
+			Result r = db.execute("CREATE TABLE foo (a INT)");
 			assertTrue(r.isClosed());
 		}
 	}
@@ -54,7 +54,7 @@ public class ResultsTests {
 		try (Database db = new Database()) {
 			BiConsumer<String, Boolean> test = (sql, query) -> {
 				try {
-					Results res = db.execute(sql);
+					Result res = db.execute(sql);
 					assertEquals(query, res.isQueryResults());
 					assertEquals(!query, res.isUpdateResults());
 				} catch (SQLException e) {
@@ -77,15 +77,16 @@ public class ResultsTests {
 			db.execute("CREATE TABLE foo (bar INT)");
 			db.execute("INSERT INTO foo VALUES (1),(2),(5),(3),(4),(8),(7),(9),(6)");
 
-			int max = db.execute("SELECT * FROM foo ORDER BY bar ASC")
-			            .stream()
-			            .mapToInt(Row::getInt)
-			            .reduce(0, (prev, cur) -> {
-				            if (prev > cur) throw new RuntimeException("Bad iteration order");
-				            return cur;
-			            });
+			Result res = db.execute("SELECT * FROM foo ORDER BY bar ASC");
+			int max = res.stream()
+			             .mapToInt(Row::getInt)
+			             .reduce(0, (prev, cur) -> {
+				             if (prev > cur) throw new RuntimeException("Bad iteration order");
+				             return cur;
+			             });
 
 			assertEquals(9, max);
+			assertTrue(res.isClosed());
 		}
 	}
 }

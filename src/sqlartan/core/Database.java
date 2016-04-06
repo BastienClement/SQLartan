@@ -179,8 +179,8 @@ public class Database implements AutoCloseable {
 	 * @return the result of the query
 	 * @throws SQLException
 	 */
-	public Results execute(String query) throws SQLException {
-		return new Results(connection, query);
+	public Result execute(String query) throws SQLException {
+		return new Result(connection, query);
 	}
 
 	/**

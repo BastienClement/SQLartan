@@ -1,31 +1,50 @@
 package sqlartan.core;
 
-import sqlartan.core.exception.InvalidDataReadException;
+import sqlartan.core.exception.RuntimeSQLException;
+import sqlartan.core.util.DataConverter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * A results row.
- *
- * This object is dynamically linked to the state of the internal ResultSet of the Results object.
- * It should not be stored or used outside the scope of the iterator or stream where it was obtained.
  */
 public class Row implements QueryStructure<GeneratedColumn> {
-	private Results res;
-	private ResultSet rs;
-	private int currentColumn;
+	private Result res;
 
-	Row(Results res, ResultSet rs) {
+	private Object[] values;
+	private TreeMap<String, Object> valuesIndex = new TreeMap<>();
+
+	private int currentColumn = 1;
+
+	Row(Result res, ResultSet rs) {
+		List<GeneratedColumn> columns = res.columns();
+		values = new Object[columns.size()];
+
+		columns.forEach(col -> {
+			try {
+				Object value = rs.getObject(currentColumn);
+				values[currentColumn - 1] = value;
+				valuesIndex.put(col.name(), value);
+				currentColumn++;
+			} catch (SQLException e) {
+				throw new RuntimeSQLException(e);
+			}
+		});
+
 		this.res = res;
-		this.rs = rs;
 		reset();
 	}
 
 	public void reset() {
 		currentColumn = 1;
 	}
+
+	//###################################################################
+	// QueryStructure proxy
+	//###################################################################
 
 	@Override
 	public List<PersistentStructure<GeneratedColumn>> sources() {
@@ -51,114 +70,76 @@ public class Row implements QueryStructure<GeneratedColumn> {
 	// Label access
 	//###################################################################
 
-	@SuppressWarnings("unchecked")
-	public <T> T getObject(String label) {
-		try {
-			return (T) rs.getObject(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+	public Object getObject(String label) {
+		return valuesIndex.get(label);
+	}
+
+	public <T> T getObject(String label, Class<T> tClass) {
+		return DataConverter.convert(getObject(label), tClass);
 	}
 
 	public int getInt(String label) {
-		try {
-			return rs.getInt(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(label, Integer.class);
 	}
 
 	public long getLong(String label) {
-		try {
-			return rs.getInt(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(label, Long.class);
 	}
 
 	public double getDouble(String label) {
-		try {
-			return rs.getDouble(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(label, Double.class);
 	}
 
 	public String getString(String label) {
-		try {
-			return rs.getString(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(label, String.class);
 	}
 
 	public byte[] getBytes(String label) {
-		try {
-			return rs.getBytes(label);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	//###################################################################
 	// Index access
 	//###################################################################
 
-	@SuppressWarnings("unchecked")
-	public <T> T getObject(int index) {
-		try {
-			return (T) rs.getObject(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+	public Object getObject(int index) {
+		return (index > 0 && index <= values.length) ? values[index - 1] : null;
+	}
+
+	public <T> T getObject(int index, Class<T> tClass) {
+		return DataConverter.convert(getObject(index), tClass);
 	}
 
 	public int getInt(int index) {
-		try {
-			return rs.getInt(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(index, Integer.class);
 	}
 
 	public long getLong(int index) {
-		try {
-			return rs.getInt(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(index, Long.class);
 	}
 
 	public double getDouble(int index) {
-		try {
-			return rs.getDouble(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(index, Double.class);
 	}
 
 	public String getString(int index) {
-		try {
-			return rs.getString(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		return getObject(index, String.class);
 	}
 
 	public byte[] getBytes(int index) {
-		try {
-			return rs.getBytes(index);
-		} catch (SQLException e) {
-			throw new InvalidDataReadException(e);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	//###################################################################
 	// Sequential access
 	//###################################################################
 
-	public <T> T getObject() {
+	public Object getObject() {
 		return getObject(currentColumn++);
+	}
+
+	public <T> T getObject(Class<T> tClass) {
+		return getObject(currentColumn++, tClass);
 	}
 
 	public int getInt() {

@@ -80,7 +80,7 @@ public interface RowStreamOps extends Streamable<Row>, AutoCloseable {
 		return firstOptional(mapper).get();
 	}
 
-	default <R> Stream<R> mapOptional(Function<? super Row, Optional<? extends R>> mapper) {
+	/*default <R> Stream<R> mapOptional(Function<? super Row, Optional<? extends R>> mapper) {
 		return stream().map(mapper).filter(Optional::isPresent).map(Optional::get);
-	}
+	}*/
 }
