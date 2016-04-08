@@ -178,4 +178,13 @@ public interface RowStreamOps extends Streamable<Row>, AutoCloseable {
 	default <R> Stream<R> mapOptional(Function<? super Row, Optional<R>> mapper) {
 		return map(mapper).filter(Optional::isPresent).map(Optional::get);
 	}
+
+	/**
+	 * Checks if at least one row is available in the Result.
+	 *
+	 * @return
+	 */
+	default boolean exists() {
+		return findFirst().isPresent();
+	}
 }
