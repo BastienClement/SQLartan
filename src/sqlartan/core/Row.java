@@ -69,6 +69,22 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 		};
 	}
 
+	@Override
+	public String toString() {
+		List<GeneratedColumn> columns = res.columns();
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Row(");
+		for (int i = 0; i < values.length; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append(columns.get(i).name());
+			sb.append(": ");
+			sb.append(values[i].toString());
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
 	//###################################################################
 	// QueryStructure proxy
 	//###################################################################
