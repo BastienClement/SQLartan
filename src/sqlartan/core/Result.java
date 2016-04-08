@@ -31,7 +31,21 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	Result(Connection connection, String query) throws SQLException {
 		statement = connection.createStatement();
-		if (statement.execute(query)) {
+		readResult(statement.execute(query));
+	}
+
+	Result(PreparedStatement preparedStatement) throws SQLException {
+		statement = preparedStatement;
+		readResult(preparedStatement.execute());
+	}
+
+	/**
+	 *
+	 * @param executeResult
+	 * @throws SQLException
+	 */
+	private void readResult(boolean executeResult) throws SQLException {
+		if (executeResult) {
 			type = Type.Query;
 			resultSet = statement.getResultSet();
 			readMetadata();
@@ -197,7 +211,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	//###################################################################
 
 	/**
-	 *
 	 * @return
 	 */
 	public boolean canBeConsumed() {
@@ -271,7 +284,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	}
 
 	/**
-	 *
 	 * @param mapper
 	 * @param <R>
 	 * @return

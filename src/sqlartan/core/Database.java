@@ -2,6 +2,9 @@ package sqlartan.core;
 
 import java.io.File;
 import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class Database implements AutoCloseable {
@@ -184,13 +187,29 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Executes a query with placeholders.
+	 *
+	 * @param query
+	 * @param parameters
+	 * @return
+	 * @throws SQLException
+	 */
+	public Result execute(String query, Object... parameters) throws SQLException {
+		PreparedQuery pq = prepare(query);
+		for (int i = 0; i < parameters.length; i++) {
+			pq.set(i + 1, parameters[i]);
+		}
+		return pq.execute();
+	}
+
+	/**
 	 * Prepares a query for execution.
 	 *
 	 * @param query
 	 * @throws SQLException
 	 */
-	public void prepare(String query) throws SQLException {
-		throw new UnsupportedOperationException("Not implemented");
+	public PreparedQuery prepare(String query) throws SQLException {
+		return new PreparedQuery(connection, query);
 	}
 
 	/**
