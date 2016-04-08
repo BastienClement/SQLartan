@@ -47,6 +47,14 @@ public class DatabaseTests {
 		}
 	}
 
+	@Test
+	public void defaultPragmaAreCorrect() throws SQLException {
+		try (Database db = new Database()) {
+			Integer off = 0, on = 1;
+			assertEquals(off, db.execute("PRAGMA count_changes").mapFirst(Row::getInt));
+		}
+	}
+
 	//db.execute("CREATE TABLE main.foo (a text, b text, c integer);");
 	//db.execute("CREATE TABLE main.bar (d intlol unique not null, e text check (length(e) > 2) primary key);");
 	//db.execute("INSERT INTO bar VALUES(42);");

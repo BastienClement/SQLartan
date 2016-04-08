@@ -89,8 +89,8 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	}
 
 	/**
-	 * Returns if this object is a result of an UPDATE or DELETE query.
-	 * Also returns true if the query was a DDL one, but updateCount() will always return 0 in this case.
+	 * Checks if this object is a result of an UPDATE or DELETE query.
+	 * Also returns true if the query was a DDL query, but updateCount() will always return 0 in this case.
 	 *
 	 * @return
 	 */
@@ -99,7 +99,16 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	}
 
 	/**
-	 * Returns if this object is a list of results from a SELECT query.
+	 * Requires the Result object to be of type Update.
+	 *
+	 * @throws IllegalStateException if the type is not Update
+	 */
+	private void requireUpdateResult() {
+		if (type != Type.Update) throw new IllegalStateException("Result must be of Update type");
+	}
+
+	/**
+	 * Checks if this object is a list of results from a SELECT query.
 	 *
 	 * @return
 	 */
@@ -107,6 +116,11 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 		return type == Type.Query;
 	}
 
+	/**
+	 * Requires the Result object to be of type Query.
+	 *
+	 * @throws IllegalStateException if the type is not Query
+	 */
 	private void requireQueryResult() {
 		if (type != Type.Query) throw new IllegalStateException("Result must be of Query type");
 	}
@@ -141,14 +155,20 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 		}
 	}
 
+	/**
+	 * Checks if this Results object has been properly closed and does no longer hold
+	 * any internal Closable objects.
+	 */
+	public boolean isClosed() {
+		return resultSet == null;
+	}
+
 	//###################################################################
 	// QueryStructure implementation
 	//###################################################################
 
 	/**
 	 * Returns the sources used to generate these results.
-	 *
-	 * @return
 	 */
 	@Override
 	public List<PersistentStructure<GeneratedColumn>> sources() {
@@ -158,9 +178,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	/**
 	 * Returns an unmodifiable list of the columns composing these results.
-	 * Only application if this Results is a Query result.
-	 *
-	 * @return
+	 * Only application if this Result is a Query result.
 	 */
 	@Override
 	public List<GeneratedColumn> columns() {
@@ -169,11 +187,16 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	}
 
 	/**
+	 * Returns the number of columns in this result.
+	 */
+	@Override
+	public int columnCount() {
+		return columns().size();
+	}
+
+	/**
 	 * Returns the column with the given name
-	 * Only application if this Results is a Query result.
-	 *
-	 * @param name
-	 * @return
+	 * Only application if this Result is a Query result.
 	 */
 	@Override
 	public Optional<GeneratedColumn> column(String name) {
@@ -183,10 +206,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	/**
 	 * Returns the column at a given index.
-	 * Only application if this Results is a Query result.
-	 *
-	 * @param idx
-	 * @return
+	 * Only application if this Result is a Query result.
 	 */
 	@Override
 	public Optional<GeneratedColumn> column(int idx) {
@@ -200,10 +220,9 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	/**
 	 * Returns the number of rows updated by the query.
-	 *
-	 * @return
 	 */
 	public int updateCount() {
+		requireUpdateResult();
 		return updateCount;
 	}
 
@@ -212,36 +231,44 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	//###################################################################
 
 	/**
-	 * @return
+	 * Indicates if the Result object can be consumed by an Iterator or a Stream pipeline.
 	 */
 	public boolean canBeConsumed() {
 		return type == Type.Query && (!consumed || rows != null);
 	}
 
 	/**
-	 *
+	 * Consumes the Result.
+	 * This method cannot be called more than one time if row storage is not enabled.
 	 */
 	private void consume() {
 		requireQueryResult();
-		if (isClosed()) throw new IllegalStateException("Result object is closed");
+		if (isClosed() && !done) throw new IllegalStateException("Result object is closed");
 		if (!canBeConsumed()) throw new IllegalStateException("Stream has already been consumed");
 		consumed = true;
 	}
 
 	/**
-	 *
+	 * Enables row storage and returns this Result object.
+	 * Once called, this Result can be consumed multiple times.
 	 */
-	public void enableStorage() {
+	public Result stored() {
 		consume();
 		rows = new ArrayList<>();
+		return this;
 	}
 
 	/**
+	 * Return the row at the given index.
 	 *
+	 * If storage is not enabled, only the row matching the current one from the underlying
+	 * ResultSet can be returned. Requesting the next row will advance the ResultSet.
+	 *
+	 * If storage is enabled, previously fetched rows can still be requested.
 	 */
 	private synchronized Row row(int idx) {
 		if (idx == currentRowIdx) {
-			return currentRow;
+			return currentRow != null ? currentRow.view() : null;
 		} else if (!done && idx == currentRowIdx + 1) {
 			try {
 				currentRowIdx++;
@@ -256,7 +283,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 			close();
 			return null;
 		} else if (idx < currentRowIdx && rows != null) {
-			return rows.get(idx - 1);
+			return rows.get(idx - 1).view();
 		} else {
 			throw new IllegalStateException("Unordered access to result rows without storage enabled");
 		}
@@ -264,8 +291,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	/**
 	 * Constructs an iterator allowing to iterate over the rows of this Results set.
-	 *
-	 * @return
 	 */
 	@Override
 	public Iterator<Row> iterator() {
@@ -283,8 +308,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 
 	/**
 	 * Constructs a stream of rows.
-	 *
-	 * @return
 	 */
 	public Stream<Row> stream() {
 		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
@@ -304,15 +327,9 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 		return res;
 	}
 
-	/**
-	 * Checks if this Results object has been properly closed and does no longer hold
-	 * any internal Closable objects.
-	 *
-	 * @return
-	 */
-	public boolean isClosed() {
-		return resultSet == null;
-	}
+	//###################################################################
+	// Iterator
+	//###################################################################
 
 	/**
 	 * Iterator over the Rows of this result set.
