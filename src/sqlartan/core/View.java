@@ -8,37 +8,34 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 		super(database, name);
 	}
 
-	@Override
 	public void rename(String newName) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-	@Override
+
 	public void duplicate(String newName) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-	@Override
+
 	public void drop() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	@Override
-	public List<PersistentStructure<GeneratedColumn>> sources() {
+	public List<PersistentStructure<? extends Column>> sources() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	@Override
 	public List<GeneratedColumn> columns() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-	@Override
+
 	public int columnCount() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-	@Override
+
 	public Optional<GeneratedColumn> column(String name) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
-	@Override
+
 	public Optional<GeneratedColumn> column(int idx) {
 		throw new UnsupportedOperationException("Not implemented");
 	}

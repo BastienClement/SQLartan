@@ -88,7 +88,7 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	//###################################################################
 
 	@Override
-	public List<PersistentStructure<GeneratedColumn>> sources() {
+	public List<PersistentStructure<? extends Column>> sources() {
 		return res.sources();
 	}
 

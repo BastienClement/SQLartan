@@ -3,7 +3,6 @@ package sqlartan.core;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -39,7 +38,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	}
 
 	/**
-	 *
 	 * @param executeResult
 	 * @throws SQLException
 	 */
@@ -132,7 +130,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 *
 	 * @throws SQLException
 	 */
-	@Override
 	public void close() {
 		if (resultSet != null) {
 			try {
@@ -168,8 +165,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	/**
 	 * Returns the sources used to generate these results.
 	 */
-	@Override
-	public List<PersistentStructure<GeneratedColumn>> sources() {
+	public List<PersistentStructure<? extends Column>> sources() {
 		requireQueryResult();
 		throw new UnsupportedOperationException("Not implemented");
 	}
@@ -178,7 +174,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 * Returns an unmodifiable list of the columns composing these results.
 	 * Only application if this Result is a Query result.
 	 */
-	@Override
 	public List<GeneratedColumn> columns() {
 		requireQueryResult();
 		return Collections.unmodifiableList(columns);
@@ -187,7 +182,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	/**
 	 * Returns the number of columns in this result.
 	 */
-	@Override
 	public int columnCount() {
 		return columns().size();
 	}
@@ -196,7 +190,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 * Returns the column with the given name
 	 * Only application if this Result is a Query result.
 	 */
-	@Override
 	public Optional<GeneratedColumn> column(String name) {
 		requireQueryResult();
 		return Optional.ofNullable(columnsIndex.get(name));
@@ -206,7 +199,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 * Returns the column at a given index.
 	 * Only application if this Result is a Query result.
 	 */
-	@Override
 	public Optional<GeneratedColumn> column(int idx) {
 		requireQueryResult();
 		return (idx < 0 || idx >= columns.size()) ? Optional.empty() : Optional.of(columns.get(idx));
@@ -257,7 +249,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	}
 
 	/**
-	 * Return the row at the given index.
+	 * Return the row at the given index (1-based).
 	 *
 	 * If storage is not enabled, only the row matching the current one from the underlying
 	 * ResultSet can be returned. Requesting the next row will advance the ResultSet.
@@ -290,39 +282,9 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	/**
 	 * Constructs an iterator allowing to iterate over the rows of this Results set.
 	 */
-	@Override
 	public Iterator<Row> iterator() {
 		consume();
 		return new ResultIterator();
-	}
-
-	/**
-	 * Disambiguate the forEach() method.
-	 */
-	@Override
-	public void forEach(Consumer<? super Row> action) {
-		Iterable.super.forEach(action);
-	}
-
-	/**
-	 * Constructs a stream of rows.
-	 */
-	public Stream<Row> stream() {
-		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
-		Spliterator<Row> split = Spliterators.spliteratorUnknownSize(iterator(), characteristics);
-		return StreamSupport.stream(split, false);
-	}
-
-	/**
-	 * @param mapper
-	 * @param <R>
-	 * @return
-	 */
-	@Override
-	public <R> Optional<R> mapFirstOptional(Function<? super Row, ? extends R> mapper) {
-		Optional<R> res = ResultStreamOps.super.mapFirstOptional(mapper);
-		close();
-		return res;
 	}
 
 	/**
@@ -340,5 +302,20 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 		public Row next() {
 			return row(++current);
 		}
+	}
+
+	/**
+	 * Constructs a stream of rows.
+	 */
+	public Stream<Row> stream() {
+		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
+		Spliterator<Row> split = Spliterators.spliteratorUnknownSize(iterator(), characteristics);
+		return StreamSupport.stream(split, false);
+	}
+
+	// Disambiguate the forEach() method.
+	@Override
+	public void forEach(Consumer<? super Row> action) {
+		Iterable.super.forEach(action);
 	}
 }

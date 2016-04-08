@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Mixin interface that provides Stream operation to the Result object.
+ * Mixin interface that provides Stream operations to the Result object.
  */
 interface ResultStreamOps extends StreamOps<Row>, AutoCloseable {
 	/**
