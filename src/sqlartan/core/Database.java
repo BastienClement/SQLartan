@@ -1,11 +1,13 @@
 package sqlartan.core;
 
+import sqlartan.core.util.IterableStream;
 import java.io.File;
-import java.sql.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Database implements AutoCloseable {
 	/**
@@ -101,22 +103,31 @@ public class Database implements AutoCloseable {
 	 *
 	 * @return the hashmap containing the tables
 	 */
-	public HashMap<String, Table> tables(){ return tables; }
+	public IterableStream<Table> tables() throws SQLException {
+		String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
+		Stream<Table> res = execute(query)
+				.map(Row::getString)
+				.map(name -> new Table(this, name));
+		return IterableStream.of(res);
+	}
 
 	/**
 	 * Returns a table with a specific name.
 	 *
-	 * @param name
+	 * @param table
 	 * @return the table contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Table table(String name){ return tables.get(name); }
+	public Optional<Table> table(String table) throws SQLException {
+		String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?");
+		return execute(query, table).findFirst().map(row -> new Table(this, table));
+	}
 
 	/**
 	 * Returns the hashmap containing every views.
 	 *
 	 * @return the hashmap containing the views
 	 */
-	public HashMap<String, View> views(){ return views; }
+	public HashMap<String, View> views() { return views; }
 
 	/**
 	 * Returns a view with a specific name.
@@ -124,7 +135,7 @@ public class Database implements AutoCloseable {
 	 * @param name
 	 * @return the view contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public View view(String name){ return views.get(name); }
+	public View view(String name) { return views.get(name); }
 
 	/**
 	 * Clean up the database by rebuilding it entirely.
@@ -173,6 +184,24 @@ public class Database implements AutoCloseable {
 	 */
 	public boolean isMemoryOnly() {
 		return path.getName().equals(":memory:");
+	}
+
+	/**
+	 * @param parts
+	 * @return
+	 */
+	public String format(String... parts) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < parts.length; i++) {
+			if (i % 2 == 0) {
+				sb.append(parts[i]);
+			} else {
+				sb.append("[");
+				sb.append(parts[i]);
+				sb.append("]");
+			}
+		}
+		return sb.toString();
 	}
 
 	/**

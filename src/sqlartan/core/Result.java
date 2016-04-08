@@ -1,14 +1,15 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RowStreamOps;
+import sqlartan.core.util.ResultStreamOps;
 import sqlartan.core.util.Streamable;
 import java.sql.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, Streamable<Row>, RowStreamOps, AutoCloseable {
+public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, Streamable<Row>, ResultStreamOps, AutoCloseable {
 	/** Type of the Results object */
 	private enum Type {
 		Update, Query
@@ -273,6 +274,14 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	}
 
 	/**
+	 * Disambiguate the forEach() method.
+	 */
+	@Override
+	public void forEach(Consumer<? super Row> action) {
+		Iterable.super.forEach(action);
+	}
+
+	/**
 	 * Constructs a stream of rows.
 	 *
 	 * @return
@@ -290,7 +299,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 	 */
 	@Override
 	public <R> Optional<R> mapFirstOptional(Function<? super Row, ? extends R> mapper) {
-		Optional<R> res = RowStreamOps.super.mapFirstOptional(mapper);
+		Optional<R> res = ResultStreamOps.super.mapFirstOptional(mapper);
 		close();
 		return res;
 	}
