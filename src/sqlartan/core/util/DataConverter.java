@@ -1,25 +1,48 @@
 package sqlartan.core.util;
 
+/**
+ * Utility object to convert objects returned by the SQLite driver
+ * to objects used as return type for Row accessors.
+ *
+ * This object is the bridge between the classes used by the
+ * SQLite driver for the ResultSet.getObject method and the
+ * types returned by the accessor in the Row object.
+ */
 public abstract class DataConverter {
+	/**
+	 * Convert the given Object value to an instance of the requested class.
+	 *
+	 * @param value  the Object value from ResultSet.getObject
+	 * @param tClass the target class to convert to
+	 * @param <T>    the type of the result
+	 */
 	public static <T> T convert(Object value, Class<T> tClass) {
+		// Find the converted to use for the requested class
 		Converter<T> converter = converterForClass(tClass);
 
+		// Ensure value is not null before doing more work
 		if (value == null) return converter.fromNull();
-		Class<?> vClass = value.getClass();
 
-		if (vClass == Integer.class) {
+		// Find the original type of the value
+		if (value instanceof Integer) {
 			return converter.fromInteger((Integer) value);
-		} else if (vClass == Long.class) {
+		} else if (value instanceof Long) {
 			return converter.fromLong((Long) value);
-		} else if (vClass == Double.class) {
+		} else if (value instanceof Double) {
 			return converter.fromDouble((Double) value);
-		} else if (vClass == String.class) {
+		} else if (value instanceof String) {
 			return converter.fromString((String) value);
 		} else {
-			throw new UnsupportedOperationException("Cannot convert from " + vClass.getSimpleName());
+			// TODO: create additional converters if we missed a return type of the SQLite driver
+			throw new UnsupportedOperationException("Cannot convert from " + value.getClass().getSimpleName());
 		}
 	}
 
+	/**
+	 * A converter construct values of a given class,
+	 *
+	 * @param <T> the type of the result of this Converter
+	 */
 	private interface Converter<T> {
 		T fromNull();
 		T fromInteger(Integer int_value);
@@ -38,8 +61,8 @@ public abstract class DataConverter {
 	}
 
 	private static class LongConverter implements Converter<Long> {
-		private static Long Zero = 0L;
-		public Long fromNull() { return Zero; }
+		private static Long zero = 0L;
+		public Long fromNull() { return zero; }
 		public Long fromInteger(Integer int_value) { return int_value.longValue(); }
 		public Long fromLong(Long long_value) { return long_value; }
 		public Long fromDouble(Double double_value) { return double_value.longValue(); }
@@ -47,8 +70,8 @@ public abstract class DataConverter {
 	}
 
 	private static class DoubleConverter implements Converter<Double> {
-		private static Double Zero = 0.0;
-		public Double fromNull() { return Zero; }
+		private static Double zero = 0.0;
+		public Double fromNull() { return zero; }
 		public Double fromInteger(Integer int_value) { return int_value.doubleValue(); }
 		public Double fromLong(Long long_value) { return long_value.doubleValue(); }
 		public Double fromDouble(Double double_value) { return double_value; }
@@ -56,8 +79,8 @@ public abstract class DataConverter {
 	}
 
 	private static class StringConverter implements Converter<String> {
-		private static String Empty = "";
-		public String fromNull() { return Empty; }
+		private static String empty = "";
+		public String fromNull() { return empty; }
 		public String fromInteger(Integer int_value) { return int_value.toString(); }
 		public String fromLong(Long long_value) { return long_value.toString(); }
 		public String fromDouble(Double double_value) { return double_value.toString(); }
@@ -69,6 +92,13 @@ public abstract class DataConverter {
 	private static DoubleConverter doubleConverter = new DoubleConverter();
 	private static StringConverter stringConverter = new StringConverter();
 
+	/**
+	 * Finds the converter matching the requested target class.
+	 *
+	 * @param tClass the target class
+	 * @param <T>    the target type
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	private static <T> Converter<T> converterForClass(Class<T> tClass) {
 		if (tClass == Integer.class) {
@@ -80,6 +110,7 @@ public abstract class DataConverter {
 		} else if (tClass == String.class) {
 			return (Converter<T>) stringConverter;
 		} else {
+			// TODO: create additional methods if we want to convert to another class
 			throw new UnsupportedOperationException("Cannot produce a converter to " + tClass.getSimpleName());
 		}
 	}

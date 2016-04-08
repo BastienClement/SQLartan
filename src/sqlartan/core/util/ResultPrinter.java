@@ -5,9 +5,14 @@ import sqlartan.core.Result;
 import sqlartan.core.Row;
 import java.util.ArrayList;
 
+/**
+ * Utility object to print a Result object as an ASCII table.
+ */
 abstract public class ResultPrinter {
 	/**
-	 * @param res
+	 * Prints the given Result object as an ASCII table.
+	 *
+	 * @param res the result object
 	 */
 	public static void print(Result res) {
 		// Count the number of columns to display
@@ -64,12 +69,11 @@ abstract public class ResultPrinter {
 	}
 
 	/**
-	 * String padding.
+	 * String padding helper.
 	 *
-	 * @param str
-	 * @param width
-	 * @param padding
-	 * @return
+	 * @param str     the stream to pad
+	 * @param width   the target width
+	 * @param padding the char to use for padding
 	 */
 	private static String pad(String str, int width, char padding) {
 		if (str.length() == width) return str;

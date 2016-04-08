@@ -5,6 +5,19 @@ import java.util.Optional;
 import java.util.function.*;
 import java.util.stream.*;
 
+/**
+ * Implements proxy functions for the Stream interface.
+ *
+ * Classes implementing this interface are required to provide a stream() method (through Streamable) that
+ * returns a classical Java 8 Stream object. This interface will then provide default implementation for
+ * methods defined by the Stream interface directly on the implementing class itself.
+ * This allow to create objects that behave like a Stream instance without actually being one.
+ *
+ * Documentation for these function is available from the official Stream JavaDoc:
+ * https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html
+ *
+ * @param <T> the type of elements from the actual stream
+ */
 public interface StreamOps<T> extends Streamable<T> {
 	default boolean allMatch(Predicate<? super T> predicate) {
 		return stream().allMatch(predicate);

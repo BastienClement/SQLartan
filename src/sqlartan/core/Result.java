@@ -1,7 +1,5 @@
 package sqlartan.core;
 
-import sqlartan.core.util.ResultStreamOps;
-import sqlartan.core.util.Streamable;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
@@ -9,7 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, Streamable<Row>, ResultStreamOps, AutoCloseable {
+public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, ResultStreamOps, AutoCloseable {
 	/** Type of the Results object */
 	private enum Type {
 		Update, Query
@@ -326,10 +324,6 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, S
 		close();
 		return res;
 	}
-
-	//###################################################################
-	// Iterator
-	//###################################################################
 
 	/**
 	 * Iterator over the Rows of this result set.
