@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.exception.RuntimeSQLException;
+import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.core.util.DataConverter;
 import java.sql.ResultSet;
 import java.sql.SQLException;

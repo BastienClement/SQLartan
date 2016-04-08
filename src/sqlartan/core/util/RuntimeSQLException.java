@@ -1,4 +1,4 @@
-package sqlartan.core.exception;
+package sqlartan.core.util;
 
 public class RuntimeSQLException extends RuntimeException {
 	public RuntimeSQLException(Throwable cause) {

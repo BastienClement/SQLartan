@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.exception.RuntimeSQLException;
+import sqlartan.core.util.RuntimeSQLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
