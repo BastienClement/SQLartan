@@ -21,13 +21,27 @@ public class SqlartanController {
 
 	void test()
 	{
-		TreeItem<String> mainTreeItem = new TreeItem<String> ("Une base de donnee");
+		TreeItem<String> mainTreeItem = new TreeItem<String> ("Bases de données");
+		TreeItem<String> dbTreeItem1 =new TreeItem<String>("Une base de données");
+		TreeItem<String> dbTreeItem2 =new TreeItem<String>("Une autre base de données");
+
+
 		treeView.setRoot(mainTreeItem);
+		mainTreeItem.getChildren().add(dbTreeItem1);
+		mainTreeItem.getChildren().add(dbTreeItem2);
 
 		mainTreeItem.setExpanded(true);
 
-		mainTreeItem.getChildren().add(new TreeItem<String>("Une table"));
-		mainTreeItem.getChildren().add(new TreeItem<String>("Une vue"));
+
+		dbTreeItem1.getChildren().add(new TreeItem<String>("Une table"));
+		dbTreeItem1.getChildren().add(new TreeItem<String>("Une vue"));
+
+
+		dbTreeItem2.getChildren().add(new TreeItem<String>("Une table"));
+		dbTreeItem2.getChildren().add(new TreeItem<String>("Une vue"));
+		treeView.setShowRoot(false);
+
+
 
 	}
 
