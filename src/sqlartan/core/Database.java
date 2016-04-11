@@ -26,12 +26,6 @@ public class Database implements AutoCloseable {
 	/** The underlying JDBC connection */
 	private Connection connection;
 
-	/** Set of tables */
-	private HashMap<String, Table> tables = new HashMap<>();
-
-	/** Set of views */
-	private HashMap<String, View> views = new HashMap<>();
-
 	/** Set of attached database */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
 
@@ -104,11 +98,13 @@ public class Database implements AutoCloseable {
 	 * @return the hashmap containing the tables
 	 */
 	public IterableStream<Table> tables() throws SQLException {
-		String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
-		Stream<Table> res = execute(query)
-				.map(Row::getString)
-				.map(name -> new Table(this, name));
-		return IterableStream.of(res);
+		String query =
+				format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
+		Stream<Table> tables =
+				execute(query)
+						.map(Row::getString)
+						.map(name -> new Table(this, name));
+		return IterableStream.of(tables);
 	}
 
 	/**
@@ -119,7 +115,9 @@ public class Database implements AutoCloseable {
 	 */
 	public Optional<Table> table(String table) throws SQLException {
 		String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?");
-		return execute(query, table).findFirst().map(row -> new Table(this, table));
+		return execute(query, table)
+				.findFirst()
+				.map(row -> new Table(this, table));
 	}
 
 	/**

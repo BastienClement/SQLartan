@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 public abstract class Column {
-	public static interface Properties {
+	interface Properties {
 		String name();
 		String type();
 	}

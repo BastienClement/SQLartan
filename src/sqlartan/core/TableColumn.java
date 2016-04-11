@@ -3,7 +3,7 @@ package sqlartan.core;
 import java.util.Optional;
 
 public class TableColumn extends Column {
-	public static interface Properties extends Column.Properties {
+	interface Properties extends Column.Properties {
 		boolean unique();
 		String check();
 	}

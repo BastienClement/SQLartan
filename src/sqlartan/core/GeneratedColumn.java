@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 public class GeneratedColumn extends Column {
-	public static interface Properties extends Column.Properties {
+	interface Properties extends Column.Properties {
 		String sourceTable();
 		String sourceExpr();
 	}
