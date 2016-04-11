@@ -5,11 +5,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import sqlartan.core.Database;
+import sqlartan.view.SqlartanController;
 
 public class Sqlartan extends Application{
 
 	private Stage primaryStage;
 	private BorderPane mainLayout;
+
+	SqlartanController controller;
 
 	/**
 	 * The main entry point for all JavaFX applications.
@@ -36,6 +40,10 @@ public class Sqlartan extends Application{
 
 		primaryStage.setScene(new Scene(mainLayout));
 		primaryStage.show();
+
+		controller = loader.getController();
+		controller.setApp(this);
+
 	}
 
 	public static void main(String[] args) {

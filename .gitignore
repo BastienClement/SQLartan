@@ -2,3 +2,4 @@
 /.idea/tasks.xml
 /out
 /.idea/dataSources*
+*.db
