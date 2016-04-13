@@ -125,7 +125,7 @@ public class Database implements AutoCloseable {
 	 *
 	 * @return the hashmap containing the views
 	 */
-	public HashMap<String, View> views() { return views; }
+	public HashMap<String, View> views() { return null; }
 
 	/**
 	 * Returns a view with a specific name.
@@ -133,7 +133,7 @@ public class Database implements AutoCloseable {
 	 * @param name
 	 * @return the view contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public View view(String name) { return views.get(name); }
+	public View view(String name) { return null; }
 
 	/**
 	 * Clean up the database by rebuilding it entirely.
