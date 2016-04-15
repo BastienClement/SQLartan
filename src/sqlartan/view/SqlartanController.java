@@ -1,6 +1,13 @@
 package sqlartan.view;
 
+import javafx.beans.Observable;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableArray;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import sqlartan.Sqlartan;
@@ -18,6 +25,8 @@ public class SqlartanController {
 
 	public Database dataBase;
 
+	private ObservableList<testClass> rows = FXCollections.observableArrayList();
+
 
 	public void setApp(Sqlartan sqlartan)
 	{
@@ -26,6 +35,9 @@ public class SqlartanController {
 
 	@FXML
 	private TreeView<String> treeView;
+
+	@FXML
+	private TableView table;
 
 	@FXML
 	private void initialize() throws SQLException {
@@ -68,6 +80,19 @@ public class SqlartanController {
 
 	void test2()
 	{
+		table.setItems(rows);
+
+		testClass tmp = rows.get(0);
+
+		for (int i = 0; i < 10; ++i)
+		{
+			TableColumn<testClass, String> coll = new  TableColumn<testClass, String>();
+			table.getColumns().add(coll);
+			coll.setCellValueFactory(cellDate->cellDate.getValue().tab.get(i));
+
+		}
+
+
 
 	}
 
