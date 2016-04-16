@@ -302,15 +302,19 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 		public Row next() {
 			return row(++current);
 		}
+	/**
+	 * Constructs a Spliterator for this Result
+	 */
+	public Spliterator<Row> spliterator() {
+		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
+		return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
 	}
 
 	/**
 	 * Constructs a stream of rows.
 	 */
 	public Stream<Row> stream() {
-		int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
-		Spliterator<Row> split = Spliterators.spliteratorUnknownSize(iterator(), characteristics);
-		return StreamSupport.stream(split, false);
+		return StreamSupport.stream(spliterator(), false);
 	}
 
 	// Disambiguate the forEach() method.

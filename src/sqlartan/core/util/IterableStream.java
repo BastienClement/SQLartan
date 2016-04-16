@@ -2,6 +2,7 @@ package sqlartan.core.util;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +47,13 @@ public class IterableStream<T> implements StreamOps<T>, Iterable<T> {
 	 */
 	public Iterator<T> iterator() {
 		return stream.iterator();
+	}
+
+	/**
+	 * Returns an spliterator over each elements in the stream.
+	 */
+	public Spliterator<T> spliterator() {
+		return stream.spliterator();
 	}
 
 	/**

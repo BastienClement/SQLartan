@@ -1,7 +1,9 @@
 package sqlartan.core.util;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.function.*;
 import java.util.stream.*;
 
@@ -18,7 +20,7 @@ import java.util.stream.*;
  *
  * @param <T> the type of elements from the actual stream
  */
-public interface StreamOps<T> extends Streamable<T> {
+public interface StreamOps<T> extends Streamable<T>, Stream<T> {
 	default boolean allMatch(Predicate<? super T> predicate) {
 		return stream().allMatch(predicate);
 	}
@@ -145,6 +147,40 @@ public interface StreamOps<T> extends Streamable<T> {
 
 	default <A> A[] toArray(IntFunction<A[]> generator) {
 		return stream().toArray(generator);
+	}
+
+	// BaseStream methods
+
+	default void close() {
+		stream().close();
+	}
+
+	default boolean isParallel() {
+		return stream().isParallel();
+	}
+
+	default Iterator<T> iterator() {
+		return stream().iterator();
+	}
+
+	default Stream<T> onClose(Runnable closeHandler) {
+		return stream().onClose(closeHandler);
+	}
+
+	default Stream<T> parallel() {
+		return stream().parallel();
+	}
+
+	default Stream<T> sequential() {
+		return stream().sequential();
+	}
+
+	default Spliterator<T> spliterator() {
+		return stream().spliterator();
+	}
+
+	default Stream<T> unordered() {
+		return stream().unordered();
 	}
 }
 
