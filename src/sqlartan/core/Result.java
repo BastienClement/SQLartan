@@ -282,7 +282,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	/**
 	 * Constructs an iterator allowing to iterate over the rows of this Results set.
 	 */
-	public Iterator<Row> iterator() {
+	public ResultIterator iterator() {
 		consume();
 		return new ResultIterator();
 	}
@@ -302,6 +302,30 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 		public Row next() {
 			return row(++current);
 		}
+
+		/**
+		 * Returns the current position of the iterator
+		 */
+		public int current() {
+			return current;
+		}
+
+		/**
+		 * Moves the iterator to the requested row
+		 */
+		public void move(int pos) {
+			throw new UnsupportedOperationException("Not implemented");
+		}
+
+		public boolean hasPrevious() {
+			throw new UnsupportedOperationException("Not implemented");
+		}
+
+		public Row previous() {
+			throw new UnsupportedOperationException("Not implemented");
+		}
+	}
+
 	/**
 	 * Constructs a Spliterator for this Result
 	 */
