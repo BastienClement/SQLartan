@@ -128,10 +128,10 @@ public class Database implements AutoCloseable {
 	public HashMap<String, View> views() { return null; }
 
 	/**
-	 * Returns a newView with a specific name.
+	 * Returns a view with a specific name.
 	 *
 	 * @param name
-	 * @return the newView contained in the hashmap under the key name, null if it doesn't exist
+	 * @return the view contained in the hashmap under the key name, null if it doesn't exist
 	 */
 	public View view(String name) { return null; }
 
