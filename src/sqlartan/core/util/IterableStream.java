@@ -1,5 +1,6 @@
 package sqlartan.core.util;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -21,6 +22,16 @@ public class IterableStream<T> implements StreamOps<T>, Iterable<T> {
 	 */
 	public static <T> IterableStream<T> of(Stream<T> stream) {
 		return new IterableStream<>(stream);
+	}
+
+	/**
+	 * Constructs a new IterableStream from an existing Collection source.
+	 *
+	 * @param collection the original collection to stream
+	 * @param <T>        the type of elements from the collection
+	 */
+	public static <T> IterableStream<T> of(Collection<T> collection) {
+		return new IterableStream<>(collection.stream());
 	}
 
 	/** The inner Stream object */

@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import java.util.List;
+import sqlartan.core.util.IterableStream;
 import java.util.Optional;
 
 /**
@@ -13,12 +13,7 @@ public interface Structure<T extends Column> {
 	/**
 	 * Returns the list of columns composing this structure.
 	 */
-	List<T> columns();
-
-	/**
-	 * Returns the number number of columns composing this structure.
-	 */
-	int columnCount();
+	IterableStream<T> columns();
 
 	/**
 	 * Returns the columns with the given name, if it exists.

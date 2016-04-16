@@ -4,6 +4,7 @@ import sqlartan.core.GeneratedColumn;
 import sqlartan.core.Result;
 import sqlartan.core.Row;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility object to print a Result object as an ASCII table.
@@ -15,15 +16,16 @@ abstract public class ResultPrinter {
 	 * @param res the result object
 	 */
 	public static void print(Result res) {
+		// Fetch the list of columns
+		List<GeneratedColumn> columns = res.columns().toList();
+
 		// Count the number of columns to display
-		int column_count = res.columnCount();
+		int column_count = columns.size();
 		ArrayList<ArrayList<String>> rows = new ArrayList<>();
 
 		// Add column titles
 		ArrayList<String> cols = new ArrayList<>(column_count);
-		for (GeneratedColumn col : res.columns()) {
-			cols.add(col.name());
-		}
+		columns.forEach(col -> cols.add(col.name()));
 		rows.add(cols);
 
 		// Fetch result data

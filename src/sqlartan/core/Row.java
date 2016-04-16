@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import sqlartan.core.util.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.core.util.DataConverter;
 import java.sql.ResultSet;
@@ -30,11 +31,11 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 
 	/**
 	 * Returns a new view of this row with an independent currentColumn counter.
-	 * Both Rows are backed by the same data object.
+	 * Both Rows are backed by the same RowData object.
 	 *
 	 * @return
 	 */
-	public Row view() {
+	public Row newView() {
 		return new Row(res, data);
 	}
 
@@ -69,7 +70,7 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 
 	@Override
 	public String toString() {
-		List<GeneratedColumn> columns = res.columns();
+		List<GeneratedColumn> columns = res.columns().toList();
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("Row(");
@@ -93,13 +94,8 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	}
 
 	@Override
-	public List<GeneratedColumn> columns() {
+	public IterableStream<GeneratedColumn> columns() {
 		return res.columns();
-	}
-
-	@Override
-	public int columnCount() {
-		return res.columnCount();
 	}
 
 	@Override
@@ -217,7 +213,7 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
 		private RowData(Result res, ResultSet rs) {
-			List<GeneratedColumn> columns = res.columns();
+			List<GeneratedColumn> columns = res.columns().toList();
 			values = new Object[columns.size()];
 
 			int currentColumn = 1;
