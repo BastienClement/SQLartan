@@ -1,8 +1,11 @@
 package sqlartan.core;
 
 import sqlartan.core.util.IterableStream;
+import sqlartan.core.util.RuntimeSQLException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Table extends PersistentStructure<TableColumn> {
 
@@ -51,7 +54,19 @@ public class Table extends PersistentStructure<TableColumn> {
 
 	@Override
 	public IterableStream<TableColumn> columns() {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			String query = database.format("PRAGMA ", database.name(), ".table_info(", name, ")");
+			Result res = database.execute(query);
+			Stream<TableColumn> cols = res.map(row -> new TableColumn(this, new TableColumn.Properties() {
+				public String name() { return row.getString("name"); }
+				public String type() { return row.getString("type"); }
+				public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
+				public String check() { throw new UnsupportedOperationException("Not implemented"); }
+			}));
+			return IterableStream.of(cols);
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	@Override
