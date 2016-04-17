@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import sqlartan.core.util.IterableStream;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
@@ -174,16 +175,9 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 * Returns an unmodifiable list of the columns composing these results.
 	 * Only application if this Result is a Query result.
 	 */
-	public List<GeneratedColumn> columns() {
+	public IterableStream<GeneratedColumn> columns() {
 		requireQueryResult();
-		return Collections.unmodifiableList(columns);
-	}
-
-	/**
-	 * Returns the number of columns in this result.
-	 */
-	public int columnCount() {
-		return columns().size();
+		return IterableStream.of(columns);
 	}
 
 	/**
@@ -258,7 +252,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 	 */
 	private synchronized Row row(int idx) {
 		if (idx == currentRowIdx) {
-			return currentRow != null ? currentRow.view() : null;
+			return currentRow != null ? currentRow.newView() : null;
 		} else if (!done && idx == currentRowIdx + 1) {
 			try {
 				currentRowIdx++;
@@ -273,7 +267,7 @@ public class Result implements QueryStructure<GeneratedColumn>, Iterable<Row>, R
 			close();
 			return null;
 		} else if (idx < currentRowIdx && rows != null) {
-			return rows.get(idx - 1).view();
+			return rows.get(idx - 1).newView();
 		} else {
 			throw new IllegalStateException("Unordered access to result rows without storage enabled");
 		}
