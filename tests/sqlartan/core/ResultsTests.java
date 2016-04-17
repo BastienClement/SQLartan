@@ -83,8 +83,7 @@ public class ResultsTests {
 			db.execute("INSERT INTO foo VALUES (1),(2),(5),(3),(4),(8),(7),(9),(6)");
 
 			Result res = db.execute("SELECT * FROM foo ORDER BY bar ASC");
-			int max = res.stream()
-			             .mapToInt(Row::getInt)
+			int max = res.mapToInt(Row::getInt)
 			             .reduce(0, (prev, cur) -> {
 				             if (prev > cur) throw new RuntimeException("Bad iteration order");
 				             return cur;
@@ -115,8 +114,8 @@ public class ResultsTests {
 
 			ImmutableList<Row> res = db.execute("SELECT * FROM foo ORDER BY bar ASC").toList();
 
-			List<Integer> l1 = res.map(Row::getInt).toList();
-			List<Integer> l2 = res.map(Row::getInt).toList();
+			List<Integer> l1 = res.map(Row::getInt);
+			List<Integer> l2 = res.map(Row::getInt);
 
 			assertEquals(l1, l2);
 		}
