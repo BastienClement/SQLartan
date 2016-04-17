@@ -13,7 +13,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 		return name;
 	}
 
-	public Database parentDatabase() {
+	public Database database() {
 		return database;
 	}
 

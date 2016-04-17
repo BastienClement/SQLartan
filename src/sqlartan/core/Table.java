@@ -1,7 +1,7 @@
 package sqlartan.core;
 
+import sqlartan.core.stream.IterableStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
@@ -50,12 +50,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	@Override
-	public List<TableColumn> columns() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-
-	@Override
-	public int columnCount() {
+	public IterableStream<TableColumn> columns() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 

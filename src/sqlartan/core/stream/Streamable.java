@@ -1,9 +1,9 @@
-package sqlartan.core.util;
+package sqlartan.core.stream;
 
 import java.util.stream.Stream;
 
 /**
- * An object that can be streamed as a Java 8 Stream.
+ * A stream()'able object
  *
  * @param <T> the type of elements in the stream
  */

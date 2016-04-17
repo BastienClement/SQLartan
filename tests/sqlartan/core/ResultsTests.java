@@ -3,10 +3,10 @@ package sqlartan.core;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiConsumer;
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 
 public class ResultsTests {
@@ -113,10 +113,10 @@ public class ResultsTests {
 			db.execute("CREATE TABLE foo (bar INT)");
 			db.execute("INSERT INTO foo VALUES (1),(2),(3),(4),(5)");
 
-			Result res = db.execute("SELECT * FROM foo ORDER BY bar ASC").stored();
+			ImmutableList<Row> res = db.execute("SELECT * FROM foo ORDER BY bar ASC").toList();
 
-			List<Integer> l1 = res.map(Row::getInt).collect(toList());
-			List<Integer> l2 = res.map(Row::getInt).collect(toList());
+			List<Integer> l1 = res.map(Row::getInt).toList();
+			List<Integer> l2 = res.map(Row::getInt).toList();
 
 			assertEquals(l1, l2);
 		}

@@ -58,6 +58,6 @@ public class PreparedQuery {
 	}
 
 	public Result execute() throws SQLException {
-		return new Result(stmt);
+		return Result.fromPreparedStatement(stmt);
 	}
 }

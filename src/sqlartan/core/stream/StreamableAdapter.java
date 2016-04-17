@@ -1,4 +1,4 @@
-package sqlartan.core.util;
+package sqlartan.core.stream;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -8,179 +8,248 @@ import java.util.function.*;
 import java.util.stream.*;
 
 /**
- * Implements proxy functions for the Stream interface.
- *
- * Classes implementing this interface are required to provide a stream() method (through Streamable) that
- * returns a classical Java 8 Stream object. This interface will then provide default implementation for
- * methods defined by the Stream interface directly on the implementing class itself.
- * This allow to create objects that behave like a Stream instance without actually being one.
- *
- * Documentation for these function is available from the official Stream JavaDoc:
- * https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html
- *
- * @param <T> the type of elements from the actual stream
+ * Mixin interface that implements the IterableStream interface on instances of Streamable.
  */
-public interface StreamOps<T> extends Streamable<T>, Stream<T> {
+public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
+	@Override
+	default boolean isReiterable() {
+		return true;
+	}
+
+	//
+	// Custom operations
+	//
+
+	@Override
+	default <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+		U result = identity;
+		for (T e : this) {
+			result = accumulator.apply(result, e);
+		}
+		return result;
+	}
+
+	@Override
+	default <R> Optional<R> mapFirstOptional(Function<? super T, ? extends R> mapper) {
+		return findFirst().map(mapper);
+	}
+
+	@Override
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
+	default <R> R mapFirst(Function<? super T, ? extends R> mapper) {
+		return mapFirstOptional(mapper).get();
+	}
+
+	@Override
+	default <R> IterableStream<R> mapOptional(Function<? super T, Optional<R>> mapper) {
+		return IterableStream.from(stream().map(mapper).filter(Optional::isPresent).map(Optional::get));
+	}
+
+	//
+	// Stream methods
+	//
+
+	@Override
 	default boolean allMatch(Predicate<? super T> predicate) {
 		return stream().allMatch(predicate);
 	}
 
+	@Override
 	default boolean anyMatch(Predicate<? super T> predicate) {
 		return stream().anyMatch(predicate);
 	}
 
+	@Override
 	default <R, A> R collect(Collector<? super T, A, R> collector) {
 		return stream().collect(collector);
 	}
 
+	@Override
 	default <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
 		return stream().collect(supplier, accumulator, combiner);
 	}
 
+	@Override
 	default long count() {
 		return stream().count();
 	}
 
-	default Stream<T> distinct() {
-		return stream().distinct();
+	@Override
+	default IterableStream<T> distinct() {
+		return IterableStream.from(stream().distinct());
 	}
 
-	default Stream<T> filter(Predicate<? super T> predicate) {
-		return stream().filter(predicate);
+	@Override
+	default IterableStream<T> filter(Predicate<? super T> predicate) {
+		return IterableStream.from(stream().filter(predicate));
 	}
 
+	@Override
 	default Optional<T> findAny() {
 		return stream().findAny();
 	}
 
+	@Override
 	default Optional<T> findFirst() {
 		return stream().findFirst();
 	}
 
-	default <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
-		return stream().flatMap(mapper);
+	@Override
+	default <R> IterableStream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
+		return IterableStream.from(stream().flatMap(mapper));
 	}
 
+	@Override
 	default DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
 		return stream().flatMapToDouble(mapper);
 	}
 
+	@Override
 	default IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
 		return stream().flatMapToInt(mapper);
 	}
 
+	@Override
 	default LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
 		return stream().flatMapToLong(mapper);
 	}
 
+	@Override
 	default void forEach(Consumer<? super T> action) {
 		stream().forEach(action);
 	}
 
+	@Override
 	default void forEachOrdered(Consumer<? super T> action) {
 		stream().forEachOrdered(action);
 	}
 
-	default Stream<T> limit(long maxSize) {
-		return stream().limit(maxSize);
+	@Override
+	default IterableStream<T> limit(long maxSize) {
+		return IterableStream.from(stream().limit(maxSize));
 	}
 
-	default <R> Stream<R> map(Function<? super T, ? extends R> mapper) {
-		return stream().map(mapper);
+	@Override
+	default <R> IterableStream<R> map(Function<? super T, ? extends R> mapper) {
+		return IterableStream.from(stream().map(mapper));
 	}
 
+	@Override
 	default DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper) {
 		return stream().mapToDouble(mapper);
 	}
 
+	@Override
 	default IntStream mapToInt(ToIntFunction<? super T> mapper) {
 		return stream().mapToInt(mapper);
 	}
 
+	@Override
 	default LongStream mapToLong(ToLongFunction<? super T> mapper) {
 		return stream().mapToLong(mapper);
 	}
 
+	@Override
 	default Optional<T> max(Comparator<? super T> comparator) {
 		return stream().max(comparator);
 	}
 
+	@Override
 	default Optional<T> min(Comparator<? super T> comparator) {
 		return stream().min(comparator);
 	}
 
+	@Override
 	default boolean noneMatch(Predicate<? super T> predicate) {
 		return stream().noneMatch(predicate);
 	}
 
-	default Stream<T> peek(Consumer<? super T> action) {
-		return stream().peek(action);
+	@Override
+	default IterableStream<T> peek(Consumer<? super T> action) {
+		return IterableStream.from(stream().peek(action));
 	}
 
+	@Override
 	default Optional<T> reduce(BinaryOperator<T> accumulator) {
 		return stream().reduce(accumulator);
 	}
 
+	@Override
 	default T reduce(T identity, BinaryOperator<T> accumulator) {
 		return stream().reduce(identity, accumulator);
 	}
 
+	@Override
 	default <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
 		return stream().reduce(identity, accumulator, combiner);
 	}
 
-	default Stream<T> skip(long n) {
-		return stream().skip(n);
+	@Override
+	default IterableStream<T> skip(long n) {
+		return IterableStream.from(stream().skip(n));
 	}
 
-	default Stream<T> sorted() {
-		return stream().sorted();
+	@Override
+	default IterableStream<T> sorted() {
+		return IterableStream.from(stream().sorted());
 	}
 
-	default Stream<T> sorted(Comparator<? super T> comparator) {
-		return stream().sorted(comparator);
+	@Override
+	default IterableStream<T> sorted(Comparator<? super T> comparator) {
+		return IterableStream.from(stream().sorted(comparator));
 	}
 
+	@Override
 	default Object[] toArray() {
 		return stream().toArray();
 	}
 
+	@Override
 	default <A> A[] toArray(IntFunction<A[]> generator) {
 		return stream().toArray(generator);
 	}
 
+	//
 	// BaseStream methods
+	//
 
+	@Override
 	default void close() {
 		stream().close();
 	}
 
+	@Override
 	default boolean isParallel() {
 		return stream().isParallel();
 	}
 
+	@Override
 	default Iterator<T> iterator() {
 		return stream().iterator();
 	}
 
-	default Stream<T> onClose(Runnable closeHandler) {
-		return stream().onClose(closeHandler);
+	@Override
+	default IterableStream<T> onClose(Runnable closeHandler) {
+		return IterableStream.from(stream().onClose(closeHandler));
 	}
 
-	default Stream<T> parallel() {
-		return stream().parallel();
+	@Override
+	default IterableStream<T> parallel() {
+		return IterableStream.from(stream().parallel());
 	}
 
-	default Stream<T> sequential() {
-		return stream().sequential();
+	@Override
+	default IterableStream<T> sequential() {
+		return IterableStream.from(stream().sequential());
 	}
 
+	@Override
 	default Spliterator<T> spliterator() {
 		return stream().spliterator();
 	}
 
-	default Stream<T> unordered() {
-		return stream().unordered();
+	@Override
+	default IterableStream<T> unordered() {
+		return IterableStream.from(stream().unordered());
 	}
 }
-
