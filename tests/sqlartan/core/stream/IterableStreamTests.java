@@ -74,6 +74,13 @@ public class IterableStreamTests {
 	}
 
 	@Test
+	public void reiterableReturnSelfIfAlreadyReiterable() {
+		IterableStream<Integer> a = IterableStream.from(this::testStream);
+		assertTrue(a.isReiterable());
+		assertSame(a, a.reiterable());
+	}
+
+	@Test
 	public void streamAreIterable() {
 		IterableStream<Integer> a = IterableStream.from(testStream());
 		int i = 0;
