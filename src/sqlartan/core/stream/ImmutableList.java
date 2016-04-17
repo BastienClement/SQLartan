@@ -63,6 +63,15 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 		return ImmutableListImpl.mapping(elements, mapper);
 	}
 
+	/**
+	 * Returns an IterableStream over this list.
+	 * The intended usage is to create transform pipeline that do not construct intermediate
+	 * immutable list at each step.
+	 */
+	default IterableStream<T> view() {
+		return IterableStream.from(this::stream);
+	}
+
 	@Override
 	default Stream<T> stream() {
 		return List.super.stream();
