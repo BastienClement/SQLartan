@@ -97,7 +97,6 @@ public abstract class DataConverter {
 	 *
 	 * @param tClass the target class
 	 * @param <T>    the target type
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T> Converter<T> converterForClass(Class<T> tClass) {

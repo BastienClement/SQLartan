@@ -1,8 +1,8 @@
 package sqlartan.core;
 
 public abstract class PersistentStructure<T extends Column> implements Structure<T> {
-	private Database database;
-	private String name;
+	protected final Database database;
+	protected final String name;
 
 	protected PersistentStructure(Database database, String name) {
 		this.database = database;
@@ -13,7 +13,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 		return name;
 	}
 
-	public Database parentDatabase() {
+	public Database database() {
 		return database;
 	}
 

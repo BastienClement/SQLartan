@@ -1,15 +1,19 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.stream.ImmutableList;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.DataConverter;
+import sqlartan.core.util.RuntimeSQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * A results row.
  */
-public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
+public class Row implements QueryStructure<GeneratedColumn> {
 	private Result res;
 	private RowData data;
 	private int currentColumn = 1;
@@ -38,35 +42,6 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 		return new Row(res, data);
 	}
 
-	public List<Object> asList() {
-		return Collections.unmodifiableList(Arrays.asList(data.values));
-	}
-
-	public List<Object> asMutableList() {
-		return new ArrayList<>(Arrays.asList(data.values));
-	}
-
-	public Object[] asArray() {
-		return Arrays.copyOf(data.values, data.values.length);
-	}
-
-	@Override
-	public Iterator<Object> iterator() {
-		return new Iterator<Object>() {
-			private int current = 0;
-
-			@Override
-			public boolean hasNext() {
-				return current < data.values.length;
-			}
-
-			@Override
-			public Object next() {
-				return data.values[current++];
-			}
-		};
-	}
-
 	@Override
 	public String toString() {
 		List<GeneratedColumn> columns = res.columns();
@@ -88,18 +63,13 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	//###################################################################
 
 	@Override
-	public List<PersistentStructure<? extends Column>> sources() {
+	public IterableStream<PersistentStructure<? extends Column>> sources() {
 		return res.sources();
 	}
 
 	@Override
-	public List<GeneratedColumn> columns() {
+	public ImmutableList<GeneratedColumn> columns() {
 		return res.columns();
-	}
-
-	@Override
-	public int columnCount() {
-		return res.columnCount();
 	}
 
 	@Override

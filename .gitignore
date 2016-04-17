@@ -2,4 +2,5 @@
 /.idea/tasks.xml
 /out
 /.idea/dataSources*
+/.idea/dictionaries
 *.db
