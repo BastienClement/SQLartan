@@ -13,8 +13,13 @@ public class IterableStreamTests {
 	@Rule
 	public final ExpectedException exception = ExpectedException.none();
 
+	private class InfiniteConsumptionException extends RuntimeException {}
+
 	private Stream<Integer> testStream() {
-		return Stream.iterate(0, i -> i + 1);
+		return Stream.iterate(0, i -> {
+			if (i > 20) throw new InfiniteConsumptionException();
+			return i + 1;
+		});
 	}
 
 	@Test
@@ -52,11 +57,29 @@ public class IterableStreamTests {
 	}
 
 	@Test
+	public void tranformOperationsMakeNonReiterable() {
+		IterableStream<Integer> a = IterableStream.from(this::testStream);
+		assertTrue(a.isReiterable());
+		IterableStream<Integer> b = a.map(i -> i * 2);
+		assertFalse(b.isReiterable());
+		IterableStream<Integer> c = b.limit(5).reiterable();
+		assertTrue(c.isReiterable());
+	}
+
+	@Test
+	public void reiterableIsEager() {
+		IterableStream<Integer> a = IterableStream.from(testStream());
+		exception.expect(InfiniteConsumptionException.class);
+		IterableStream<Integer> b = a.reiterable();
+	}
+
+	@Test
 	public void streamAreIterable() {
-		IterableStream<Integer> a = IterableStream.from(testStream().limit(3));
+		IterableStream<Integer> a = IterableStream.from(testStream());
 		int i = 0;
 		for (int j : a) {
 			assertEquals(i++, j);
+			if (i > 5) break;
 		}
 	}
 
