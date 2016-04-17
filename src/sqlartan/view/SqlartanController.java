@@ -34,16 +34,10 @@ public class SqlartanController {
 		Database db = new Database("testdb.db");
 		tree(db);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			try {
-				Optional<Table> oTable = db.table(newValue.getValue());
-				if (oTable.isPresent()) {
-					Table t = db.table(newValue.getValue()).get();
-					structure(t);
-				}
-			} catch (SQLException e) { // pas une table
-
+			Optional<Table> oTable = db.table(newValue.getValue());
+			if (oTable.isPresent()) {
+				structure(db.table(newValue.getValue()).get());
 			}
-			System.out.println("Selected : " + newValue.getValue());
 		});
 		// Table t = db.table("table1").get();
 		//structure(t);
@@ -87,6 +81,7 @@ public class SqlartanController {
 	}
 
 	void structure(Table t) {
+		table.getColumns().clear();
 		table.setEditable(true);
 
 		for (Column c : t.columns()) {
