@@ -83,6 +83,11 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	}
 
 	@Override
+	default ImmutableList<T> toList() {
+		return this;
+	}
+
+	@Override
 	Object[] toArray();
 
 	@Override
