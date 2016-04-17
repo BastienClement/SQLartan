@@ -6,7 +6,6 @@ import javafx.scene.control.TreeView;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.Table;
-import sqlartan.core.util.IterableStream;
 import java.sql.SQLException;
 
 /**
