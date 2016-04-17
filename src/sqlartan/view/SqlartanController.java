@@ -30,18 +30,18 @@ public class SqlartanController {
 		this.sqlartan = sqlartan;
 	}
 	@FXML
+
 	private void initialize() throws SQLException {
 		Database db = new Database("testdb.db");
 		tree(db);
+		table.setEditable(true);
+		table.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			Optional<Table> oTable = db.table(newValue.getValue());
 			if (oTable.isPresent()) {
 				structure(db.table(newValue.getValue()).get());
 			}
 		});
-		// Table t = db.table("table1").get();
-		//structure(t);
-
 	}
 
 	/**
@@ -82,14 +82,8 @@ public class SqlartanController {
 
 	void structure(Table t) {
 		table.getColumns().clear();
-		table.setEditable(true);
-
-		for (Column c : t.columns()) {
-			TableColumn tc = new TableColumn(c.name());
-			table.getColumns().add(tc);
-		}
-		table.setVisible(true);
-
+		for (Column c : t.columns())
+			table.getColumns().add(new TableColumn(c.name()));
 	}
 
 	/*
