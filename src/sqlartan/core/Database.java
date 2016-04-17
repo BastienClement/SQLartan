@@ -1,32 +1,36 @@
 package sqlartan.core;
 
-import sqlartan.core.util.IterableStream;
+import sqlartan.core.stream.IterableStream;
+import sqlartan.core.util.RuntimeSQLException;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class Database implements AutoCloseable {
 	/**
-	 * Logical name of this database.
+	 * Logical name of this database
 	 * This is always "main" for the first database in a SQLite Connection.
 	 * Additional databases loaded with ATTACH have user-defined names.
 	 */
 	private String name;
 
 	/**
-	 * File path to this database.
+	 * File path to this database
 	 * For a memory-only database, this is an abstract file named ":memory:".
 	 */
 	private File path;
 
-	/** The underlying JDBC connection */
+	/**
+	 * The underlying JDBC connection
+	 */
 	private Connection connection;
 
-	/** Set of attached database */
+	/**
+	 * Set of attached database
+	 */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
 
 	/**
@@ -75,8 +79,6 @@ public class Database implements AutoCloseable {
 	 * Returns the logical name of this database.
 	 * The name of a database opened with the new operator is always "main".
 	 * An attached database will have the name given to attach().
-	 *
-	 * @return the logical name of this database
 	 */
 	public String name() {
 		return name;
@@ -85,62 +87,55 @@ public class Database implements AutoCloseable {
 	/**
 	 * Returns the file path of this database.
 	 * If this is a temporary in-memory database, returns an abstract File named ":memory:".
-	 *
-	 * @return the file path of this database
 	 */
 	public File path() {
 		return path;
 	}
 
 	/**
-	 * Returns the hashmap containing every tables.
-	 *
-	 * @return the hashmap containing the tables
+	 * Returns a stream of tables in this database.
 	 */
-	public IterableStream<Table> tables() throws SQLException {
-		String query =
-				format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
-		Stream<Table> tables =
-				execute(query)
-						.map(Row::getString)
-						.map(name -> new Table(this, name));
-		return IterableStream.of(tables);
+	public IterableStream<Table> tables() {
+		try {
+			String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
+			return execute(query).map(Row::getString).map(name -> new Table(this, name));
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
-	 * Returns a table with a specific name.
+	 * Returns the table with the given name, if it exists.
+	 * If the table does not exist, an empty Optional is returned.
 	 *
-	 * @param table
-	 * @return the table contained in the hashmap under the key name, null if it doesn't exist
+	 * @param table the name of the table
 	 */
-	public Optional<Table> table(String table) throws SQLException {
-		String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?");
-		return execute(query, table)
-				.findFirst()
-				.map(row -> new Table(this, table));
+	public Optional<Table> table(String table) {
+		try {
+			String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?");
+			return execute(query, table).mapFirstOptional(row -> new Table(this, row.getString()));
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
-	 * Returns the hashmap containing every views.
-	 *
-	 * @return the hashmap containing the views
+	 * Returns a stream of views in this database.
 	 */
-	public HashMap<String, View> views() { return null; }
+	public IterableStream<View> views() { return null; }
 
 	/**
-	 * Returns a view with a specific name.
+	 * Returns the view with the given name, if it exists.
+	 * If the view does not exist, an empty Optional is returned.
 	 *
-	 * @param name
-	 * @return the view contained in the hashmap under the key name, null if it doesn't exist
+	 * @param view the name of the view
 	 */
-	public View view(String name) { return null; }
+	public Optional<View> view(String view) { return null; }
 
 	/**
 	 * Clean up the database by rebuilding it entirely.
-	 *
-	 * @throws SQLException
 	 */
-	public void vacuum() throws SQLException {
+	public void vacuum() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -152,16 +147,15 @@ public class Database implements AutoCloseable {
 	 *
 	 * @throws SQLException
 	 */
-	public void close() throws SQLException {
+	public void close() {
 		if (this.connection != null) {
-			this.connection.close();
+			try {
+				this.connection.close();
+			} catch (SQLException ignored) {}
 			this.connection = null;
 		}
 
-		for (AttachedDatabase adb : attached.values()) {
-			adb.close();
-		}
-
+		attached.values().forEach(AttachedDatabase::close);
 		attached.clear();
 	}
 
@@ -185,8 +179,8 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * TODO
 	 * @param parts
-	 * @return
 	 */
 	public String format(String... parts) {
 		StringBuilder sb = new StringBuilder();
@@ -210,7 +204,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		return new Result(connection, query);
+		return Result.fromQuery(connection, query);
 	}
 
 	/**

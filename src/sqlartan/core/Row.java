@@ -1,16 +1,19 @@
 package sqlartan.core;
 
-import sqlartan.core.util.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.stream.ImmutableList;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.DataConverter;
+import sqlartan.core.util.RuntimeSQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * A results row.
  */
-public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
+public class Row implements QueryStructure<GeneratedColumn> {
 	private Result res;
 	private RowData data;
 	private int currentColumn = 1;
@@ -31,46 +34,17 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 
 	/**
 	 * Returns a new view of this row with an independent currentColumn counter.
-	 * Both Rows are backed by the same RowData object.
+	 * Both Rows are backed by the same data object.
 	 *
 	 * @return
 	 */
-	public Row newView() {
+	public Row view() {
 		return new Row(res, data);
-	}
-
-	public List<Object> asList() {
-		return Collections.unmodifiableList(Arrays.asList(data.values));
-	}
-
-	public List<Object> asMutableList() {
-		return new ArrayList<>(Arrays.asList(data.values));
-	}
-
-	public Object[] asArray() {
-		return Arrays.copyOf(data.values, data.values.length);
-	}
-
-	@Override
-	public Iterator<Object> iterator() {
-		return new Iterator<Object>() {
-			private int current = 0;
-
-			@Override
-			public boolean hasNext() {
-				return current < data.values.length;
-			}
-
-			@Override
-			public Object next() {
-				return data.values[current++];
-			}
-		};
 	}
 
 	@Override
 	public String toString() {
-		List<GeneratedColumn> columns = res.columns().toList();
+		List<GeneratedColumn> columns = res.columns();
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("Row(");
@@ -89,12 +63,12 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 	//###################################################################
 
 	@Override
-	public List<PersistentStructure<? extends Column>> sources() {
+	public IterableStream<PersistentStructure<? extends Column>> sources() {
 		return res.sources();
 	}
 
 	@Override
-	public IterableStream<GeneratedColumn> columns() {
+	public ImmutableList<GeneratedColumn> columns() {
 		return res.columns();
 	}
 
@@ -213,7 +187,7 @@ public class Row implements QueryStructure<GeneratedColumn>, Iterable<Object> {
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
 		private RowData(Result res, ResultSet rs) {
-			List<GeneratedColumn> columns = res.columns().toList();
+			List<GeneratedColumn> columns = res.columns();
 			values = new Object[columns.size()];
 
 			int currentColumn = 1;

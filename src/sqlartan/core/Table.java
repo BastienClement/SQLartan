@@ -1,11 +1,10 @@
 package sqlartan.core;
 
-import sqlartan.core.util.IterableStream;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class Table extends PersistentStructure<TableColumn> {
 
@@ -17,6 +16,7 @@ public class Table extends PersistentStructure<TableColumn> {
 
 	/**
 	 * Construct a new table linked to the specified database and with the specified name.
+	 *
 	 * @param database
 	 * @param name
 	 */
@@ -56,14 +56,12 @@ public class Table extends PersistentStructure<TableColumn> {
 	public IterableStream<TableColumn> columns() {
 		try {
 			String query = database.format("PRAGMA ", database.name(), ".table_info(", name, ")");
-			Result res = database.execute(query);
-			Stream<TableColumn> cols = res.map(row -> new TableColumn(this, new TableColumn.Properties() {
+			return database.execute(query).map(row -> new TableColumn(this, new TableColumn.Properties() {
 				public String name() { return row.getString("name"); }
 				public String type() { return row.getString("type"); }
 				public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
 				public String check() { throw new UnsupportedOperationException("Not implemented"); }
 			}));
-			return IterableStream.of(cols);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
@@ -92,14 +90,14 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @return the index contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Index index(String name){ return indices.get(name); }
+	public Index index(String name) { return indices.get(name); }
 
 	/**
 	 * Find and return the primaryKey from the indices.
 	 *
 	 * @return the primary key of the table
 	 */
-	public Index primaryKey(){ throw new UnsupportedOperationException("Not implemented"); }
+	public Index primaryKey() { throw new UnsupportedOperationException("Not implemented"); }
 
 	/**
 	 * Returns the hashmap containing every triggers.
@@ -114,10 +112,10 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @return the trigger contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Trigger trigger(String name){ return triggers.get(name); }
+	public Trigger trigger(String name) { return triggers.get(name); }
 
 	/**
 	 * Truncate the table.
 	 */
-	public void truncate(){ throw new UnsupportedOperationException("Not implemented"); }
+	public void truncate() { throw new UnsupportedOperationException("Not implemented"); }
 }

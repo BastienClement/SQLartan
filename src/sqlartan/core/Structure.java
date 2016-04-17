@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.IterableStream;
+import sqlartan.core.stream.IterableStream;
 import java.util.Optional;
 
 /**

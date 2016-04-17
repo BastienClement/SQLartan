@@ -3,8 +3,8 @@ package sqlartan.core.util;
 import sqlartan.core.GeneratedColumn;
 import sqlartan.core.Result;
 import sqlartan.core.Row;
+import sqlartan.core.stream.ImmutableList;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Utility object to print a Result object as an ASCII table.
@@ -16,17 +16,18 @@ abstract public class ResultPrinter {
 	 * @param res the result object
 	 */
 	public static void print(Result res) {
-		// Fetch the list of columns
-		List<GeneratedColumn> columns = res.columns().toList();
+		ImmutableList<GeneratedColumn> columns = res.columns();
 
 		// Count the number of columns to display
 		int column_count = columns.size();
 		ArrayList<ArrayList<String>> rows = new ArrayList<>();
 
 		// Add column titles
-		ArrayList<String> cols = new ArrayList<>(column_count);
-		columns.forEach(col -> cols.add(col.name()));
-		rows.add(cols);
+		ArrayList<String> titles = new ArrayList<>(column_count);
+		for (GeneratedColumn col : columns) {
+			titles.add(col.name());
+		}
+		rows.add(titles);
 
 		// Fetch result data
 		for (Row row : res) {

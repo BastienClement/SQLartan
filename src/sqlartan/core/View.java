@@ -1,7 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.IterableStream;
-import java.util.List;
+import sqlartan.core.stream.IterableStream;
 import java.util.Optional;
 
 public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
@@ -21,11 +20,15 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	public List<PersistentStructure<? extends Column>> sources() {
+	public IterableStream<PersistentStructure<? extends Column>> sources() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	public IterableStream<GeneratedColumn> columns() {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	public int columnCount() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
