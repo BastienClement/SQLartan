@@ -139,6 +139,7 @@ public class SqlartanController {
 			rows.add(row);
 		}
 
+		tableView.setItems(rows);
 
 	}
 
