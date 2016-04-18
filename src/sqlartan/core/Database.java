@@ -136,7 +136,11 @@ public class Database implements AutoCloseable {
 	 * Clean up the database by rebuilding it entirely.
 	 */
 	public void vacuum() {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			execute("VACUUM");
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
