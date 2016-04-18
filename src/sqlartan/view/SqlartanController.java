@@ -8,10 +8,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import sqlartan.Sqlartan;
-import sqlartan.core.AttachedDatabase;
-import sqlartan.core.Column;
-import sqlartan.core.Database;
-import sqlartan.core.Table;
+import sqlartan.core.*;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -37,10 +34,7 @@ public class SqlartanController {
 		table.setEditable(true);
 		table.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			Optional<Table> oTable = db.table(newValue.getValue());
-			if (oTable.isPresent()) {
-				structure(db.table(newValue.getValue()).get());
-			}
+			db.table(newValue.getValue()).ifPresent(this::structure);
 		});
 	}
 
@@ -59,19 +53,29 @@ public class SqlartanController {
 
 		// Main
 		TreeItem<String> trees = new TreeItem<>(database.name());
-		for (Table table : database.tables())
-			trees.getChildren().add(new TreeItem<>(table.name()));
+
+		trees.getChildren().addAll(database.tables()
+		                                   .map(Table::name)
+		                                   .map(TreeItem::new)
+		                                   .toList());
+
 		/* TODO remove when view is coded
-		for (View view : database.views())
-			trees.getChildren().add(new TreeItem<>(view.name()));
-		*/
+		trees.getChildren().addAll(database.views()
+		                                   .map(View::name)
+		                                   .map(TreeItem::new)
+		                                   .toList());
+		 */
+
 		mainTreeItem.getChildren().add(trees);
 
 		// Attached database
 		for (AttachedDatabase adb : database.attached().values()) {
 			TreeItem<String> tItems = new TreeItem<>(adb.name());
-			for (Table table : adb.tables())
-				tItems.getChildren().add(new TreeItem<>(table.name()));
+			tItems.getChildren().addAll(adb.tables()
+			                               .map(Table::name)
+			                               .map(TreeItem::new)
+			                               .toList());
+
 			/* TODO remove when view is coded
 			for (View view : database.views())
 				tItems.getChildren().add(new TreeItem<>(view.name()));
@@ -82,8 +86,10 @@ public class SqlartanController {
 
 	void structure(Table t) {
 		table.getColumns().clear();
-		for (Column c : t.columns())
-			table.getColumns().add(new TableColumn(c.name()));
+		table.getColumns().addAll(t.columns()
+		                           .map(Column::name)
+		                           .map(TableColumn::new)
+		                           .toList());
 	}
 
 	/*
