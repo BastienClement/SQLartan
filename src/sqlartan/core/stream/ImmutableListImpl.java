@@ -9,7 +9,7 @@ import java.util.function.Function;
  *
  * @param <T> the type of elements in the list
  */
-class ImmutableListImpl<T> extends AbstractList<T> implements ImmutableList<T> {
+abstract class ImmutableListImpl<T, U> extends AbstractList<T> implements ImmutableList<T> {
 	/**
 	 * Constructs a new list from an array of elements.
 	 * The array will be cloned to ensure immutability.
@@ -18,10 +18,10 @@ class ImmutableListImpl<T> extends AbstractList<T> implements ImmutableList<T> {
 	 * @param <U>      the type of elements in the array
 	 */
 	@SuppressWarnings("unchecked")
-	static <U> ImmutableListImpl<U> from(U[] elements) {
+	static <U> ImmutableList<U> from(U[] elements) {
 		Object[] clone = new Object[elements.length];
 		System.arraycopy(elements, 0, clone, 0, elements.length);
-		return new ImmutableListImpl<>((U[]) clone);
+		return new Simple<>((U[]) clone);
 	}
 
 	/**
@@ -31,8 +31,8 @@ class ImmutableListImpl<T> extends AbstractList<T> implements ImmutableList<T> {
 	 * @param elements an immutable array of elements
 	 * @param <U>      the type of elements in the array
 	 */
-	static <U> ImmutableListImpl<U> wrap(U[] elements) {
-		return new ImmutableListImpl<>(elements);
+	static <U> ImmutableList<U> wrap(U[] elements) {
+		return new Simple<>(elements);
 	}
 
 	/**
@@ -45,33 +45,51 @@ class ImmutableListImpl<T> extends AbstractList<T> implements ImmutableList<T> {
 	 * @param <U>      the type of elements from the array
 	 * @param <R>      the return type of the mapper function
 	 */
-	static <U, R> ImmutableListImpl<R> mapping(U[] elements, Function<? super U, ? extends R> mapper) {
-		return new ImmutableListImpl<R>(null) {
-			@Override
-			public R get(int index) {
-				return mapper.apply(elements[index]);
-			}
-
-			@Override
-			public int size() {
-				return elements.length;
-			}
-		};
+	static <U, R> ImmutableList<R> mapping(U[] elements, Function<? super U, ? extends R> mapper) {
+		return new Mapping<>(elements, mapper);
 	}
 
-	private T[] elements;
-
-	private ImmutableListImpl(T[] elements) {
+	protected final U[] elements;
+	protected ImmutableListImpl(U[] elements) {
 		this.elements = elements;
-	}
-
-	@Override
-	public T get(int index) {
-		return elements[index];
 	}
 
 	@Override
 	public int size() {
 		return elements.length;
+	}
+
+	/**
+	 * A simple implementation of an immutable List wrapping an Array.
+	 * @param <T>
+	 */
+	static class Simple<T> extends ImmutableListImpl<T, T> {
+		Simple(T[] elements) {
+			super(elements);
+		}
+
+		@Override
+		public T get(int index) {
+			return super.elements[index];
+		}
+	}
+
+	/**
+	 * An immutable List that execute the given mapping function on get().
+	 * @param <T>
+	 * @param <U>
+	 */
+	static class Mapping<T, U> extends ImmutableListImpl<T, U> {
+		private final Function<? super U, ? extends T> mapper;
+
+		Mapping(U[] elements, Function<? super U, ? extends T> mapper) {
+			super(elements);
+			this.mapper = mapper;
+		}
+
+		@Override
+		public T get(int index) {
+			return mapper.apply(elements[index]);
+		}
 	}
 }
