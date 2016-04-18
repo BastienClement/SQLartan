@@ -1,5 +1,7 @@
 package sqlartan.view;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -7,10 +9,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.Observable;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -18,11 +22,11 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private Sqlartan sqlartan;
-	private ObservableList<testClass> rows = FXCollections.observableArrayList();
+	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
 	private TreeView<String> treeView;
 	@FXML
-	private TableView table = new TableView();
+	private TableView tableView = new TableView();
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
@@ -31,10 +35,11 @@ public class SqlartanController {
 	private void initialize() throws SQLException {
 		Database db = new Database("testdb.db");
 		tree(db);
-		table.setEditable(true);
-		table.setVisible(true);
+		tableView.setEditable(true);
+		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			db.table(newValue.getValue()).ifPresent(this::structure);
+			db.table(newValue.getValue()).ifPresent(this::dataView);
 		});
 	}
 
@@ -85,26 +90,57 @@ public class SqlartanController {
 	}
 
 	void structure(Table t) {
-		table.getColumns().clear();
-		table.getColumns().addAll(t.columns()
-		                           .map(Column::name)
-		                           .map(TableColumn::new)
-		                           .toList());
+		/*
+		tableView.getColumns().clear();
+		tableView.getColumns().addAll(t.columns()
+		                               .map(Column::name)
+		                               .map(TableColumn::new)
+		                               .toList());
+		                               */
 	}
 
-	/*
-	void test2() {
-		table.setItems(rows);
-		testClass tmp = rows.get(0);
-		rows.add
 
-		for (int i = 0; i < 10; ++i) {
-			TableColumn<testClass, String> coll = new TableColumn<>();
-			table.getColumns().add(coll);
-			coll.setCellValueFactory(cellDate -> cellDate.getValue().tab.get(i));
+	void dataView(Table table) {
+		Database db = table.database();
+		String query = db.format("SELECT * FROM ", table.name());
+		Result res;
+		try {
+			res = db.execute(query);
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
 		}
+
+		tableView.getColumns().clear();
+		/**********************************
+		 * TABLE COLUMN ADDED DYNAMICALLY *
+		 **********************************/
+		int i = 0;
+		for (Column c : res.columns()) {
+			final int j = i;
+			TableColumn col = new TableColumn(c.name());
+			col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList, String>, ObservableValue<String>>() {
+				public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
+					return new SimpleStringProperty(param.getValue().get(j).toString());
+				}
+			});
+			tableView.getColumns().addAll(col);
+			System.out.println("Column [" + i++ + "] " + c.name());
+		}
+
+		/********************************
+		 * Data added to ObservableList *
+		 ********************************/
+		for (Row resRow : res) {
+			ObservableList<String> row = FXCollections.observableArrayList();
+			for (int k = 1; k <= res.columns().count(); k++) {
+				row.add(resRow.getString());
+			}
+			System.out.println("Row [1] added " + row);
+			rows.add(row);
+		}
+
+
 	}
-	*/
 
 
 }

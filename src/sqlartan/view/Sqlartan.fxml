@@ -33,6 +33,6 @@
       <TreeView fx:id="treeView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </left>
    <center>
-      <TableView fx:id="table" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <TableView fx:id="tableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
