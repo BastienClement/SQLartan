@@ -14,7 +14,6 @@ import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
-import java.util.Observable;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -38,7 +37,6 @@ public class SqlartanController {
 		tableView.setEditable(true);
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			db.table(newValue.getValue()).ifPresent(this::structure);
 			db.table(newValue.getValue()).ifPresent(this::dataView);
 		});
 	}
@@ -89,17 +87,6 @@ public class SqlartanController {
 		}
 	}
 
-	void structure(Table t) {
-		/*
-		tableView.getColumns().clear();
-		tableView.getColumns().addAll(t.columns()
-		                               .map(Column::name)
-		                               .map(TableColumn::new)
-		                               .toList());
-		                               */
-	}
-
-
 	void dataView(Table table) {
 		Database db = table.database();
 		String query = db.format("SELECT * FROM ", table.name());
@@ -130,6 +117,7 @@ public class SqlartanController {
 		/********************************
 		 * Data added to ObservableList *
 		 ********************************/
+		rows.clear();
 		for (Row resRow : res) {
 			ObservableList<String> row = FXCollections.observableArrayList();
 			for (int k = 1; k <= res.columns().count(); k++) {
@@ -138,10 +126,7 @@ public class SqlartanController {
 			System.out.println("Row [1] added " + row);
 			rows.add(row);
 		}
-
 		tableView.setItems(rows);
 
 	}
-
-
 }
