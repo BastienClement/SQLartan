@@ -13,11 +13,11 @@ public class DatabaseTests {
 		Database db_ref;
 		try (Database db = new Database()) {
 			db_ref = db;
-			assertEquals(db.path().getName(), ":memory:");
-			assertEquals(db.name(), "main");
-			assertEquals(db.isMemoryOnly(), true);
+			assertEquals(":memory:", db.path().getName());
+			assertEquals("main", db.name());
+			assertTrue(db.isMemoryOnly());
 		}
-		assertEquals(db_ref.isClosed(), true);
+		assertTrue(db_ref.isClosed());
 	}
 
 	@Test

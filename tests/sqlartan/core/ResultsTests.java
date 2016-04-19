@@ -50,8 +50,7 @@ public class ResultsTests {
 	public void resultShouldHaveCorrectType() throws SQLException {
 		try (Database db = new Database()) {
 			BiConsumer<String, Boolean> test = (sql, query) -> {
-				try {
-					Result res = db.execute(sql);
+				try (Result res = db.execute(sql)) {
 					assertEquals(query, res.isQueryResult());
 					assertEquals(!query, res.isUpdateResult());
 				} catch (SQLException e) {

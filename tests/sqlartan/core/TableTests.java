@@ -1,10 +1,10 @@
 package sqlartan.core;
 
 import org.junit.Test;
+import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 public class TableTests {
@@ -14,17 +14,17 @@ public class TableTests {
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			Table test = db.table("test").get();
 
-			List<TableColumn> columns = test.columns().toList();
+			ImmutableList<TableColumn> columns = test.columns().toList();
 			assertEquals(3, columns.size());
 
 			List<String> names = Arrays.asList("a", "b", "c");
-			assertEquals(names, columns.stream().map(Column::name).collect(Collectors.toList()));
+			assertEquals(names, columns.map(Column::name));
 
 			List<String> types = Arrays.asList("INT", "TEXT", "FLOAT");
-			assertEquals(types, columns.stream().map(Column::type).collect(Collectors.toList()));
+			assertEquals(types, columns.map(Column::type));
 
 			List<Affinity> affinities = Arrays.asList(Affinity.Integer, Affinity.Text, Affinity.Real);
-			assertEquals(affinities, columns.stream().map(Column::affinity).collect(Collectors.toList()));
+			assertEquals(affinities, columns.map(Column::affinity));
 		}
 	}
 
@@ -36,19 +36,20 @@ public class TableTests {
 			db.execute("INSERT INTO test VALUES (1, 'abc', 11)");
 			db.execute("INSERT INTO test VALUES (2, 'def', 12)");
 			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
+
 			Table test = db.table("test").get();
 			test.duplicate("test2");
 
 			// Check if the structure is right
 			Table test2 = db.table("test2").get();
-			List<TableColumn> columns = test2.columns().toList();
+			ImmutableList<TableColumn> columns = test2.columns().toList();
 			assertEquals(3, columns.size());
 			List<String> names = Arrays.asList("a", "b", "c");
-			assertEquals(names, columns.stream().map(Column::name).collect(Collectors.toList()));
+			assertEquals(names, columns.map(Column::name));
 
 			// Check if we have exactly 3 rows in the table
 			int count = db.execute("SELECT COUNT(*) FROM test2").mapFirst(Row::getInt);
-			assertTrue(count == 3);
+			assertEquals(3, count);
 
 			// Create and duplicate a table which name is contained inside the keyword CREATE
 			db.execute("CREATE TABLE EA (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
@@ -60,14 +61,14 @@ public class TableTests {
 
 			// Check if the structure is right
 			Table ea2 = db.table("EA2").get();
-			List<TableColumn> columns2 = ea2.columns().toList();
+			ImmutableList<TableColumn> columns2 = ea2.columns().toList();
 			assertEquals(3, columns.size());
 			List<String> names2 = Arrays.asList("a", "b", "c");
-			assertEquals(names2, columns.stream().map(Column::name).collect(Collectors.toList()));
+			assertEquals(names2, columns.map(Column::name));
 
 			// Check if we have exactly 3 rows in the table
 			int count2 = db.execute("SELECT COUNT(*) FROM EA2").mapFirst(Row::getInt);
-			assertTrue(count == 3);
+			assertEquals(3, count);
 		}
 	}
 }
