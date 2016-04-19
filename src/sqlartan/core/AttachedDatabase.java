@@ -11,7 +11,7 @@ public class AttachedDatabase extends Database {
 		this.main = main;
 	}
 
-	public Database mainDatabase() {
+	public Database main() {
 		return main;
 	}
 }
