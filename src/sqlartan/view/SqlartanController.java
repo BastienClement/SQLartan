@@ -29,8 +29,16 @@ public class SqlartanController {
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
-	@FXML
 
+	void dataView(PersistentStructure<?> structure) {
+		try {
+			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
+	}
+
+	@FXML
 	private void initialize() throws SQLException {
 		Database db = new Database("testdb.db");
 		tree(db);
@@ -38,6 +46,7 @@ public class SqlartanController {
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			db.table(newValue.getValue()).ifPresent(this::dataView);
+			db.view(newValue.getValue()).ifPresent(this::dataView);
 		});
 	}
 
@@ -62,12 +71,11 @@ public class SqlartanController {
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
-		/* TODO remove when view is coded
+
 		trees.getChildren().addAll(database.views()
 		                                   .map(View::name)
 		                                   .map(TreeItem::new)
 		                                   .toList());
-		 */
 
 		mainTreeItem.getChildren().add(trees);
 
@@ -79,24 +87,16 @@ public class SqlartanController {
 			                               .map(TreeItem::new)
 			                               .toList());
 
-			/* TODO remove when view is coded
-			for (View view : database.views())
-				tItems.getChildren().add(new TreeItem<>(view.name()));
-			*/
+			tItems.getChildren().addAll(adb.views()
+			                               .map(View::name)
+			                               .map(TreeItem::new)
+			                               .toList());
+
 			mainTreeItem.getChildren().add(tItems);
 		}
 	}
 
-	void dataView(Table table) {
-		Database db = table.database();
-		String query = db.format("SELECT * FROM ", table.name());
-		Result res;
-		try {
-			res = db.execute(query);
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
-
+	void dataView(Result res) {
 		tableView.getColumns().clear();
 		/**********************************
 		 * TABLE COLUMN ADDED DYNAMICALLY *
