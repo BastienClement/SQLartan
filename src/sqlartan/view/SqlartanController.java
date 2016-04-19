@@ -122,14 +122,9 @@ public class SqlartanController {
 		 * Data added to ObservableList *
 		 ********************************/
 		rows.clear();
-		for (Row resRow : res) {
-			ObservableList<String> row = FXCollections.observableArrayList();
-			for (int k = 1; k <= res.columns().count(); k++) {
-				row.add(resRow.getString());
-			}
-			System.out.println("Row [1] added " + row);
-			rows.add(row);
-		}
+		res.forEach(row -> rows.add(FXCollections.observableArrayList(
+				res.columns().map(c -> row.getString()))
+		));
 		tableView.setItems(rows);
 
 	}
