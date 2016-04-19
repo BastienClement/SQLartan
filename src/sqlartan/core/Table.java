@@ -39,7 +39,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param newName
 	 */
 	@Override
-	public void duplicate(String newName) {
+	public Table duplicate(String newName) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
