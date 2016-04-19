@@ -40,10 +40,12 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param newName
 	 */
 	@Override
-	public void duplicate(String newName) {
+	public Table duplicate(String newName) {
 		try {
 			// Get the SQL command to create the table
-			String createStatement = database.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", name).mapFirst(Row::getString);
+			String createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+			                                 .execute(name)
+			                                 .mapFirst(Row::getString);
 
 			// Replace the name in the table
 			createStatement = createStatement.replaceFirst(" " + name + " ", " " + newName + " ");
@@ -52,7 +54,10 @@ public class Table extends PersistentStructure<TableColumn> {
 			database.execute(createStatement);
 
 			// Insert the data in the table
-			database.execute(database.format("INSERT INTO ", newName, "SELECT * FROM ", name));
+			database.assemble("INSERT INTO ", newName, "SELECT * FROM ", name).execute();
+
+			//noinspection OptionalGetWithoutIsPresent
+			return database.table(newName).get();
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
