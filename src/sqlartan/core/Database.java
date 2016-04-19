@@ -211,10 +211,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * TODO
-	 *
-	 * @param parts
+	 * @deprecated Use assemble instead
 	 */
+	@Deprecated
 	public String format(String... parts) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < parts.length; i++) {
@@ -227,6 +226,24 @@ public class Database implements AutoCloseable {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * TODO
+	 * @param parts
+	 */
+	public AssembledQuery assemble(String... parts) {
+		StringBuilder query = new StringBuilder();
+		for (int i = 0; i < parts.length; i++) {
+			if (i % 2 == 0) {
+				query.append(parts[i]);
+			} else {
+				query.append("[");
+				query.append(parts[i]);
+				query.append("]");
+			}
+		}
+		return new AssembledQuery(this, query.toString());
 	}
 
 	/**

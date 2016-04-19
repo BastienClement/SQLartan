@@ -70,8 +70,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	private Result tableInfo() {
 		try {
-			String query = database.format("PRAGMA ", database.name(), ".table_info(", name(), ")");
-			return database.execute(query);
+			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
