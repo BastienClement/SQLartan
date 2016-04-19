@@ -36,12 +36,27 @@ public class Table extends PersistentStructure<TableColumn> {
 
 	/**
 	 * Duplicate the table to a new table with the specified name.
+	 * Doesn't duplicate the triggers.
 	 *
 	 * @param newName
 	 */
 	@Override
 	public void duplicate(String newName) {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			// Get the SQL command to create the table
+			String createStatement = database.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", name).mapFirst(Row::getString);
+
+			// Replace the name in the table
+			createStatement = createStatement.replaceFirst(" " + name + " ", " " + newName + " ");
+
+			// Create the new table
+			database.execute(createStatement);
+
+			// Insert the data in the table
+			database.execute(database.format("INSERT INTO ", newName, "SELECT * FROM ", name));
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
