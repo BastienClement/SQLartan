@@ -17,6 +17,12 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 		return database;
 	}
 
+	/**
+	 * Returns the safe full name of this persistent structure for use in queries.
+	 */
+	public String fullName() {
+		return "[" + database.name() + "].[" + name() + "]";
+	}
 	public abstract void rename(String newName);
 	public abstract void duplicate(String newName);
 	public abstract void drop();
