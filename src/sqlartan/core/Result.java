@@ -1,9 +1,8 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.ImmutableList;
-import sqlartan.core.stream.IterableStream;
 import sqlartan.core.stream.IterableAdapter;
-import sqlartan.core.util.ResultStreamOps;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.*;
 import java.util.*;
@@ -13,7 +12,7 @@ import java.util.*;
  *
  * TODO: write more
  */
-public abstract class Result implements QueryStructure<GeneratedColumn>, AutoCloseable, IterableStream<Row>, ResultStreamOps {
+public abstract class Result implements QueryStructure<GeneratedColumn>, AutoCloseable, IterableStream<Row> {
 	/**
 	 * Constructs a Result by executing the given query on the connection.
 	 *
@@ -282,6 +281,32 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 
 			super.close();
 		}
+
+		/**
+		 * Returns the first element from the Stream, if it is not empty.
+		 * In addition to its defined behavior, this method also closes
+		 * the Result object, freeing underlying JDBC resources.
+		 */
+		@Override
+		public Optional<Row> findFirst() {
+			Optional<Row> first = IterableAdapter.super.findFirst();
+			try {
+				close();
+			} catch (Exception ignored) {}
+			return first;
+		}
+
+		/**
+		 * Returns any element from the Stream, if it is not empty.
+		 * Since Result object are purely sequential, this method is identical
+		 * to Result.findFirst().
+		 *
+		 * @deprecated Use findFirst() instead
+		 */
+		@Override
+		public Optional<Row> findAny() {
+			return findFirst();
+		}
 	}
 
 	/**
@@ -309,6 +334,13 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 		public Iterator<Row> iterator() {
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	/**
+	 * Checks if at least one row is available in the Result.
+	 */
+	public boolean exists() {
+		return findFirst().isPresent();
 	}
 }
 

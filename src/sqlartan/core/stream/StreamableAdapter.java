@@ -45,6 +45,16 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 		return IterableStream.from(stream().map(mapper).filter(Optional::isPresent).map(Optional::get));
 	}
 
+	@Override
+	default Optional<T> find(Predicate<? super T> predicate) {
+		for (T e : this) {
+			if (predicate.test(e)) {
+				return Optional.of(e);
+			}
+		}
+		return Optional.empty();
+	}
+
 	//
 	// Stream methods
 	//

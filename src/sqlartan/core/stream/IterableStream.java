@@ -90,6 +90,13 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 		return ImmutableList.from(this);
 	}
 
+	/**
+	 * Returns a view of this object.
+	 * A view is guaranteed to be backed by a Stream pipeline and not a List.
+	 * If called on a Stream, returns itself.
+	 */
+	default IterableStream<T> view() { return this; }
+
 	//
 	// Custom operations
 	//
@@ -143,6 +150,13 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * @param <R>    the type of the result
 	 */
 	<R> R mapFirst(Function<? super T, ? extends R> mapper);
+
+	/**
+	 * Finds the first element of the stream satisfying a predicate, if any.
+	 *
+	 * @param predicate a predicate function
+	 */
+	Optional<T> find(Predicate<? super T> predicate);
 
 	//
 	// Stream methods

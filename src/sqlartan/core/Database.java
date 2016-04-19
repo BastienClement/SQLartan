@@ -6,8 +6,11 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class Database implements AutoCloseable {
 	/**
@@ -93,44 +96,69 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Returns a stream of tables in this database.
+	 * TODO
+	 * @param type
+	 * @param builder
+	 * @param <T>
 	 */
-	public IterableStream<Table> tables() {
+	private <T> IterableStream<T> listStructures(String type, Function<String, T> builder) {
 		try {
-			String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' ORDER BY name ASC");
-			return execute(query).map(Row::getString).map(name -> new Table(this, name));
+			String query = format("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? ORDER BY name ASC");
+			return execute(query, type).map(Row::getString).map(builder);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
+	}
+
+	/**
+	 * TODO
+	 * @param type
+	 * @param name
+	 * @param builder
+	 * @param <T>
+	 */
+	private <T> Optional<T> findStructure(String type, String name, Function<String, T> builder) {
+		try {
+			String query = format("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? AND name = ?");
+			return execute(query, type, name).mapFirstOptional(Row::getString).map(builder);
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
+	}
+
+	/**
+	 * Returns a stream of tables in this database.
+	 */
+	public IterableStream<Table> tables() {
+		return listStructures("table", n -> new Table(this, n));
 	}
 
 	/**
 	 * Returns the table with the given name, if it exists.
 	 * If the table does not exist, an empty Optional is returned.
 	 *
-	 * @param table the name of the table
+	 * @param name the name of the table
 	 */
-	public Optional<Table> table(String table) {
-		try {
-			String query = format("SELECT name FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?");
-			return execute(query, table).mapFirstOptional(row -> new Table(this, row.getString()));
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
+	public Optional<Table> table(String name) {
+		return findStructure("table", name, n -> new Table(this, n));
 	}
 
 	/**
 	 * Returns a stream of views in this database.
 	 */
-	public IterableStream<View> views() { return null; }
+	public IterableStream<View> views() {
+		return listStructures("view", n -> new View(this, n));
+	}
 
 	/**
 	 * Returns the view with the given name, if it exists.
 	 * If the view does not exist, an empty Optional is returned.
 	 *
-	 * @param view the name of the view
+	 * @param name the name of the view
 	 */
-	public Optional<View> view(String view) { return null; }
+	public Optional<View> view(String name) {
+		return findStructure("view", name, n -> new View(this, n));
+	}
 
 	/**
 	 * Clean up the database by rebuilding it entirely.
@@ -183,9 +211,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * TODO
-	 * @param parts
+	 * @deprecated Use assemble instead
 	 */
+	@Deprecated
 	public String format(String... parts) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < parts.length; i++) {
@@ -198,6 +226,24 @@ public class Database implements AutoCloseable {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * TODO
+	 * @param parts
+	 */
+	public AssembledQuery assemble(String... parts) {
+		StringBuilder query = new StringBuilder();
+		for (int i = 0; i < parts.length; i++) {
+			if (i % 2 == 0) {
+				query.append(parts[i]);
+			} else {
+				query.append("[");
+				query.append(parts[i]);
+				query.append("]");
+			}
+		}
+		return new AssembledQuery(this, query.toString());
 	}
 
 	/**
@@ -252,8 +298,8 @@ public class Database implements AutoCloseable {
 	 *
 	 * @return the attached databases
 	 */
-	public HashMap<String, AttachedDatabase> attached() {
-		return attached;
+	public Map<String, AttachedDatabase> attached() {
+		return Collections.unmodifiableMap(attached);
 	}
 
 	/**
@@ -262,8 +308,8 @@ public class Database implements AutoCloseable {
 	 * @param name
 	 * @return the attached database contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public AttachedDatabase attached(String name) {
-		return attached.get(name);
+	public Optional<AttachedDatabase> attached(String name) {
+		return Optional.ofNullable(attached.get(name));
 	}
 
 	/**
