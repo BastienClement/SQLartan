@@ -42,6 +42,13 @@ public class Row implements QueryStructure<GeneratedColumn> {
 		return new Row(res, data);
 	}
 
+	/**
+	 * Returns the number of columns of this row.
+	 */
+	public int size() {
+		return data.values.length;
+	}
+
 	@Override
 	public String toString() {
 		List<GeneratedColumn> columns = res.columns();
