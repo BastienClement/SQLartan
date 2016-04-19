@@ -6,7 +6,9 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -279,8 +281,8 @@ public class Database implements AutoCloseable {
 	 *
 	 * @return the attached databases
 	 */
-	public HashMap<String, AttachedDatabase> attached() {
-		return attached;
+	public Map<String, AttachedDatabase> attached() {
+		return Collections.unmodifiableMap(attached);
 	}
 
 	/**
@@ -289,8 +291,8 @@ public class Database implements AutoCloseable {
 	 * @param name
 	 * @return the attached database contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public AttachedDatabase attached(String name) {
-		return attached.get(name);
+	public Optional<AttachedDatabase> attached(String name) {
+		return Optional.ofNullable(attached.get(name));
 	}
 
 	/**
