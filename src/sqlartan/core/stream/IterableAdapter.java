@@ -36,7 +36,7 @@ public interface IterableAdapter<T> extends StreamableAdapter<T> {
 	}
 
 	//
-	// Remove default implementation from StreamableProxy
+	// Remove default implementation from StreamableAdapter
 	//
 	// This prevents accidentally creating an infinite loop:
 	//

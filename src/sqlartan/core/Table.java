@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
-
 	/** Set of indices */
 	private HashMap<String, Index> indices = new HashMap<>();
 
@@ -36,12 +35,32 @@ public class Table extends PersistentStructure<TableColumn> {
 
 	/**
 	 * Duplicate the table to a new table with the specified name.
+	 * Doesn't duplicate the triggers.
 	 *
 	 * @param newName
 	 */
 	@Override
-	public void duplicate(String newName) {
-		throw new UnsupportedOperationException("Not implemented");
+	public Table duplicate(String newName) {
+		try {
+			// Get the SQL command to create the table
+			String createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+			                                 .execute(name)
+			                                 .mapFirst(Row::getString);
+
+			// Replace the name in the table
+			createStatement = createStatement.replaceFirst(" " + name + " ", " " + newName + " ");
+
+			// Create the new table
+			database.execute(createStatement);
+
+			// Insert the data in the table
+			database.assemble("INSERT INTO ", newName, "SELECT * FROM ", name).execute();
+
+			//noinspection OptionalGetWithoutIsPresent
+			return database.table(newName).get();
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
@@ -52,29 +71,48 @@ public class Table extends PersistentStructure<TableColumn> {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	@Override
-	public IterableStream<TableColumn> columns() {
+	/**
+	 *
+	 * @param row
+	 * @return
+	 */
+	private TableColumn columnBuilder(Row row) {
+		return new TableColumn(this, new TableColumn.Properties() {
+			public String name() { return row.getString("name"); }
+			public String type() { return row.getString("type"); }
+			public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
+			public String check() { throw new UnsupportedOperationException("Not implemented"); }
+		});
+	}
+
+	/**
+	 * Returns the table_info() pragma result for this table.
+	 */
+	private Result tableInfo() {
 		try {
-			String query = database.format("PRAGMA ", database.name(), ".table_info(", name, ")");
-			return database.execute(query).map(row -> new TableColumn(this, new TableColumn.Properties() {
-				public String name() { return row.getString("name"); }
-				public String type() { return row.getString("type"); }
-				public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
-				public String check() { throw new UnsupportedOperationException("Not implemented"); }
-			}));
+			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
 	}
 
 	@Override
+	public IterableStream<TableColumn> columns() {
+		return tableInfo().map(this::columnBuilder);
+	}
+
+	@Override
 	public Optional<TableColumn> column(String name) {
-		throw new UnsupportedOperationException("Not implemented");
+		try (Result res = tableInfo()) {
+			return res.find(row -> row.getString("name").equals(name)).map(this::columnBuilder);
+		}
 	}
 
 	@Override
 	public Optional<TableColumn> column(int idx) {
-		throw new UnsupportedOperationException("Not implemented");
+		try (Result res = tableInfo()) {
+			return res.skip(idx).mapFirstOptional(this::columnBuilder);
+		}
 	}
 
 	/**

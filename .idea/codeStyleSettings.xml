@@ -35,12 +35,6 @@
         <option name="JD_DO_NOT_WRAP_ONE_LINE_COMMENTS" value="true" />
         <option name="JD_PRESERVE_LINE_FEEDS" value="true" />
         <option name="WRAP_COMMENTS" value="true" />
-        <JSCodeStyleSettings>
-          <option name="SPACE_BEFORE_FUNCTION_LEFT_PARENTH" value="false" />
-        </JSCodeStyleSettings>
-        <TypeScriptCodeStyleSettings>
-          <option name="SPACE_AFTER_TYPE_COLON" value="true" />
-        </TypeScriptCodeStyleSettings>
         <XML>
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
@@ -70,7 +64,6 @@
           <option name="SPACE_BEFORE_ARRAY_INITIALIZER_LBRACE" value="true" />
           <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
           <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="true" />
-          <option name="KEEP_SIMPLE_LAMBDAS_IN_ONE_LINE" value="true" />
           <option name="KEEP_SIMPLE_CLASSES_IN_ONE_LINE" value="true" />
           <indentOptions>
             <option name="USE_TAB_CHARACTER" value="true" />
