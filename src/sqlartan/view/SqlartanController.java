@@ -13,6 +13,7 @@ import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.utils.Optionals;
 import java.sql.SQLException;
 
 /**
@@ -45,8 +46,11 @@ public class SqlartanController {
 		tableView.setEditable(true);
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			db.table(newValue.getValue()).ifPresent(this::dataView);
-			db.view(newValue.getValue()).ifPresent(this::dataView);
+			Optionals.firstPresent(
+					() -> db.table(newValue.getValue()),
+					() -> db.view(newValue.getValue())
+			).ifPresent(this::dataView);
+
 		});
 	}
 
