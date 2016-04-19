@@ -151,6 +151,13 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 */
 	<R> R mapFirst(Function<? super T, ? extends R> mapper);
 
+	/**
+	 * Finds the first element of the stream satisfying a predicate, if any.
+	 *
+	 * @param predicate a predicate function
+	 */
+	Optional<T> find(Predicate<? super T> predicate);
+
 	//
 	// Stream methods
 	//

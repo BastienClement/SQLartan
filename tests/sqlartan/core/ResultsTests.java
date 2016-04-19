@@ -37,7 +37,7 @@ public class ResultsTests {
 
 			// Limit the stream
 			Result r3 = db.execute("SELECT * FROM foo");
-			r3.stream().limit(1).forEach(row -> {});
+			r3.limit(1).forEach(row -> {});
 			assertFalse(r3.isClosed());
 
 			// Manual close
