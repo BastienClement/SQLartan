@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
-
 	/** Set of indices */
 	private HashMap<String, Index> indices = new HashMap<>();
 
@@ -52,29 +51,49 @@ public class Table extends PersistentStructure<TableColumn> {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	@Override
-	public IterableStream<TableColumn> columns() {
+	/**
+	 *
+	 * @param row
+	 * @return
+	 */
+	private TableColumn columnBuilder(Row row) {
+		return new TableColumn(this, new TableColumn.Properties() {
+			public String name() { return row.getString("name"); }
+			public String type() { return row.getString("type"); }
+			public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
+			public String check() { throw new UnsupportedOperationException("Not implemented"); }
+		});
+	}
+
+	/**
+	 * Returns the table_info() pragma result for this table.
+	 */
+	private Result tableInfo() {
 		try {
-			String query = database.format("PRAGMA ", database.name(), ".table_info(", name, ")");
-			return database.execute(query).map(row -> new TableColumn(this, new TableColumn.Properties() {
-				public String name() { return row.getString("name"); }
-				public String type() { return row.getString("type"); }
-				public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
-				public String check() { throw new UnsupportedOperationException("Not implemented"); }
-			}));
+			String query = database.format("PRAGMA ", database.name(), ".table_info(", name(), ")");
+			return database.execute(query);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
 	}
 
 	@Override
+	public IterableStream<TableColumn> columns() {
+		return tableInfo().map(this::columnBuilder);
+	}
+
+	@Override
 	public Optional<TableColumn> column(String name) {
-		throw new UnsupportedOperationException("Not implemented");
+		try (Result res = tableInfo()) {
+			return res.find(row -> row.getString("name").equals(name)).map(this::columnBuilder);
+		}
 	}
 
 	@Override
 	public Optional<TableColumn> column(int idx) {
-		throw new UnsupportedOperationException("Not implemented");
+		try (Result res = tableInfo()) {
+			return res.skip(idx).mapFirstOptional(this::columnBuilder);
+		}
 	}
 
 	/**
