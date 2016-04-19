@@ -1,6 +1,8 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.IterableStream;
+import sqlartan.core.util.RuntimeSQLException;
+import java.sql.SQLException;
 import java.util.Optional;
 
 public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
@@ -20,7 +22,11 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 
 	@Override
 	public void drop() {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			database.assemble("DROP VIEW ", fullName()).execute();
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	@Override
