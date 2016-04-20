@@ -97,14 +97,17 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param type
 	 * @param builder
 	 * @param <T>
 	 */
 	private <T> IterableStream<T> listStructures(String type, Function<String, T> builder) {
 		try {
-			String query = format("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? ORDER BY name ASC");
-			return execute(query, type).map(Row::getString).map(builder);
+			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? ORDER BY name ASC")
+					.execute(type)
+					.map(Row::getString)
+					.map(builder);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
@@ -112,6 +115,7 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param type
 	 * @param name
 	 * @param builder
@@ -119,8 +123,10 @@ public class Database implements AutoCloseable {
 	 */
 	private <T> Optional<T> findStructure(String type, String name, Function<String, T> builder) {
 		try {
-			String query = format("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? AND name = ?");
-			return execute(query, type, name).mapFirstOptional(Row::getString).map(builder);
+			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? AND name = ?")
+					.execute(type, name)
+					.mapFirstOptional(Row::getString)
+					.map(builder);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
@@ -230,6 +236,7 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param parts
 	 */
 	public AssembledQuery assemble(String... parts) {
@@ -238,9 +245,11 @@ public class Database implements AutoCloseable {
 			if (i % 2 == 0) {
 				query.append(parts[i]);
 			} else {
-				query.append("[");
+				String part = parts[i];
+				boolean escaped = part.charAt(0) == '[' && part.charAt(part.length() - 1) == ']';
+				if (!escaped) query.append("[");
 				query.append(parts[i]);
-				query.append("]");
+				if (!escaped) query.append("]");
 			}
 		}
 		return new AssembledQuery(this, query.toString());

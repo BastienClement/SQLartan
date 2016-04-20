@@ -17,5 +17,4 @@ public class OptionalsTests {
 		assertTrue(first.isPresent());
 		assertEquals("b", first.get());
 	}
-
 }
