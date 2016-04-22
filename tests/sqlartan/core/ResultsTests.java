@@ -16,7 +16,7 @@ public class ResultsTests {
 	@Test
 	@SuppressWarnings("StatementWithEmptyBody")
 	public void resultShouldCloseWhenFullyConsumed() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			// Test iterator interface
 			Result r1 = db.execute("SELECT sqlite_version()");
 			for (Row row : r1) {}
@@ -48,7 +48,7 @@ public class ResultsTests {
 
 	@Test
 	public void resultShouldHaveCorrectType() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			BiConsumer<String, Boolean> test = (sql, query) -> {
 				try (Result res = db.execute(sql)) {
 					assertEquals(query, res.isQueryResult());
@@ -69,7 +69,7 @@ public class ResultsTests {
 
 	@Test
 	public void updateResultShouldAlreadyBeClosed() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			Result r = db.execute("CREATE TABLE foo (a INT)");
 			assertTrue(r.isClosed());
 		}
@@ -77,7 +77,7 @@ public class ResultsTests {
 
 	@Test
 	public void resultIterationIsOrdered() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE foo (bar INT)");
 			db.execute("INSERT INTO foo VALUES (1),(2),(5),(3),(4),(8),(7),(9),(6)");
 
@@ -95,7 +95,7 @@ public class ResultsTests {
 
 	@Test
 	public void updateCountIsCorrect() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE foo (bar INT, baz TEXT)");
 
 			assertEquals(3, db.execute("INSERT INTO foo VALUES (1, 'a'), (2, 'b'), (3, 'c')").updateCount());
@@ -107,7 +107,7 @@ public class ResultsTests {
 
 	@Test
 	public void storedResultCanBeIteratedMultipleTimes() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE foo (bar INT)");
 			db.execute("INSERT INTO foo VALUES (1),(2),(3),(4),(5)");
 
@@ -122,7 +122,7 @@ public class ResultsTests {
 
 	@Test
 	public void nonStoredResultCannotBeIteratedMultipleTimes() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			Result res = db.execute("SELECT 1, 2, 3");
 			res.forEach(row -> {});
 

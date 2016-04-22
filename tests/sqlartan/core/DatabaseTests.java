@@ -11,7 +11,7 @@ public class DatabaseTests {
 	@Test
 	public void databaseLifecycleShouldBeCorrect() throws SQLException {
 		Database db_ref;
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db_ref = db;
 			assertEquals(":memory:", db.path().getName());
 			assertEquals("main", db.name());
@@ -22,14 +22,14 @@ public class DatabaseTests {
 
 	@Test
 	public void sqliteVersionIsThreeEightEleven() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			assertEquals("3.8.11", db.execute("SELECT sqlite_version()").mapFirst(Row::getString));
 		}
 	}
 
 	@Test
 	public void defaultPragmaAreCorrect() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			int count_changes = db.execute("PRAGMA count_changes").mapFirst(Row::getInt);
 			assertEquals(0, count_changes);
 		}
@@ -37,7 +37,7 @@ public class DatabaseTests {
 
 	@Test
 	public void structureListTests() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE a (z INT)");
 			db.execute("CREATE TABLE c (z INT)");
 			db.execute("CREATE TABLE b (z INT)");
