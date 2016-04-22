@@ -12,7 +12,6 @@ import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
-import sqlartan.core.util.ResultPrinter;
 import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.utils.Optionals;
 import java.io.File;
@@ -25,12 +24,14 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private Sqlartan sqlartan;
-	private Database db;
+	private Database db = null;
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
 	private TreeView<String> treeView;
 	@FXML
 	private TableView tableView = new TableView();
+
+	TreeItem<String> mainTreeItem;
 
 	File file;
 
@@ -52,8 +53,6 @@ public class SqlartanController {
 
 	@FXML
 	private void initialize() throws SQLException {
-		db = new Database("testdb.db");
-		tree(db);
 		tableView.setEditable(true);
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -63,6 +62,24 @@ public class SqlartanController {
 			).ifPresent(this::dataView);
 
 		});
+
+
+		mainTreeItem = new TreeItem<>("Bases de données"); // Hidden
+		mainTreeItem.setExpanded(true);
+		treeView.setShowRoot(false);
+		treeView.setRoot(mainTreeItem);
+	}
+
+	/**
+	 * To call to refresh the view of the tree
+	 * @throws SQLException
+	 */
+	void refreshView() throws SQLException
+	{
+		if (db != null){
+			tree(db);
+		}
+
 	}
 
 	/**
@@ -72,11 +89,6 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	void tree(Database database) throws SQLException {
-		TreeItem<String> mainTreeItem = new TreeItem<>("Bases de données"); // Hidden
-		mainTreeItem.setExpanded(true);
-
-		treeView.setShowRoot(false);
-		treeView.setRoot(mainTreeItem);
 
 		// Main
 		TreeItem<String> trees = new TreeItem<>(database.name());
@@ -141,7 +153,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * The methode called by the close button
+	 * Close the entery application
 	 */
 	@FXML
 	private void close()
@@ -151,10 +163,10 @@ public class SqlartanController {
 
 
 	/**
-	 * Methode called by the gui to open the database
+	 * Open a database
 	 */
 	@FXML
-	private void openDB() {
+	private void openDB() throws SQLException {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLLite database");
 		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
@@ -162,16 +174,18 @@ public class SqlartanController {
 		while (true) {
 			try {
 				db = new Database(file.getPath());
-				db.execute("SELECT * FROM sqllite_master").toList();
+				//db.execute("SELECT * FROM sqllite_master").toList();
+				refreshView();
+				break;
 			} catch (SQLException e) {
 
-				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				Alert alert = new Alert(Alert.AlertType.NONE);
 				alert.setTitle("Problem while opening database");
 				alert.setContentText("Error: " + e.getMessage());
 
-				ButtonType buttonCanncel = new ButtonType("Cancel");
+				ButtonType buttonCanncel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choos new file");
+				ButtonType buttonNewFile = new ButtonType("Choos new");
 
 				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCanncel);
 
@@ -190,7 +204,17 @@ public class SqlartanController {
 
 			}
 		}
+	}
 
 
+	/**
+	 * Close the current database
+	 */
+	@FXML
+	private void closeDB() throws SQLException
+	{
+		tableView.getColumns().clear();
+		treeView.setRoot(null);
+		//db = null;
 	}
 }
