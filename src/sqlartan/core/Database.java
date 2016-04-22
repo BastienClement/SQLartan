@@ -210,9 +210,9 @@ public class Database implements AutoCloseable {
 	/**
 	 * Checks if this database is a temporary memory-only database.
 	 *
-	 * @return true if this database is memory-only
+	 * @return true if this database is ephemeral
 	 */
-	public boolean isMemoryOnly() {
+	public boolean isEphemeral() {
 		return path.getName().equals(":memory:");
 	}
 

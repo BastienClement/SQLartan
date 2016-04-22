@@ -15,7 +15,7 @@ public class DatabaseTests {
 			db_ref = db;
 			assertEquals(":memory:", db.path().getName());
 			assertEquals("main", db.name());
-			assertTrue(db.isMemoryOnly());
+			assertTrue(db.isEphemeral());
 		}
 		assertTrue(db_ref.isClosed());
 	}
