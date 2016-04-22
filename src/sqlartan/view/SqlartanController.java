@@ -6,16 +6,18 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.core.util.ResultPrinter;
 import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.utils.Optionals;
+import java.io.File;
 import java.sql.SQLException;
+import java.util.Optional;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -23,11 +25,19 @@ import java.sql.SQLException;
 public class SqlartanController {
 
 	private Sqlartan sqlartan;
+	private Database db;
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
 	private TreeView<String> treeView;
 	@FXML
 	private TableView tableView = new TableView();
+
+	File file;
+
+	/**
+	 * Called by the mainApp to set the link to the mainApp
+	 * @param sqlartan
+	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
@@ -42,7 +52,7 @@ public class SqlartanController {
 
 	@FXML
 	private void initialize() throws SQLException {
-		Database db = new Database("testdb.db");
+		db = new Database("testdb.db");
 		tree(db);
 		tableView.setEditable(true);
 		tableView.setVisible(true);
@@ -137,5 +147,50 @@ public class SqlartanController {
 	private void close()
 	{
 		Platform.exit();
+	}
+
+
+	/**
+	 * Methode called by the gui to open the database
+	 */
+	@FXML
+	private void openDB() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open SQLLite database");
+		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+
+		while (true) {
+			try {
+				db = new Database(file.getPath());
+				db.execute("SELECT * FROM sqllite_master").toList();
+			} catch (SQLException e) {
+
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.setTitle("Problem while opening database");
+				alert.setContentText("Error: " + e.getMessage());
+
+				ButtonType buttonCanncel = new ButtonType("Cancel");
+				ButtonType buttonRetry = new ButtonType("Retry");
+				ButtonType buttonNewFile = new ButtonType("Choos new file");
+
+				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCanncel);
+
+
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.get() == buttonRetry) {
+					continue;
+				}
+				else if (result.get() == buttonNewFile) {
+					file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+				}
+				else{
+					break;
+				}
+
+			}
+		}
+
+
 	}
 }
