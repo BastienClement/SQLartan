@@ -7,9 +7,9 @@
 
 }
 
-.tree-view, .tree-cell {
+.tree-view, .tree-cell {/*
 	-fx-background-color: black ;
-	-fx-text-fill: white ;
+	-fx-text-fill: white ;*/
 }
 
 .tree-cell:selected {

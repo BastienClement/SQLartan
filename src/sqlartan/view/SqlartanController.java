@@ -1,5 +1,6 @@
 package sqlartan.view;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -127,5 +128,14 @@ public class SqlartanController {
 		));
 		tableView.setItems(rows);
 
+	}
+
+	/**
+	 * The methode called by the close button
+	 */
+	@FXML
+	private void close()
+	{
+		Platform.exit();
 	}
 }
