@@ -103,6 +103,16 @@ public class Database implements AutoCloseable {
 		this.name = name;
 		this.path = path;
 		this.connection = DriverManager.getConnection("jdbc:sqlite:" + path.getPath());
+
+		// If the given file is not a database, SQLite will not complain until executing
+		// the first query. Do that here so that opening a database triggers an exception
+		// if the file is not a database.
+		try {
+			execute("SELECT * FROM sqlite_master LIMIT 1");
+		} catch (SQLException e) {
+			close();
+			throw e;
+		}
 	}
 
 	/**
