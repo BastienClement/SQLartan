@@ -14,6 +14,35 @@ import java.util.function.Function;
 
 public class Database implements AutoCloseable {
 	/**
+	 * Constructs a new ephemeral database.
+	 *
+	 * @throws SQLException
+	 */
+	public static Database createEphemeral() throws SQLException {
+		return open(":memory:");
+	}
+
+	/**
+	 * Opens a database file.
+	 *
+	 * @param path the path to the database file
+	 * @throws SQLException
+	 */
+	public static Database open(String path) throws SQLException {
+		return open(new File(path));
+	}
+
+	/**
+	 * Opens a database file.
+	 *
+	 * @param file the path to the database file
+	 * @throws SQLException
+	 */
+	public static Database open(File file) throws SQLException {
+		return new Database(file, "main");
+	}
+
+	/**
 	 * Logical name of this database
 	 * This is always "main" for the first database in a SQLite Connection.
 	 * Additional databases loaded with ATTACH have user-defined names.
@@ -37,30 +66,28 @@ public class Database implements AutoCloseable {
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
 
 	/**
-	 * Constructs a new memory-only database.
-	 *
 	 * @throws SQLException
+	 * @deprecated Use Database.createEphemeral() instead
 	 */
+	@Deprecated
 	public Database() throws SQLException {
-		this(":memory:");
+		this(new File(":memory:"), "main");
 	}
 
 	/**
-	 * Opens a database file.
-	 *
-	 * @param path the path to the database file
 	 * @throws SQLException
+	 * @deprecated Use Database.open(path) instead
 	 */
+	@Deprecated
 	public Database(String path) throws SQLException {
 		this(new File(path), "main");
 	}
 
 	/**
-	 * Opens a database file.
-	 *
-	 * @param path the path to the database file
 	 * @throws SQLException
+	 * @deprecated Use Database.open(path) instead
 	 */
+	@Deprecated
 	public Database(File path) throws SQLException {
 		this(path, "main");
 	}
@@ -76,6 +103,16 @@ public class Database implements AutoCloseable {
 		this.name = name;
 		this.path = path;
 		this.connection = DriverManager.getConnection("jdbc:sqlite:" + path.getPath());
+
+		// If the given file is not a database, SQLite will not complain until executing
+		// the first query. Do that here so that opening a database triggers an exception
+		// if the file is not a database.
+		try {
+			execute("SELECT * FROM sqlite_master LIMIT 1").close();
+		} catch (SQLException e) {
+			close();
+			throw e;
+		}
 	}
 
 	/**
@@ -210,9 +247,9 @@ public class Database implements AutoCloseable {
 	/**
 	 * Checks if this database is a temporary memory-only database.
 	 *
-	 * @return true if this database is memory-only
+	 * @return true if this database is ephemeral
 	 */
-	public boolean isMemoryOnly() {
+	public boolean isEphemeral() {
 		return path.getName().equals(":memory:");
 	}
 

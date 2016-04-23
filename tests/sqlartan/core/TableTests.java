@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class TableTests {
 	@Test
 	public void tablesColumnsTests() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			Table test = db.table("test").get();
 
@@ -30,7 +30,7 @@ public class TableTests {
 
 	@Test
 	public void duplicateTableTests() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
 			// Create and duplicate a simple table
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			db.execute("INSERT INTO test VALUES (1, 'abc', 11)");
