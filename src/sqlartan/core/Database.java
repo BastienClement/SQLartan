@@ -108,7 +108,7 @@ public class Database implements AutoCloseable {
 		// the first query. Do that here so that opening a database triggers an exception
 		// if the file is not a database.
 		try {
-			execute("SELECT * FROM sqlite_master LIMIT 1");
+			execute("SELECT * FROM sqlite_master LIMIT 1").close();
 		} catch (SQLException e) {
 			close();
 			throw e;
