@@ -4,9 +4,9 @@ import java.util.LinkedList;
 
 public class Index
 {
-	private String name;
-	private boolean unique;
-	private boolean primaryKey;
+	private final String name;
+	private final boolean unique;
+	private final boolean primaryKey;
 	private LinkedList<String> columns;
 
 	public Index(String name, boolean unique, boolean primaryKey){

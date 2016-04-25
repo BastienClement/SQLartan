@@ -12,11 +12,48 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 
 	@Override
 	public void rename(String newName) {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			// retrieve the view creation sql
+			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'view' AND name = ?")
+			                     .execute(name)
+			                     .mapFirst(Row::getString);
+
+			// Replace the name in the view creation sql
+			sql.replaceAll(name, newName);
+
+			// Execute the new sql, add the new view
+			database.execute(sql);
+
+			// Delete the old view
+			drop();
+
+			// Update view's name
+			name = newName;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public View duplicate(String newName) {
+		try {
+			// retrieve the view creation sql
+			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'view' AND name = ?")
+			                     .execute(name)
+			                     .mapFirst(Row::getString);
+
+			// Replace the name in the view creation sql
+			sql.replaceAll(name, newName);
+
+			// Execute the new sql, add the new view
+			database.execute(sql);
+
+			// Gets the new view, without inspection
+			return database.view(newName).get();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 		throw new UnsupportedOperationException("Not implemented");
 	}
 

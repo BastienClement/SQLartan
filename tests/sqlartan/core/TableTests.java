@@ -74,45 +74,59 @@ public class TableTests {
 
 	@Test
 	public void renameTests() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			Table test = db.table("test").get();
 
+			// Rename table
 			test.rename("test2");
+			// check fields
 			assertEquals(test.name(), "test2");
+
+			// Check if table exists
 			Table test2 = db.table("test2").get();
 			assertNotNull(test2);
 			assertEquals(test.name(), "test2");
+
+			// Check that there is no table with the old name
 			assertFalse(db.table("test").isPresent());
 		}
 	}
 
 	@Test
 	public void columnTests() throws SQLException {
-		try (Database db = new Database()) {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			Table test = db.table("test").get();
 
+			// Check that the columns exist
+			assertTrue(test.column("a").isPresent());
+			assertTrue(test.column("b").isPresent());
+			assertTrue(test.column("c").isPresent());
+
+			// Retrieve the columns
 			TableColumn colA = test.column("a").get();
 			TableColumn colB = test.column("b").get();
 			TableColumn colC = test.column("c").get();
 
-			assertNotNull(colA);
-			assertNotNull(colB);
-			assertNotNull(colC);
-
+			// Check unique constraints
 			assertTrue(colA.unique());
 			assertTrue(colB.unique());
 			assertFalse(colC.unique());
 
+			// Check columns names
 			assertEquals(colA.name(), "a");
 			assertEquals(colB.name(), "b");
 			assertEquals(colC.name(), "c");
 
+			// Check columns types
 			assertEquals(colA.type(), "INT");
 			assertEquals(colB.type(), "TEXT");
 			assertEquals(colC.type(), "FLOAT");
 
+			// Check columns indexes
 			assertEquals(test.column(0).get().name(), "a");
 			assertEquals(test.column(1).get().name(), "b");
 			assertEquals(test.column(2).get().name(), "c");
@@ -120,16 +134,69 @@ public class TableTests {
 	}
 
 	@Test
-	public void pkTests() throws SQLException {
-		try (Database db = new Database()) {
+	public void dropTests() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			Table test = db.table("test").get();
 
+			// Delete table
+			test.drop();
+
+			// Check that the table has been removed
+			assertFalse(db.table("test").isPresent());
+		}
+	}
+
+	@Test
+	public void pkTests() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			// Gets the primary key
 			Index pk = test.primaryKey();
+			// Check that there is a primary key
 			assertNotNull(pk);
+			// Check that the primary key has one column
 			assertNotNull(pk.getColumns());
 			assertTrue(pk.getColumns().size() == 1);
+			// Check the primary key column
 			assertEquals(pk.getColumns().get(0), "a");
+		}
+	}
+
+	@Test
+	public void triggerTests() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			// Create a simple trigger
+			db.execute("CREATE TRIGGER trig  AFTER INSERT ON test BEGIN DELETE FROM test; END;");
+
+			// Check that an existing trigger can be found
+			assertNull(db.table("test").get().trigger("trigg"));
+			assertNotNull(db.table("test").get().trigger("trig"));
+
+			// Rename table
+			test.rename("test2");
+			// Check that the trigger is linked to this table
+			assertNotNull(db.table("test2").get().trigger("trig"));
+
+			// Rename trigger
+			db.table("test2").get().trigger("trig").rename("trigg");
+			// Check that the old trigger does not exist anymore
+			assertNull(db.table("test2").get().trigger("trig"));
+			// Check that the new trigger exists
+			assertNotNull(db.table("test2").get().trigger("trigg"));
+
+			// Delete trigger
+			db.table("test2").get().trigger("trigg").drop();
+			// Check that the trigger does not exist anymore
+			assertNull(db.table("test2").get().trigger("trig"));
 		}
 	}
 }

@@ -23,23 +23,32 @@ public class Table extends PersistentStructure<TableColumn> {
 	Table(Database database, String name) {
 		super(database, name);
 		try {
-			String query = database.format("PRAGMA ", database.name(), ".index_list(", name(), ")");
-			database.execute(query).map(Row::view).forEach(
-					row -> {
-						try {
-							Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
-							final String qy = database.format("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")");
-							database.execute(qy).map(Row::view).forEach(
-									r -> {
-										index.addColumn(r.getString("name"));
-									}
-							);
-							indices.put(row.getString("name"), index);
-						} catch (SQLException e) {
-							e.printStackTrace();
+			database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
+			        .execute().map(Row::view)
+			        .forEach(
+						row -> {
+							try {
+								Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
+								database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
+								        .execute().map(Row::view)
+								        .forEach(
+											r -> {
+												index.addColumn(r.getString("name"));
+											}
+										);
+								indices.put(row.getString("name"), index);
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 						}
-					}
-			);
+					);
+			database.assemble("SELECT name, sql, tbl_name FROM ", database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ?")
+			        .execute(name)
+			        .forEach(
+					        row -> {
+						        triggers.put(row.getString("name"), new Trigger(database, row .getString("name"), row.getString("sql")));
+					        }
+			        );
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -170,7 +179,11 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @return the index contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Index index(String name) { return indices.get(name); }
+	public Index index(String name) {
+		if(indices.containsKey(name))
+			return indices.get(name);
+		return null;
+	}
 
 	/**
 	 * Find and return the primaryKey from the indices.
@@ -178,11 +191,12 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @return the primary key of the table
 	 */
 	public Index primaryKey() {
+		// Search in the indices the one which is a primary key
 		Iterator<String> keySetIterator = indices.keySet().iterator();
 		while(keySetIterator.hasNext()){
 			String key = keySetIterator.next();
 			if(indices.get(key).isPrimaryKey())
-				return indices.get(key);
+				return index(key);
 		}
 		return null;
 	}
@@ -200,7 +214,11 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @return the trigger contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Trigger trigger(String name) { return triggers.get(name); }
+	public Trigger trigger(String name) {
+		if(triggers.containsKey(name))
+			return triggers.get(name);
+		return null;
+	}
 
 	/**
 	 * Truncate the table.
