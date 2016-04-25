@@ -1,6 +1,7 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -56,10 +57,13 @@ public class SqlartanController {
 		tableView.setEditable(true);
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			Optionals.firstPresent(
-					() -> db.table(newValue.getValue()),
-					() -> db.view(newValue.getValue())
-			).ifPresent(this::dataView);
+
+			if (newValue != null) {
+				Optionals.firstPresent(
+						() -> db.table(newValue.getValue()),
+						() -> db.view(newValue.getValue())
+				).ifPresent(this::dataView);
+			}
 
 		});
 
@@ -214,7 +218,7 @@ public class SqlartanController {
 	private void closeDB() throws SQLException
 	{
 		tableView.getColumns().clear();
-		treeView.setRoot(null);
-		//db = null;
+		mainTreeItem.getChildren().clear();
+		db = null;
 	}
 }
