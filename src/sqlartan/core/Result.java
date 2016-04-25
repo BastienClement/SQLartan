@@ -162,6 +162,7 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 				String name = meta.getColumnName(i);
 				String table = meta.getTableName(i);
 				String type = meta.getColumnTypeName(i);
+				boolean nullable = meta.isNullable(i) == 1;
 
 				GeneratedColumn col = new GeneratedColumn(new GeneratedColumn.Properties() {
 					public String name() { return name; }
@@ -170,6 +171,7 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 					}
 					public String sourceTable() { return table; }
 					public String sourceExpr() { throw new UnsupportedOperationException(); }
+					public boolean nullable() { return nullable; }
 				});
 
 				columns.add(col);

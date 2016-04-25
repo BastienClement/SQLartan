@@ -6,7 +6,7 @@ package sqlartan.core;
  */
 public abstract class PersistentStructure<T extends Column> implements Structure<T> {
 	protected final Database database;
-	protected final String name;
+	protected String name;
 
 	protected PersistentStructure(Database database, String name) {
 		this.database = database;

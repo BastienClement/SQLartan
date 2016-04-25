@@ -4,6 +4,7 @@ import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
@@ -21,6 +22,27 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	Table(Database database, String name) {
 		super(database, name);
+		try {
+			String query = database.format("PRAGMA ", database.name(), ".index_list(", name(), ")");
+			database.execute(query).map(Row::view).forEach(
+					row -> {
+						try {
+							Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
+							final String qy = database.format("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")");
+							database.execute(qy).map(Row::view).forEach(
+									r -> {
+										index.addColumn(r.getString("name"));
+									}
+							);
+							indices.put(row.getString("name"), index);
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+			);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -30,7 +52,13 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	@Override
 	public void rename(String newName) {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			String query = "ALTER TABLE " + fullName() + " RENAME TO " + newName;
+			database.execute(query);
+			name = newName;
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
@@ -68,7 +96,12 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	@Override
 	public void drop() {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			String query = "DROP TABLE " + fullName();
+			database.execute(query);
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
 	}
 
 	/**
@@ -80,8 +113,17 @@ public class Table extends PersistentStructure<TableColumn> {
 		return new TableColumn(this, new TableColumn.Properties() {
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
-			public boolean unique() { throw new UnsupportedOperationException("Not implemented"); }
+			public boolean unique() {
+				Iterator<String> keySetIterator = indices.keySet().iterator();
+				while(keySetIterator.hasNext()){
+					String key = keySetIterator.next();
+					if(indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique())
+						return true;
+				}
+				return false;
+			}
 			public String check() { throw new UnsupportedOperationException("Not implemented"); }
+			public boolean nullable() { return row.getInt("notnull") == 0; }
 		});
 	}
 
@@ -135,7 +177,15 @@ public class Table extends PersistentStructure<TableColumn> {
 	 *
 	 * @return the primary key of the table
 	 */
-	public Index primaryKey() { throw new UnsupportedOperationException("Not implemented"); }
+	public Index primaryKey() {
+		Iterator<String> keySetIterator = indices.keySet().iterator();
+		while(keySetIterator.hasNext()){
+			String key = keySetIterator.next();
+			if(indices.get(key).isPrimaryKey())
+				return indices.get(key);
+		}
+		return null;
+	}
 
 	/**
 	 * Returns the hashmap containing every triggers.

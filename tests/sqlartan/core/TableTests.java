@@ -71,4 +71,65 @@ public class TableTests {
 			assertEquals(3, count);
 		}
 	}
+
+	@Test
+	public void renameTests() throws SQLException {
+		try (Database db = new Database()) {
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			test.rename("test2");
+			assertEquals(test.name(), "test2");
+			Table test2 = db.table("test2").get();
+			assertNotNull(test2);
+			assertEquals(test.name(), "test2");
+			assertFalse(db.table("test").isPresent());
+		}
+	}
+
+	@Test
+	public void columnTests() throws SQLException {
+		try (Database db = new Database()) {
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			TableColumn colA = test.column("a").get();
+			TableColumn colB = test.column("b").get();
+			TableColumn colC = test.column("c").get();
+
+			assertNotNull(colA);
+			assertNotNull(colB);
+			assertNotNull(colC);
+
+			assertTrue(colA.unique());
+			assertTrue(colB.unique());
+			assertFalse(colC.unique());
+
+			assertEquals(colA.name(), "a");
+			assertEquals(colB.name(), "b");
+			assertEquals(colC.name(), "c");
+
+			assertEquals(colA.type(), "INT");
+			assertEquals(colB.type(), "TEXT");
+			assertEquals(colC.type(), "FLOAT");
+
+			assertEquals(test.column(0).get().name(), "a");
+			assertEquals(test.column(1).get().name(), "b");
+			assertEquals(test.column(2).get().name(), "c");
+		}
+	}
+
+	@Test
+	public void pkTests() throws SQLException {
+		try (Database db = new Database()) {
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			Index pk = test.primaryKey();
+			assertNotNull(pk);
+			assertNotNull(pk.getColumns());
+			assertTrue(pk.getColumns().size() == 1);
+			assertEquals(pk.getColumns().get(0), "a");
+		}
+	}
 }

@@ -4,6 +4,7 @@ public abstract class Column {
 	interface Properties {
 		String name();
 		String type();
+		boolean nullable();
 	}
 
 	private Properties props;
@@ -25,6 +26,6 @@ public abstract class Column {
 	}
 
 	public boolean nullable() {
-		return true;
+		return props.nullable();
 	}
 }
