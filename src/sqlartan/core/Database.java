@@ -6,10 +6,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public class Database implements AutoCloseable {
@@ -39,7 +36,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public static Database open(File file) throws SQLException {
-		return new Database(file, "main");
+		return new Database(file, "main", null);
 	}
 
 	/**
@@ -56,14 +53,14 @@ public class Database implements AutoCloseable {
 	private File path;
 
 	/**
-	 * The underlying JDBC connection
-	 */
-	private Connection connection;
-
-	/**
 	 * Set of attached database
 	 */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
+
+	/**
+	 * The underlying JDBC connection
+	 */
+	protected Connection connection;
 
 	/**
 	 * @throws SQLException
@@ -71,7 +68,7 @@ public class Database implements AutoCloseable {
 	 */
 	@Deprecated
 	public Database() throws SQLException {
-		this(new File(":memory:"), "main");
+		this(new File(":memory:"), "main", null);
 	}
 
 	/**
@@ -80,7 +77,7 @@ public class Database implements AutoCloseable {
 	 */
 	@Deprecated
 	public Database(String path) throws SQLException {
-		this(new File(path), "main");
+		this(new File(path), "main", null);
 	}
 
 	/**
@@ -89,29 +86,36 @@ public class Database implements AutoCloseable {
 	 */
 	@Deprecated
 	public Database(File path) throws SQLException {
-		this(path, "main");
+		this(path, "main", null);
 	}
 
 	/**
 	 * Opens a database file with a specific name.
 	 *
-	 * @param path the path to the database file
-	 * @param name the logical name of the database
+	 * @param path       the path to the database file
+	 * @param name       the logical name of the database
+	 * @param connection the connection to use for this database
+	 *                   if null is given a new connection will be created
 	 * @throws SQLException
 	 */
-	protected Database(File path, String name) throws SQLException {
+	protected Database(File path, String name, Connection connection) throws SQLException {
 		this.name = name;
 		this.path = path;
-		this.connection = DriverManager.getConnection("jdbc:sqlite:" + path.getPath());
 
-		// If the given file is not a database, SQLite will not complain until executing
-		// the first query. Do that here so that opening a database triggers an exception
-		// if the file is not a database.
-		try {
-			execute("SELECT * FROM sqlite_master LIMIT 1").close();
-		} catch (SQLException e) {
-			close();
-			throw e;
+		if (connection == null) {
+			this.connection = DriverManager.getConnection("jdbc:sqlite:" + path.getPath());
+
+			// If the given file is not a database, SQLite will not complain until executing
+			// the first query. Do that here so that opening a database triggers an exception
+			// if the file is not a database.
+			try {
+				execute("SELECT * FROM sqlite_master LIMIT 1").close();
+			} catch (SQLException e) {
+				close();
+				throw e;
+			}
+		} else {
+			this.connection = connection;
 		}
 	}
 
@@ -332,11 +336,26 @@ public class Database implements AutoCloseable {
 	/**
 	 * Attaches a database with the name passed in parameters.
 	 *
+	 * @param file
 	 * @param name
 	 * @return the attached database
 	 */
-	public AttachedDatabase attach(String name) {
-		throw new UnsupportedOperationException("Not implemented");
+	public AttachedDatabase attach(File file, String name) throws SQLException {
+		assemble("ATTACH DATABASE ", file.getPath(), " AS ", name).execute();
+		AttachedDatabase database = new AttachedDatabase(this, file, name);
+		attached.put(name, database);
+		return database;
+	}
+
+	/**
+	 * Attaches a database with the name passed in parameters.
+	 *
+	 * @param file
+	 * @param name
+	 * @return the attached database
+	 */
+	public AttachedDatabase attach(String file, String name) throws SQLException {
+		return attach(new File(file), name);
 	}
 
 	/**
@@ -363,7 +382,10 @@ public class Database implements AutoCloseable {
 	 *
 	 * @param name
 	 */
-	public void detach(String name) {
-		throw new UnsupportedOperationException("Not implemented");
+	public void detach(String name) throws SQLException {
+		AttachedDatabase db = attached(name)
+				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
+		db.close();
+		attached.remove(name);
 	}
 }

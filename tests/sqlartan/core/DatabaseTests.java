@@ -4,13 +4,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import sqlartan.core.util.RuntimeSQLException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import static org.junit.Assert.*;
 
 public class DatabaseTests {
@@ -57,6 +56,39 @@ public class DatabaseTests {
 		// Opening it should throw an exception
 		exception.expect(SQLException.class);
 		Database.open(badFile);
+	}
+
+	@Test
+	public void attachTests() throws IOException, SQLException {
+		File mainFile = folder.newFile();
+		File attachedFile = folder.newFile();
+
+		for (File file : Arrays.asList(mainFile, attachedFile)) {
+			try (Database db = Database.open(file)) {
+				db.assemble("CREATE TABLE ", file.getName() ," (a INT, b TEXT)").execute();
+			}
+		}
+
+		try (Database main = Database.open(mainFile);
+		     AttachedDatabase attached = main.attach(attachedFile, "attached")) {
+			assertEquals(Collections.singletonList(mainFile.getName()), main.tables().map(Table::name).toList());
+			assertEquals(Collections.singletonList(attachedFile.getName()), attached.tables().map(Table::name).toList());
+
+			assertSame(attached, main.attached().get("attached"));
+			Set<String> keys = main.attached().keySet();
+			assertEquals(1, keys.size());
+			assertTrue(keys.contains("attached"));
+
+			//noinspection OptionalGetWithoutIsPresent
+			assertSame(attached, main.attached("attached").get());
+			assertFalse(main.attached("foo").isPresent());
+
+			attached.detach();
+			assertEquals(0, main.attached().size());
+
+			exception.expect(RuntimeSQLException.class);
+			attached.tables();
+		}
 	}
 
 	@Test
