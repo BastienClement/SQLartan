@@ -1,20 +1,23 @@
 package sqlartan.view;
 
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.utils.Optionals;
+import java.io.File;
 import java.sql.SQLException;
+import java.util.Optional;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -22,11 +25,21 @@ import java.sql.SQLException;
 public class SqlartanController {
 
 	private Sqlartan sqlartan;
+	private Database db = null;
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
 	private TreeView<String> treeView;
 	@FXML
 	private TableView tableView = new TableView();
+
+	TreeItem<String> mainTreeItem;
+
+	File file;
+
+	/**
+	 * Called by the mainApp to set the link to the mainApp
+	 * @param sqlartan
+	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
@@ -41,17 +54,36 @@ public class SqlartanController {
 
 	@FXML
 	private void initialize() throws SQLException {
-		Database db = new Database("testdb.db");
-		tree(db);
 		tableView.setEditable(true);
 		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			Optionals.firstPresent(
-					() -> db.table(newValue.getValue()),
-					() -> db.view(newValue.getValue())
-			).ifPresent(this::dataView);
+
+			if (newValue != null) {
+				Optionals.firstPresent(
+						() -> db.table(newValue.getValue()),
+						() -> db.view(newValue.getValue())
+				).ifPresent(this::dataView);
+			}
 
 		});
+
+
+		mainTreeItem = new TreeItem<>("Bases de données"); // Hidden
+		mainTreeItem.setExpanded(true);
+		treeView.setShowRoot(false);
+		treeView.setRoot(mainTreeItem);
+	}
+
+	/**
+	 * To call to refresh the view of the tree
+	 * @throws SQLException
+	 */
+	void refreshView() throws SQLException
+	{
+		if (db != null){
+			tree(db);
+		}
+
 	}
 
 	/**
@@ -61,11 +93,6 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	void tree(Database database) throws SQLException {
-		TreeItem<String> mainTreeItem = new TreeItem<>("Bases de données"); // Hidden
-		mainTreeItem.setExpanded(true);
-
-		treeView.setShowRoot(false);
-		treeView.setRoot(mainTreeItem);
 
 		// Main
 		TreeItem<String> trees = new TreeItem<>(database.name());
@@ -127,5 +154,71 @@ public class SqlartanController {
 		));
 		tableView.setItems(rows);
 
+	}
+
+	/**
+	 * Close the entery application
+	 */
+	@FXML
+	private void close()
+	{
+		Platform.exit();
+	}
+
+
+	/**
+	 * Open a database
+	 */
+	@FXML
+	private void openDB() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open SQLLite database");
+		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+
+		while (true) {
+			try {
+				db = new Database(file.getPath());
+				//db.execute("SELECT * FROM sqllite_master").toList();
+				refreshView();
+				break;
+			} catch (SQLException e) {
+
+				Alert alert = new Alert(Alert.AlertType.NONE);
+				alert.setTitle("Problem while opening database");
+				alert.setContentText("Error: " + e.getMessage());
+
+				ButtonType buttonCanncel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				ButtonType buttonRetry = new ButtonType("Retry");
+				ButtonType buttonNewFile = new ButtonType("Choos new");
+
+				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCanncel);
+
+
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.get() == buttonRetry) {
+					continue;
+				}
+				else if (result.get() == buttonNewFile) {
+					file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+				}
+				else{
+					break;
+				}
+
+			}
+		}
+	}
+
+
+	/**
+	 * Close the current database
+	 */
+	@FXML
+	private void closeDB() throws SQLException
+	{
+		tableView.getColumns().clear();
+		mainTreeItem.getChildren().clear();
+		db = null;
 	}
 }

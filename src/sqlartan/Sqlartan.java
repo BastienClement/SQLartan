@@ -3,6 +3,8 @@ package sqlartan;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import sqlartan.core.Database;
@@ -39,11 +41,17 @@ public class Sqlartan extends Application{
 		mainLayout = loader.load();
 
 		primaryStage.setScene(new Scene(mainLayout));
+		primaryStage.getIcons().add(new Image("sqlartan/icon.png"));
 		primaryStage.show();
 
 		controller = loader.getController();
 		controller.setApp(this);
 
+	}
+
+	public Stage getPrimaryStage()
+	{
+		return primaryStage;
 	}
 
 	public static void main(String[] args) {
