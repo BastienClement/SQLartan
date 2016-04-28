@@ -224,8 +224,9 @@ public class SqlartanController {
 
 	/**
 	 * Truncate a table
+	 * @param table
+	 * @throws SQLException
 	 */
-	@FXML
 	private void truncateTable(Table table) throws SQLException {
 		table.truncate();
 		refreshView();
