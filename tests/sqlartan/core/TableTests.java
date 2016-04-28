@@ -69,6 +69,8 @@ public class TableTests {
 			// Check if we have exactly 3 rows in the table
 			int count2 = db.execute("SELECT COUNT(*) FROM EA2").mapFirst(Row::getInt);
 			assertEquals(3, count);
+
+			// TODO add triggers copy tests
 		}
 	}
 
@@ -197,6 +199,28 @@ public class TableTests {
 			db.table("test2").get().trigger("trigg").drop();
 			// Check that the trigger does not exist anymore
 			assertNull(db.table("test2").get().trigger("trig"));
+		}
+	}
+
+	@Test
+	public void truncateTests() throws SQLException{
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			db.execute("INSERT INTO test VALUES (1, 'abc', 11)");
+			db.execute("INSERT INTO test VALUES (2, 'def', 12)");
+			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
+			Table test = db.table("test").get();
+
+			// Check if we have exactly 3 rows in the table
+			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			test.truncate();
+
+			// Check if we have exactly 0 rows in the table
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(0, count);
 		}
 	}
 }

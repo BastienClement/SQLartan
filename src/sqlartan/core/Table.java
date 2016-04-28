@@ -223,7 +223,14 @@ public class Table extends PersistentStructure<TableColumn> {
 	/**
 	 * Truncate the table.
 	 */
-	public void truncate() { throw new UnsupportedOperationException("Not implemented"); }
+	public void truncate() {
+		try {
+			String query = "DELETE FROM " + fullName();
+			database.execute(query);
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
+	}
 
 	/**
 	 * Add a new column to the table
@@ -231,7 +238,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @param affinity
 	 */
-	public void addColumn(String name, Affinity affinity){
+	public void addColumn(String name, Affinity affinity) {
 		// TODO
 	}
 }
