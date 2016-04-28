@@ -224,4 +224,14 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * Truncate the table.
 	 */
 	public void truncate() { throw new UnsupportedOperationException("Not implemented"); }
+
+	/**
+	 * Add a new column to the table
+	 *
+	 * @param name
+	 * @param affinity
+	 */
+	public void addColumn(String name, Affinity affinity){
+		// TODO
+	}
 }

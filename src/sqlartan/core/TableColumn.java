@@ -2,6 +2,9 @@ package sqlartan.core;
 
 import java.util.Optional;
 
+/**
+ * Defines a column of a table
+ */
 public class TableColumn extends Column {
 	interface Properties extends Column.Properties {
 		boolean unique();
@@ -27,5 +30,21 @@ public class TableColumn extends Column {
 
 	public Optional<String> check() {
 		return Optional.ofNullable(props.check());
+	}
+
+	/**
+	 * Rename the column
+	 *
+	 * @param name
+	 */
+	public void rename(String name) {
+		// TODO
+	}
+
+	/**
+	 * Drop the column
+	 */
+	public void drop() {
+		// TODO
 	}
 }
