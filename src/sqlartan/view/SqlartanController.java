@@ -221,4 +221,13 @@ public class SqlartanController {
 		mainTreeItem.getChildren().clear();
 		db = null;
 	}
+
+	/**
+	 * Truncate a table
+	 */
+	@FXML
+	private void truncateTable(Table table) throws SQLException {
+		table.truncate();
+		refreshView();
+	}
 }
