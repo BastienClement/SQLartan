@@ -88,6 +88,7 @@ public class SqlartanController {
 				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
 
 				stackPane.getChildren().add(tabPane);
+
 			}
 
 			if (newValue != null) {
