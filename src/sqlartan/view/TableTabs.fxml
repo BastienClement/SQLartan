@@ -20,7 +20,7 @@
               </columns>
             </TableView>
          </content></Tab>
-    <Tab fx:id="display" text="Display" />
-      <Tab text="+ SQL" />
+    <Tab fx:id="displayTab" text="Display" />
+      <Tab fx:id="sqlTab" text="+ SQL" />
   </tabs>
 </TabPane>

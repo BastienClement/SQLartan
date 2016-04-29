@@ -1,5 +1,6 @@
 package sqlartan.view;
 
+import com.sun.scenario.effect.impl.prism.PrTexture;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
@@ -33,7 +34,6 @@ public class SqlartanController {
 
 	private Sqlartan sqlartan;
 	private Database db = null;
-	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
 	private TreeView<DbTreeItem> treeView;
 
@@ -43,23 +43,21 @@ public class SqlartanController {
 	@FXML
 	private StackPane stackPane;
 
-
-	private TableView<ObservableList<String>> tableView = new TableView<>();
-
 	TreeItem<DbTreeItem> mainTreeItem;
+
+	TableVue tableVue;
 
 	File file;
 
 	@FXML
 	private void initialize() throws SQLException {
-		tableView.setEditable(true);
-		tableView.setVisible(true);
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue.getValue().getType() == Type.DATABASE)
 			{
 				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml"));
 
 				TabPane tabPane = null;
+				stackPane.getChildren().clear();
 
 				try {
 					tabPane = loader.load();
@@ -79,25 +77,46 @@ public class SqlartanController {
 
 				TabPane tabPane = null;
 
+				// Onglets
 				try {
 					tabPane = loader.load();
+
+
+					TableTabsController tabsController = loader.getController();
+
+					tabsController.setDB(db);
+
+					if (newValue != null) {
+						DbTreeItem treeItem = newValue.getValue();
+						Optional<? extends PersistentStructure <?> > structure = Optional.empty();
+
+						switch (treeItem.getType())
+						{
+							case TABLE:
+								structure = db.table(treeItem.getName());
+								break;
+							case VIEW:
+								structure = db.view(treeItem.getName());
+								break;
+						}
+
+						structure.ifPresent(tabsController::init);
+					}
+
+					stackPane.getChildren().clear();
+
+					tabPane.prefHeightProperty().bind(stackPane.heightProperty());
+					tabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+					stackPane.getChildren().add(tabPane);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 
-				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
-
-				stackPane.getChildren().add(tabPane);
-
 			}
 
-			if (newValue != null) {
-				Optionals.firstPresent(
-						() -> db.table(newValue.getValue().getName()),
-						() -> db.view(newValue.getValue().getName())
-				).ifPresent(this::dataView);
-			}
+
 		});
 
 
@@ -114,17 +133,6 @@ public class SqlartanController {
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
-
-	void dataView(PersistentStructure<?> structure) {
-		try {
-			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute(), tableView);
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
-	}
-
-
 
 
 	/**
@@ -182,31 +190,6 @@ public class SqlartanController {
 		}*/
 	}
 
-	private void dataView(Result res, TableView<ObservableList<String>> tv) {
-		tv.getColumns().clear();
-		/**********************************
-		 * TABLE COLUMN ADDED DYNAMICALLY *
-		 **********************************/
-		int i = 0;
-		for (Column c : res.columns()) {
-			final int j = i;
-			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
-			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
-			tv.getColumns().add(col);
-			System.out.println("Column [" + i++ + "] " + c.name());
-		}
-
-		/********************************
-		 * Data added to ObservableList *
-		 ********************************/
-		rows.clear();
-		res.forEach(row -> rows.add(FXCollections.observableArrayList(
-				res.columns().map(c -> row.getString()))
-		));
-		tv.setItems(rows);
-
-	}
-
 
 	/**
 	 * Open a database
@@ -259,7 +242,6 @@ public class SqlartanController {
 	@FXML
 	private void closeDB() throws SQLException
 	{
-		tableView.getColumns().clear();
 		mainTreeItem.getChildren().clear();
 		db.close();
 	}

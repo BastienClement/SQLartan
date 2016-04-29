@@ -27,7 +27,7 @@ public class AllRequestController {
 
 	public void executeQuery() {
 		try {
-			dataView(db.assemble(SQLTextQuery.toString()).execute(), UserQueryView);
+			dataView(db.execute(SQLTextQuery.toString()), UserQueryView);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
