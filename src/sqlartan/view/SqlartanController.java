@@ -202,8 +202,9 @@ public class SqlartanController {
 
 		while (true) {
 			try {
+				if (file == null)
+					break;
 				db = Database.open(file.getPath());
-				//db.execute("SELECT * FROM sqllite_master").toList();
 				refreshView();
 				break;
 			} catch (SQLException e) {
