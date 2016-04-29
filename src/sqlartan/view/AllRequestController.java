@@ -27,14 +27,14 @@ public class AllRequestController {
 
 	public void executeQuery() {
 		try {
-			dataView(db.assemble(SQLTextQuery.toString()).execute());
+			dataView(db.assemble(SQLTextQuery.toString()).execute(), UserQueryView);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void dataView(Result execute) {
-
+	private void dataView(Result execute, TableView tv) {
+		// TODO Use the SqlartanController.dataView()
 	}
 
 }

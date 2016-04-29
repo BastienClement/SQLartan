@@ -65,7 +65,7 @@ public class SqlartanController {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
+
 				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
 				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
 
@@ -116,7 +116,7 @@ public class SqlartanController {
 	void dataView(PersistentStructure<?> structure) {
 		try {
 			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
+			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute(), tableView);
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
@@ -134,7 +134,6 @@ public class SqlartanController {
 		if (db != null){
 			tree(db);
 		}
-
 	}
 
 
@@ -181,8 +180,8 @@ public class SqlartanController {
 		}*/
 	}
 
-	void dataView(Result res) {
-		tableView.getColumns().clear();
+	void dataView(Result res, TableView tv) {
+		tv.getColumns().clear();
 		/**********************************
 		 * TABLE COLUMN ADDED DYNAMICALLY *
 		 **********************************/
@@ -195,7 +194,7 @@ public class SqlartanController {
 					return new SimpleStringProperty(param.getValue().get(j).toString());
 				}
 			});
-			tableView.getColumns().addAll(col);
+			tv.getColumns().addAll(col);
 			System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
@@ -206,7 +205,7 @@ public class SqlartanController {
 		res.forEach(row -> rows.add(FXCollections.observableArrayList(
 				res.columns().map(c -> row.getString()))
 		));
-		tableView.setItems(rows);
+		tv.setItems(rows);
 
 	}
 
@@ -222,7 +221,7 @@ public class SqlartanController {
 
 		while (true) {
 			try {
-				db = new Database(file.getPath());
+				db = Database.open(file.getPath());
 				//db.execute("SELECT * FROM sqllite_master").toList();
 				refreshView();
 				break;
