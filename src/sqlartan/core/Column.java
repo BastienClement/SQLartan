@@ -28,4 +28,5 @@ public abstract class Column {
 	public boolean nullable() {
 		return props.nullable();
 	}
+
 }

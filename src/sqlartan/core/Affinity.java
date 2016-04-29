@@ -2,6 +2,9 @@ package sqlartan.core;
 
 import java.util.TreeMap;
 
+/**
+ * Defines the different types
+ */
 public enum Affinity {
 	Text(Type.Text),
 	Numeric(Type.Real),
@@ -17,6 +20,11 @@ public enum Affinity {
 
 	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
 
+	/**
+	 *
+	 * @param type
+	 * @return
+	 */
 	public static Affinity forType(String type) {
 		type = type.toUpperCase().trim();
 
@@ -29,6 +37,12 @@ public enum Affinity {
 		return a;
 	}
 
+	/**
+	 *
+	 *
+	 * @param type
+	 * @return
+	 */
 	private static Affinity parseType(String type) {
 		// https://www.sqlite.org/datatype3.html
 		if (type.contains("INT")) {
