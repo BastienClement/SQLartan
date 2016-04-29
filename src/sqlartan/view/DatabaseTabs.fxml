@@ -2,10 +2,22 @@
 
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
   <tabs>
-    <Tab text="Structure" />
+    <Tab text="Structure">
+         <content>
+            <TableView prefHeight="200.0" prefWidth="200.0">
+              <columns>
+                <TableColumn prefWidth="75.0" text="Table" />
+                  <TableColumn prefWidth="75.0" text="Type" />
+                  <TableColumn prefWidth="75.0" text="Lignes" />
+                <TableColumn prefWidth="75.0" text="Actions" />
+              </columns>
+            </TableView>
+         </content></Tab>
       <Tab text="+ SQL" />
   </tabs>
 </TabPane>
