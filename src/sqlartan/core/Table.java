@@ -238,6 +238,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @param affinity
 	 */
+	@Deprecated
 	public void addColumn(String name, Affinity affinity) {
 		// TODO
 	}
