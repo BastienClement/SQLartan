@@ -5,14 +5,14 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.91" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.AllRequestController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.AllRequestController">
    <top>
-      <TextArea prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <TextArea fx:id="SQLTextQuery" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </top>
    <right>
-      <Button fx:id="execute" minHeight="25.0" minWidth="52.0" mnemonicParsing="false" onAction="#toast" text="execute" BorderPane.alignment="TOP_RIGHT" />
+      <Button fx:id="execute" minHeight="25.0" minWidth="52.0" mnemonicParsing="false" onAction="#executeQuery" text="execute" BorderPane.alignment="TOP_RIGHT" />
    </right>
    <bottom>
-      <TableView prefHeight="175.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+      <TableView fx:id="UserQueryView" prefHeight="175.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>

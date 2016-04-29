@@ -7,14 +7,33 @@ package sqlartan.view;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import sqlartan.core.Database;
+import sqlartan.core.Result;
+import java.sql.SQLException;
 
 public class AllRequestController {
 	@FXML
 	Button execute;
 
+	@FXML
+	TextArea SQLTextQuery;
 
-	public void toast() {
-		System.out.println("Coucou");
+	@FXML
+	TableView UserQueryView;
+
+	Database db;
+
+	public void executeQuery() {
+		try {
+			dataView(db.assemble(SQLTextQuery.toString()).execute());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void dataView(Result execute) {
 
 	}
 
