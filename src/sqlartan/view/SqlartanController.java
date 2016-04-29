@@ -23,6 +23,7 @@ import sqlartan.utils.Optionals;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Observable;
 import java.util.Optional;
 
 /**
@@ -43,7 +44,7 @@ public class SqlartanController {
 	private StackPane stackPane;
 
 
-	private TableView tableView = new TableView();
+	private TableView<ObservableList<String>> tableView = new TableView<>();
 
 	TreeItem<DbTreeItem> mainTreeItem;
 
@@ -181,7 +182,7 @@ public class SqlartanController {
 		}*/
 	}
 
-	void dataView(Result res, TableView tv) {
+	private void dataView(Result res, TableView<ObservableList<String>> tv) {
 		tv.getColumns().clear();
 		/**********************************
 		 * TABLE COLUMN ADDED DYNAMICALLY *
@@ -189,13 +190,9 @@ public class SqlartanController {
 		int i = 0;
 		for (Column c : res.columns()) {
 			final int j = i;
-			TableColumn col = new TableColumn(c.name());
-			col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList, String>, ObservableValue<String>>() {
-				public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
-					return new SimpleStringProperty(param.getValue().get(j).toString());
-				}
-			});
-			tv.getColumns().addAll(col);
+			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
+			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
+			tv.getColumns().add(col);
 			System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
