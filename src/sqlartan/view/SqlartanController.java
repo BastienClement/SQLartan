@@ -7,8 +7,13 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
@@ -16,6 +21,7 @@ import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
 import sqlartan.utils.Optionals;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -28,13 +34,76 @@ public class SqlartanController {
 	private Database db = null;
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 	@FXML
-	private TreeView<String> treeView;
+	private TreeView<DbTreeItem> treeView;
+
 	@FXML
+	private BorderPane borderPane;
+
+	@FXML
+	private StackPane stackPane;
+
+
 	private TableView tableView = new TableView();
 
-	TreeItem<String> mainTreeItem;
+	TreeItem<DbTreeItem> mainTreeItem;
 
 	File file;
+
+	@FXML
+	private void initialize() throws SQLException {
+		tableView.setEditable(true);
+		tableView.setVisible(true);
+		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue.getValue().getType() == Type.DATABASE)
+			{
+				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml"));
+
+				TabPane tabPane = null;
+
+				try {
+					tabPane = loader.load();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
+				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+				stackPane.getChildren().add(tabPane);
+
+			}
+			else if (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW)
+			{
+				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
+
+				TabPane tabPane = null;
+
+				try {
+					tabPane = loader.load();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
+				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+				stackPane.getChildren().add(tabPane);
+			}
+
+			if (newValue != null) {
+				Optionals.firstPresent(
+						() -> db.table(newValue.getValue().getName()),
+						() -> db.view(newValue.getValue().getName())
+				).ifPresent(this::dataView);
+			}
+		});
+
+
+		mainTreeItem = new TreeItem<>(); // Hidden
+		mainTreeItem.setExpanded(true);
+		treeView.setShowRoot(false);
+		treeView.setRoot(mainTreeItem);
+	}
 
 	/**
 	 * Called by the mainApp to set the link to the mainApp
@@ -46,33 +115,15 @@ public class SqlartanController {
 
 	void dataView(PersistentStructure<?> structure) {
 		try {
+			//sqlartan.getMainLayout().setCenter(tableView);
 			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
 	}
 
-	@FXML
-	private void initialize() throws SQLException {
-		tableView.setEditable(true);
-		tableView.setVisible(true);
-		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-
-			if (newValue != null) {
-				Optionals.firstPresent(
-						() -> db.table(newValue.getValue()),
-						() -> db.view(newValue.getValue())
-				).ifPresent(this::dataView);
-			}
-
-		});
 
 
-		mainTreeItem = new TreeItem<>("Bases de données"); // Hidden
-		mainTreeItem.setExpanded(true);
-		treeView.setShowRoot(false);
-		treeView.setRoot(mainTreeItem);
-	}
 
 	/**
 	 * To call to refresh the view of the tree
@@ -86,6 +137,7 @@ public class SqlartanController {
 
 	}
 
+
 	/**
 	 * Create the tree for a specific database
 	 *
@@ -95,24 +147,26 @@ public class SqlartanController {
 	void tree(Database database) throws SQLException {
 
 		// Main
-		TreeItem<String> trees = new TreeItem<>(database.name());
+		TreeItem<DbTreeItem> trees = new TreeItem<>(new DbTreeItem(database.name(), Type.DATABASE));
 
 		trees.getChildren().addAll(database.tables()
-		                                   .map(Table::name)
+		                                   .map(Table::name) // .map(table -> table.name())
+		                                   .map(name -> new DbTreeItem(name, Type.TABLE)) // flux de dbtreeitme
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
 
 		trees.getChildren().addAll(database.views()
 		                                   .map(View::name)
+		                                   .map(name -> new DbTreeItem(name, Type.VIEW))
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
 		mainTreeItem.getChildren().add(trees);
-
+/*
 		// Attached database
 		for (AttachedDatabase adb : database.attached().values()) {
-			TreeItem<String> tItems = new TreeItem<>(adb.name());
+			TreeItem<DbTreeItem> tItems = new TreeItem<>(adb.name());
 			tItems.getChildren().addAll(adb.tables()
 			                               .map(Table::name)
 			                               .map(TreeItem::new)
@@ -124,7 +178,7 @@ public class SqlartanController {
 			                               .toList());
 
 			mainTreeItem.getChildren().add(tItems);
-		}
+		}*/
 	}
 
 	void dataView(Result res) {
@@ -154,15 +208,6 @@ public class SqlartanController {
 		));
 		tableView.setItems(rows);
 
-	}
-
-	/**
-	 * Close the entery application
-	 */
-	@FXML
-	private void close()
-	{
-		Platform.exit();
 	}
 
 
@@ -219,6 +264,17 @@ public class SqlartanController {
 	{
 		tableView.getColumns().clear();
 		mainTreeItem.getChildren().clear();
-		db = null;
+		db.close();
 	}
+
+
+	/**
+	 * Close the entery application
+	 */
+	@FXML
+	private void close()
+	{
+		Platform.exit();
+	}
+
 }
