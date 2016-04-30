@@ -1,5 +1,6 @@
 package sqlartan.core.ast.parser;
 
+import sqlartan.core.ast.Node;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.TokenSource;
 import java.util.ArrayList;
@@ -61,11 +62,11 @@ public class ParserContext {
 		}
 	}
 
-	public <T> T parse(Parser<T> parser) {
+	public <T extends Node> T parse(Parser<T> parser) {
 		return parser.parse(this);
 	}
 
-	public <T> Optional<T> tryParse(Parser<T> parser) {
+	public <T extends Node> Optional<T> tryParse(Parser<T> parser) {
 		source.begin();
 		try {
 			T res = parser.parse(this);
@@ -77,13 +78,13 @@ public class ParserContext {
 		}
 	}
 
-	public <T> List<T> parseList(Token separator, Parser<T> parser) {
+	public <T extends Node> List<T> parseList(Token separator, Parser<T> parser) {
 		List<T> list = new ArrayList<>();
 		parseList(list, separator, parser);
 		return list;
 	}
 
-	public <T> void parseList(List<T> list, Token separator, Parser<T> parser) {
+	public <T extends Node> void parseList(List<T> list, Token separator, Parser<T> parser) {
 		do {
 			Optional<T> item = tryParse(parser);
 			if (item.isPresent()) {
