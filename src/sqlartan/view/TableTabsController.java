@@ -1,8 +1,12 @@
 package sqlartan.view;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
@@ -14,20 +18,21 @@ import java.io.IOException;
  */
 public class TableTabsController {
 
-	private Database database;
+	private PersistentStructure<?> structure;
 
 	private TableVue tableVue = new TableVue();
+
+	@FXML
+	private TabPane tabPane;
 
 	@FXML
 	private Tab displayTab;
 
 	@FXML
-	private Tab sqlTab;
+	private Pane sqlTab;
 
-	public void setDB(Database database)
-	{
-		this.database = database;
-	}
+	@FXML
+	private TableView structureTab;
 
 	@FXML
 	private void initialize()
@@ -36,18 +41,38 @@ public class TableTabsController {
 
 		try {
 			Pane allRequestPane = allRequestLoader.load();
-			sqlTab.setContent(allRequestPane);
+
+			sqlTab.getChildren().add(allRequestPane);
+
+			allRequestPane.prefHeightProperty().bind(sqlTab.heightProperty());
+			allRequestPane.prefWidthProperty().bind(sqlTab.widthProperty());
+
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+		// Affiche la tablea dans l'onglet display l'orque il est acctive
+		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Tab> observable, Tab oldTab, Tab newTab) {
+				if(newTab == displayTab) { displayTab.setContent(tableVue.getTableView(structure)); }
+
+			}
+		});
+
 	}
 
-
-	public void init(PersistentStructure<?> structure)
+	@FXML
+	private void testPint()
 	{
-		displayTab.setContent(tableVue.getTableView(structure));
+		System.out.println("Fonction de test");
+	}
+
+	public void setStructure(PersistentStructure<?> structure)
+	{
+		this.structure = structure;
 	}
 
 }

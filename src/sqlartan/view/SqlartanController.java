@@ -51,8 +51,9 @@ public class SqlartanController {
 
 	@FXML
 	private void initialize() throws SQLException {
+
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			if (newValue.getValue().getType() == Type.DATABASE)
+			if (newValue != null && newValue.getValue().getType() == Type.DATABASE)
 			{
 				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml"));
 
@@ -71,7 +72,7 @@ public class SqlartanController {
 				stackPane.getChildren().add(tabPane);
 
 			}
-			else if (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW)
+			else if (newValue != null && (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW))
 			{
 				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
 
@@ -84,7 +85,6 @@ public class SqlartanController {
 
 					TableTabsController tabsController = loader.getController();
 
-					tabsController.setDB(db);
 
 					if (newValue != null) {
 						DbTreeItem treeItem = newValue.getValue();
@@ -100,7 +100,7 @@ public class SqlartanController {
 								break;
 						}
 
-						structure.ifPresent(tabsController::init);
+						structure.ifPresent(tabsController::setStructure);
 					}
 
 					stackPane.getChildren().clear();
@@ -244,6 +244,7 @@ public class SqlartanController {
 	private void closeDB() throws SQLException
 	{
 		mainTreeItem.getChildren().clear();
+		stackPane.getChildren().clear();
 		db.close();
 	}
 

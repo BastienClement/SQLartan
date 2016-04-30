@@ -24,21 +24,18 @@ public class TableVue
 
 	private void dataView(Result res, TableView<ObservableList<String>> tv) {
 		tv.getColumns().clear();
-		/**********************************
-		 * TABLE COLUMN ADDED DYNAMICALLY *
-		 **********************************/
+
+		//Creations des colones
 		int i = 0;
 		for (Column c : res.columns()) {
 			final int j = i;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
 			tv.getColumns().add(col);
-			System.out.println("Column [" + i++ + "] " + c.name());
+			//System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
-		/********************************
-		 * Data added to ObservableList *
-		 ********************************/
+		//Ajout des donnees
 		rows.clear();
 		res.forEach(row -> rows.add(FXCollections.observableArrayList(
 				res.columns().map(c -> row.getString()))

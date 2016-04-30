@@ -28,9 +28,9 @@
       </MenuBar>
    </top>
    <left>
-      <TreeView fx:id="treeView" prefHeight="333.0" prefWidth="200.0" style="-fx-border-color: #ADD8E6; -fx-background-color: #ADD8E6;" BorderPane.alignment="CENTER" />
+      <TreeView fx:id="treeView" prefHeight="333.0" prefWidth="200.0" style="-fx-background-color: #059af4;" BorderPane.alignment="CENTER" />
    </left>
    <center>
-      <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #ADD8E6;" BorderPane.alignment="CENTER" />
+      <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #fff;" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
