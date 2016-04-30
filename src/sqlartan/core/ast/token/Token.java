@@ -1,3 +1,3 @@
 package sqlartan.core.ast.token;
 
-interface Token {}
+public interface Token {}
