@@ -24,6 +24,10 @@ public class Tokenizer {
 		EXPONENT
 	}
 
+	private static String slice(char[] input, int start, int end) {
+		return String.valueOf(input, start, end - start);
+	}
+
 	@SuppressWarnings("StatementWithEmptyBody")
 	public static TokenSource tokenize(String sql) {
 		TokenSource.Builder builder = TokenSource.builder();
@@ -51,10 +55,8 @@ public class Tokenizer {
 							i += 2;
 						} else if (c == '?') {
 							state = NUM_PLACEHOLDER;
-							++begin;
 						} else if (c == ':') {
 							state = ALPHA_PLACEHOLDER;
-							++begin;
 						} else if (c == '@') {
 							state = ALPHA_PLACEHOLDER;
 						} else if (c == '$') {
@@ -62,17 +64,14 @@ public class Tokenizer {
 							throw new UnsupportedOperationException();
 						} else if (c == '\'') {
 							state = STRING;
-							++begin;
 						} else if ((c == 'x' || c == 'X') && input[i + 1] == '\'') {
 							throw new UnsupportedOperationException("BLOB literals are not supported");
 						} else if (c == '[') {
 							state = IDENTIFIER;
 							quote_char = ']';
-							++begin;
 						} else if (c == '"' || c == '`') {
 							state = IDENTIFIER;
 							quote_char = c;
-							++begin;
 						} else if (Character.isDigit(c) || (c == '.' && Character.isDigit(input[i + 1])) ||
 								(c == '-' && (input[i + 1] == '.' || Character.isDigit(input[i + 1])))) {
 							state = NUMERIC;
@@ -87,13 +86,13 @@ public class Tokenizer {
 
 				case NUM_PLACEHOLDER:
 					if (!Character.isDigit(c)) {
-						if (begin == i) {
+						if (i - begin == 1) {
 							++max_placeholder;
-							builder.push(new Placeholder.Indexed(max_placeholder));
+							builder.push(new Placeholder.Indexed(max_placeholder, begin));
 						} else {
-							int index = Integer.valueOf(String.valueOf(input, begin, i - begin));
+							int index = Integer.valueOf(slice(input, begin + 1, i));
 							if (index > max_placeholder) max_placeholder = index;
-							builder.push(new Placeholder.Indexed(index));
+							builder.push(new Placeholder.Indexed(index, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -102,12 +101,12 @@ public class Tokenizer {
 
 				case ALPHA_PLACEHOLDER:
 					if (!Character.isLetter(c)) {
-						if (begin == i) {
+						if (i - begin == 1) {
 							// Empty named placeholder
 							throw new IllegalArgumentException();
 						} else {
-							String name = String.valueOf(input, begin, i - begin);
-							builder.push(new Placeholder.Named(name));
+							String name = slice(input, begin + 1, i);
+							builder.push(new Placeholder.Named(name, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -120,8 +119,8 @@ public class Tokenizer {
 							// Single quote escape
 							++i;
 						} else {
-							String value = String.valueOf(input, begin, i - begin).replace("''", "'");
-							builder.push(Literal.from(value));
+							String value = slice(input, begin + 1, i).replace("''", "'");
+							builder.push(Literal.from(value, begin));
 							state = State.WHITESPACE;
 						}
 					}
@@ -129,8 +128,8 @@ public class Tokenizer {
 
 				case IDENTIFIER:
 					if (c == quote_char) {
-						String fragment = String.valueOf(input, begin, i - begin);
-						builder.push(Identifier.from(fragment));
+						String fragment = slice(input, begin + 1, i);
+						builder.push(Identifier.from(fragment, begin));
 						state = State.WHITESPACE;
 					}
 					break;
@@ -204,7 +203,7 @@ public class Tokenizer {
 						throw new IllegalArgumentException("Malformed number: " + number);
 					}
 
-					builder.push(Literal.from(number));
+					builder.push(Literal.from(number, begin));
 
 					state = State.WHITESPACE;
 					--i;
@@ -225,7 +224,7 @@ public class Tokenizer {
 								operator = Operator.NOT_EQ;
 								break;
 							default:
-								operator = Operator.from(fragment);
+								operator = Operator.from(fragment, begin);
 								break;
 						}
 
@@ -236,10 +235,10 @@ public class Tokenizer {
 							} else {
 								builder.push(operator);
 							}
-						} else if ((keyword = Keyword.from(fragment)) != null) {
+						} else if ((keyword = Keyword.from(fragment, begin)) != null) {
 							builder.push(keyword);
 						} else {
-							builder.push(Identifier.from(fragment));
+							builder.push(Identifier.from(fragment, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -251,7 +250,7 @@ public class Tokenizer {
 						String fragment;
 						do {
 							fragment = String.valueOf(input, begin, i - begin);
-							Operator operator = Operator.from(fragment);
+							Operator operator = Operator.from(fragment, begin);
 							if (operator != null) {
 								builder.push(operator);
 								state = State.WHITESPACE;

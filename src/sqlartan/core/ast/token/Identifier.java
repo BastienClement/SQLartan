@@ -1,17 +1,17 @@
 package sqlartan.core.ast.token;
 
-public class Identifier implements Token {
+public class Identifier extends Token {
 	public final String name;
 
-	private Identifier(String name) {
+	private Identifier(String name, int offset) {
+		super(offset);
 		this.name = name;
 	}
 
-	public String toString() {
-		return "Identifier(" + name + ")";
-	}
+	protected String type() { return "Identifier"; }
+	protected String value() { return name; }
 
-	public static Identifier from(String name) {
-		return new Identifier(name);
+	public static Identifier from(String value, int offset) {
+		return new Identifier(value, offset);
 	}
 }

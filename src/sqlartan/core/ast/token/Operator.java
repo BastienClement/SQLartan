@@ -5,23 +5,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("StaticInitializerReferencesSubClass")
-public class Operator implements Token {
+public class Operator extends Token {
 	public static final int MAX_OPERATOR_LEN = 2;
 
 	private static Map<String, Operator> operators = new HashMap<>();
 	public final String symbol;
 
-	private Operator(String symbol) {
+	private Operator(String symbol, int offset) {
+		super(offset);
 		this.symbol = symbol;
+	}
+
+	private Operator(String symbol) {
+		this(symbol, -1);
 		operators.put(symbol, this);
 	}
 
-	public String toString() {
-		return "Operator(" + symbol + ")";
+	private static class OffsetOperator extends Operator {
+		private OffsetOperator(String name, int offset) {
+			super(name, offset);
+		}
 	}
 
-	public static Operator from(String keyword) {
-		return operators.get(keyword.toUpperCase());
+	public static Operator from(String symbol, int offset) {
+		Operator ref = operators.get(symbol.toUpperCase());
+		return ref != null ? new OffsetOperator(ref.symbol, offset) : null;
+	}
+
+	protected String type() { return "Operator"; }
+	protected String value() { return symbol; }
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Operator && ((Operator) other).symbol.equals(symbol);
+	}
+
+	@Override
+	public int hashCode() {
+		return symbol.hashCode();
 	}
 
 	public static final Operator CONCAT = new Operator("||");

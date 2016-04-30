@@ -3,21 +3,42 @@ package sqlartan.core.ast.token;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Keyword implements Token {
+public class Keyword extends Token {
 	private static Map<String, Keyword> keywords = new HashMap<>();
 	public final String name;
 
-	private Keyword(String name) {
+	private Keyword(String name, int offset) {
+		super(offset);
 		this.name = name;
+	}
+
+	private Keyword(String name) {
+		this(name, -1);
 		keywords.put(name, this);
 	}
 
-	public String toString() {
-		return "Keyword(" + name + ")";
+	private static class OffsetKeyword extends Keyword {
+		private OffsetKeyword(String name, int offset) {
+			super(name, offset);
+		}
 	}
 
-	public static Keyword from(String keyword) {
-		return keywords.get(keyword.toUpperCase());
+	public static Keyword from(String keyword, int offset) {
+		Keyword ref = keywords.get(keyword.toUpperCase());
+		return ref != null ? new OffsetKeyword(ref.name, offset) : null;
+	}
+
+	protected String type() { return "Keyword"; }
+	protected String value() { return name; }
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Keyword && ((Keyword) other).name.equals(name);
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode();
 	}
 
 	public static final Keyword ABORT = new Keyword("ABORT");
@@ -48,7 +69,7 @@ public class Keyword implements Token {
 	public static final Keyword CREATE = new Keyword("CREATE");
 	public static final Keyword CROSS = new Keyword("CROSS");
 	public static final Keyword CURRENT_DATE = new Keyword("CURRENT");
-	public static final Keyword CURRENT_TIME  = new Keyword("CURRENT");
+	public static final Keyword CURRENT_TIME = new Keyword("CURRENT");
 	public static final Keyword CURRENT_TIMESTAMP = new Keyword("CURRENT");
 	public static final Keyword DATABASE = new Keyword("DATABASE");
 	public static final Keyword DEFAULT = new Keyword("DEFAULT");
@@ -97,7 +118,7 @@ public class Keyword implements Token {
 	public static final Keyword MATCH = new Keyword("MATCH");
 	public static final Keyword NATURAL = new Keyword("NATURAL");
 	public static final Keyword NO = new Keyword("NO");
-	public static final Keyword NOT  = new Keyword("NOT");
+	public static final Keyword NOT = new Keyword("NOT");
 	public static final Keyword NOTNULL = new Keyword("NOTNULL");
 	public static final Keyword NULL = new Keyword("NULL");
 	public static final Keyword OF = new Keyword("OF");
