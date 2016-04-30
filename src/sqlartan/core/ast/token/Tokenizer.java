@@ -88,11 +88,11 @@ public class Tokenizer {
 					if (!Character.isDigit(c)) {
 						if (i - begin == 1) {
 							++max_placeholder;
-							builder.push(new Placeholder.Indexed(max_placeholder, sql, begin));
+							builder.push(Placeholder.forIndex(max_placeholder, sql, begin));
 						} else {
 							int index = Integer.valueOf(slice(input, begin + 1, i));
 							if (index > max_placeholder) max_placeholder = index;
-							builder.push(new Placeholder.Indexed(index, sql, begin));
+							builder.push(Placeholder.forIndex(index, sql, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -106,7 +106,7 @@ public class Tokenizer {
 							throw new TokenizeException("Empty named placeholder", sql, begin);
 						} else {
 							String name = slice(input, begin + 1, i);
-							builder.push(new Placeholder.Named(name, sql, begin));
+							builder.push(Placeholder.forName(name, sql, begin));
 						}
 						state = State.WHITESPACE;
 						--i;

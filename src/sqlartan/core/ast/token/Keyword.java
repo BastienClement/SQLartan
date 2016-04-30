@@ -3,40 +3,24 @@ package sqlartan.core.ast.token;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Keyword extends Token {
+public class Keyword extends Token<String> {
 	private static Map<String, Keyword> keywords = new HashMap<>();
-	public final String name;
 
 	private Keyword(String name, String source, int offset) {
-		super(source, offset);
-		this.name = name;
+		super(Type.KEYWORD, source, offset, name);
 	}
 
 	private Keyword(String name) {
 		this(name, "", -1);
-		keywords.put(name, this);
-	}
-
-	private static class OffsetKeyword extends Keyword {
-		private OffsetKeyword(String name, String source, int offset) {
-			super(name, source, offset);
+		if (keywords.containsKey(name)) {
+			throw new IllegalStateException("An instance of " + name + " already exists");
 		}
+		keywords.put(name, this);
 	}
 
 	public static Keyword from(String keyword, String source, int offset) {
 		Keyword ref = keywords.get(keyword.toUpperCase());
-		return ref != null ? new OffsetKeyword(ref.name, source, offset) : null;
-	}
-
-	protected String type() { return "Keyword"; }
-	protected String value() { return name; }
-
-	public boolean equals(Object other) {
-		return other instanceof Keyword && ((Keyword) other).name.equals(name);
-	}
-
-	public int hashCode() {
-		return name.hashCode();
+		return ref != null ? new Keyword(ref.value, source, offset) : null;
 	}
 
 	public static final Keyword ABORT = new Keyword("ABORT");
@@ -66,9 +50,9 @@ public class Keyword extends Token {
 	public static final Keyword CONSTRAINT = new Keyword("CONSTRAINT");
 	public static final Keyword CREATE = new Keyword("CREATE");
 	public static final Keyword CROSS = new Keyword("CROSS");
-	public static final Keyword CURRENT_DATE = new Keyword("CURRENT");
-	public static final Keyword CURRENT_TIME = new Keyword("CURRENT");
-	public static final Keyword CURRENT_TIMESTAMP = new Keyword("CURRENT");
+	public static final Keyword CURRENT_DATE = new Keyword("CURRENT_DATE");
+	public static final Keyword CURRENT_TIME = new Keyword("CURRENT_TIME");
+	public static final Keyword CURRENT_TIMESTAMP = new Keyword("CURRENT_TIMESTAMP");
 	public static final Keyword DATABASE = new Keyword("DATABASE");
 	public static final Keyword DEFAULT = new Keyword("DEFAULT");
 	public static final Keyword DEFERRABLE = new Keyword("DEFERRABLE");

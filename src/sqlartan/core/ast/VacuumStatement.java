@@ -14,4 +14,9 @@ public class VacuumStatement extends Statement {
 	}
 
 	private VacuumStatement() {}
+
+	@Override
+	public String toSQL() {
+		return "VACUUM";
+	}
 }

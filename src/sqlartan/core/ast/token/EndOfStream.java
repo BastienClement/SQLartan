@@ -1,20 +1,11 @@
 package sqlartan.core.ast.token;
 
-public class EndOfStream extends Token {
+import sqlartan.util.Nothing;
+
+public class EndOfStream extends Token<Nothing> {
 	private EndOfStream(String source, int offset) {
-		super(source, offset);
+		super(Type.END_OF_STREAM, source, offset, null);
 	}
-
-	public boolean equals(Object other) {
-		return other instanceof EndOfStream;
-	}
-
-	public int hashCode() {
-		return EndOfStream.class.hashCode();
-	}
-
-	protected String type() { return "EndOfStream"; }
-	protected String value() { return ""; }
 
 	public static EndOfStream at(String source, int offset) {
 		return new EndOfStream(source, offset);

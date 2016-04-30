@@ -13,4 +13,13 @@ public class StatementList extends ArrayList<Statement> implements Node {
 		context.parseList(statementList, SEMICOLON, Statement::parse);
 		return statementList;
 	}
+
+	@Override
+	public String toSQL() {
+		StringBuilder sb = new StringBuilder();
+		for (Statement statement : this) {
+			sb.append(statement.toSQL()).append(";\n");
+		}
+		return sb.toString();
+	}
 }
