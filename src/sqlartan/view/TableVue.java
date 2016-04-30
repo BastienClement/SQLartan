@@ -5,10 +5,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import sqlartan.core.Column;
-import sqlartan.core.PersistentStructure;
-import sqlartan.core.Result;
-import sqlartan.core.Table;
+import sqlartan.Sqlartan;
+import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
 
@@ -21,9 +19,11 @@ public class TableVue
 
 	private TableView<ObservableList<String>> tableView = new TableView<>();
 
+	Database db = SqlartanController.getDB();
 
-	private void dataView(Result res, TableView<ObservableList<String>> tv) {
-		tv.getColumns().clear();
+
+	private void dataView(Result res) {
+		tableView.getColumns().clear();
 
 		//Creations des colones
 		int i = 0;
@@ -31,7 +31,7 @@ public class TableVue
 			final int j = i;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
-			tv.getColumns().add(col);
+			tableView.getColumns().add(col);
 			//System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
@@ -40,7 +40,7 @@ public class TableVue
 		res.forEach(row -> rows.add(FXCollections.observableArrayList(
 				res.columns().map(c -> row.getString()))
 		));
-		tv.setItems(rows);
+		tableView.setItems(rows);
 
 	}
 
@@ -48,7 +48,16 @@ public class TableVue
 	void dataView(PersistentStructure<?> structure) {
 		try {
 			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute(), tableView);
+			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
+	}
+	
+	void dataView(String str, Database db) {
+		try {
+			//sqlartan.getMainLayout().setCenter(tableView);
+			dataView(db.execute(str));
 		} catch (SQLException e) {
 			throw new RuntimeSQLException(e);
 		}
@@ -58,6 +67,12 @@ public class TableVue
 	TableView getTableView(PersistentStructure<?> structure)
 	{
 		dataView(structure);
+		return tableView;
+	}
+
+	TableView getTableView(String str)
+	{
+		dataView(str, db);
 		return tableView;
 	}
 }

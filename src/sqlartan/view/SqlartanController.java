@@ -33,7 +33,7 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private Sqlartan sqlartan;
-	private Database db = null;
+	private static Database db = null;
 	@FXML
 	private TreeView<DbTreeItem> treeView;
 
@@ -256,6 +256,11 @@ public class SqlartanController {
 	private void close()
 	{
 		Platform.exit();
+	}
+
+	static public Database getDB()
+	{
+		return db;
 	}
 
 }

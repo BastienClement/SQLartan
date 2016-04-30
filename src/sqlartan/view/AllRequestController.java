@@ -9,11 +9,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.StackPane;
 import sqlartan.core.Database;
 import sqlartan.core.Result;
 import java.sql.SQLException;
 
 public class AllRequestController {
+
+	private TableVue tableVue = new TableVue();
+
 	@FXML
 	Button execute;
 
@@ -21,20 +25,15 @@ public class AllRequestController {
 	TextArea SQLTextQuery;
 
 	@FXML
-	TableView UserQueryView;
+	StackPane userQueryView;
+
 
 	Database db;
 
 	public void executeQuery() {
-		try {
-			dataView(db.execute(SQLTextQuery.toString()), UserQueryView);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		userQueryView.getChildren().clear();
+		userQueryView.getChildren().add(tableVue.getTableView(SQLTextQuery.getText()));
 	}
 
-	private void dataView(Result execute, TableView tv) {
-		// TODO Use the SqlartanController.dataView()
-	}
 
 }
