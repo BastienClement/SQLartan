@@ -60,6 +60,7 @@ public class Operator implements Token {
 
 	public static final Operator DOT = new Operator(".");
 	public static final Operator COMMA = new Operator(",");
+	public static final Operator SEMICOLON = new Operator(";");
 	public static final Operator LEFT_PAREN = new Operator("(");
 	public static final Operator RIGHT_PAREN = new Operator(")");
 }
