@@ -3,6 +3,7 @@ package sqlartan.view;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
@@ -45,34 +46,47 @@ public class TableVue
 	}
 
 
-	void dataView(PersistentStructure<?> structure) {
-		try {
+	void dataView(PersistentStructure<?> structure) throws SQLException {
+
 			//sqlartan.getMainLayout().setCenter(tableView);
 			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
+
 	}
-	
-	void dataView(String str, Database db) {
-		try {
+
+	void dataView(String str, Database db)  throws SQLException {
+
 			//sqlartan.getMainLayout().setCenter(tableView);
 			dataView(db.execute(str));
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
 	}
 
 
 	TableView getTableView(PersistentStructure<?> structure)
 	{
-		dataView(structure);
+		try {
+			dataView(structure);
+		} catch (SQLException e)
+		{
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Bad Resquest");
+			alert.setContentText(e.getMessage());
+
+			alert.showAndWait();
+		}
+
 		return tableView;
 	}
 
 	TableView getTableView(String str)
 	{
-		dataView(str, db);
+		try {
+			dataView(str, db);
+		} catch (SQLException e) {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Bad Resquest");
+			alert.setContentText(e.getMessage());
+
+			alert.showAndWait();
+		}
 		return tableView;
 	}
 }

@@ -24,7 +24,7 @@
       </AnchorPane>
       <StackPane fx:id="userQueryView" prefHeight="150.0" prefWidth="200.0">
          <opaqueInsets>
-            <Insets />
+            <Insets left="15.0" right="15.0" top="15.0" />
          </opaqueInsets>
          <VBox.margin>
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />

@@ -27,8 +27,13 @@ public class AllRequestController {
 	@FXML
 	StackPane userQueryView;
 
+	private Database db;
 
-	Database db;
+	@FXML
+	private void initialize()
+	{
+		userQueryView.getChildren().add(new TableView<>());
+	}
 
 	public void executeQuery() {
 		userQueryView.getChildren().clear();

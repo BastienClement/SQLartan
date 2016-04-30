@@ -12,6 +12,7 @@ import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Created by julien on 29.04.16.
@@ -60,6 +61,7 @@ public class TableTabsController {
 				if(newTab == displayTab) { displayTab.setContent(tableVue.getTableView(structure)); }
 
 			}
+
 		});
 
 	}
