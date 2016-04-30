@@ -53,7 +53,12 @@ public class TableTabsController {
 			e.printStackTrace();
 		}
 
-		// Affiche la tablea dans l'onglet display l'orque il est acctive
+
+
+		/**
+		 * Affiche les donnees de la table dans l'onglet display l'orque il s'active uniquement
+		 * Une nouvelle requette sera effectuee a chaquer fois
+ 		 */
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 
 			@Override
@@ -63,13 +68,6 @@ public class TableTabsController {
 			}
 
 		});
-
-	}
-
-	@FXML
-	private void testPint()
-	{
-		System.out.println("Fonction de test");
 	}
 
 	public void setStructure(PersistentStructure<?> structure)
