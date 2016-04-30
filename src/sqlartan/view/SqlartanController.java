@@ -1,30 +1,20 @@
 package sqlartan.view;
 
-import com.sun.scenario.effect.impl.prism.PrTexture;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.TableColumn;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import sqlartan.Sqlartan;
-import sqlartan.core.*;
-import sqlartan.core.util.RuntimeSQLException;
-import sqlartan.utils.Optionals;
+import sqlartan.core.Database;
+import sqlartan.core.PersistentStructure;
+import sqlartan.core.Table;
+import sqlartan.core.View;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Observable;
 import java.util.Optional;
 
 /**
@@ -197,7 +187,7 @@ public class SqlartanController {
 	@FXML
 	private void openDB() throws SQLException {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLLite database");
+		fileChooser.setTitle("Open SQLite database");
 		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 
 		while (true) {

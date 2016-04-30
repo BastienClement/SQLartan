@@ -6,9 +6,10 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import sqlartan.Sqlartan;
-import sqlartan.core.*;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.Column;
+import sqlartan.core.Database;
+import sqlartan.core.PersistentStructure;
+import sqlartan.core.Result;
 import java.sql.SQLException;
 
 /**
@@ -49,7 +50,7 @@ public class TableVue
 	void dataView(PersistentStructure<?> structure) throws SQLException {
 
 			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(structure.database().assemble("SELECT * FROM ", structure.name()).execute());
+			dataView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
 
 	}
 
