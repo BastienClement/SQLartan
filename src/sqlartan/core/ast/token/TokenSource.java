@@ -35,19 +35,22 @@ public class TokenSource {
 	}
 
 	public final List<Token> tokens;
+	public final int length;
+
 	private Token current, next;
 	private int cursor;
 	private Stack<Integer> marks = new Stack<>();
 
 	private TokenSource(List<Token> tokens) {
 		this.tokens = Collections.unmodifiableList(tokens);
+		this.length = tokens.size();
 		setCursor(0);
 	}
 
 	private void setCursor(int pos) {
 		cursor = pos;
 		current = tokens.get(cursor);
-		next = tokens.get(cursor + 1);
+		next = (cursor + 1 < length) ? tokens.get(cursor + 1) : null;
 	}
 
 	public Token current() {
@@ -66,7 +69,7 @@ public class TokenSource {
 		if (current != null) {
 			++cursor;
 			current = next;
-			next = tokens.get(cursor + 1);
+			next = (cursor + 1 < length) ? tokens.get(cursor + 1) : null;
 			return true;
 		}
 		return false;
