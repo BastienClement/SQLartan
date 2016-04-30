@@ -9,4 +9,8 @@ public class UnexpectedTokenException extends ParseException {
 		super("Unexpected token", token.source, token.offset);
 		this.token = token;
 	}
+
+	public String getMessage() {
+		return super.getMessage() + ": " + token.toString();
+	}
 }

@@ -1,5 +1,6 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.util.Matching.match;
@@ -29,12 +30,6 @@ public abstract class Statement {
 				.when(SELECT, () -> context.parse(SelectStatement::parse))
 				.when(UPDATE, () -> context.parse(UpdateStatement::parse))
 				.when(VACUUM, () -> context.parse(VacuumStatement::parse))
-				.orElse(() -> {
-					throw new UnsupportedOperationException();
-					// TODO: WITH ... SELECT statements
-					// TODO: WITH ... INSERT statements
-					// TODO: WITH ... DELETE statements
-					// TODO: WITH ... UPDATE statements
-				});
+				.orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 }
