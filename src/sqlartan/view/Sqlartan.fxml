@@ -3,11 +3,11 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="background" stylesheets="@MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.SqlartanController">
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #ADD8E6;" styleClass="background" stylesheets="@MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.SqlartanController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -28,9 +28,9 @@
       </MenuBar>
    </top>
    <left>
-      <TreeView fx:id="treeView" prefHeight="333.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <TreeView fx:id="treeView" prefHeight="333.0" prefWidth="200.0" style="-fx-background-color: #059af4;" BorderPane.alignment="CENTER" />
    </left>
    <center>
-      <TableView fx:id="tableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #fff;" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
