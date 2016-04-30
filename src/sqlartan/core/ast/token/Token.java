@@ -10,7 +10,6 @@ public abstract class Token {
 	protected abstract String type();
 	protected abstract String value();
 
-	@Override
 	public String toString() {
 		return type() + "(" + value() + ", " + offset + ")";
 	}

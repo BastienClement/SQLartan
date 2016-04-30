@@ -278,6 +278,8 @@ public class Tokenizer {
 
 		if (state == STRING || state == IDENTIFIER) {
 			throw new TokenizeException("Unterminated string or identifier", sql, begin);
+		} else {
+			builder.push(EndOfStream.at(length));
 		}
 
 		return builder.build();

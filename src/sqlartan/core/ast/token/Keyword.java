@@ -31,12 +31,10 @@ public class Keyword extends Token {
 	protected String type() { return "Keyword"; }
 	protected String value() { return name; }
 
-	@Override
 	public boolean equals(Object other) {
 		return other instanceof Keyword && ((Keyword) other).name.equals(name);
 	}
 
-	@Override
 	public int hashCode() {
 		return name.hashCode();
 	}

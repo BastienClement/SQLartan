@@ -35,12 +35,10 @@ public class Operator extends Token {
 	protected String type() { return "Operator"; }
 	protected String value() { return symbol; }
 
-	@Override
 	public boolean equals(Object other) {
 		return other instanceof Operator && ((Operator) other).symbol.equals(symbol);
 	}
 
-	@Override
 	public int hashCode() {
 		return symbol.hashCode();
 	}
