@@ -16,20 +16,25 @@ public abstract class Statement {
 				.when(COMMIT, () -> CommitStatement.parse(source))
 				.when(END, () -> CommitStatement.parse(source))
 				.when(CREATE, () -> CreateStatement.parse(source))
+				.when(DELETE, () -> DeleteStatement.parse(source))
 				.when(DETACH, () -> DetachStatement.parse(source))
 				.when(DROP, () -> DropStatement.parse(source))
+				.when(INSERT, () -> InsertStatement.parse(source))
+				.when(REPLACE, () -> InsertStatement.parse(source))
 				.when(PRAGMA, () -> PragmaStatement.parse(source))
 				.when(REINDEX, () -> ReindexStatement.parse(source))
 				.when(RELEASE, () -> ReleaseStatement.parse(source))
 				.when(ROLLBACK, () -> RollbackStatement.parse(source))
 				.when(SAVEPOINT, () -> SavepointStatement.parse(source))
+				.when(SELECT, () -> SelectStatement.parse(source))
+				.when(UPDATE, () -> UpdateStatement.parse(source))
 				.when(VACUUM, () -> VacuumStatement.parse(source))
 				.orElse(() -> {
 					throw new UnsupportedOperationException();
-					/*UpdateStatement.parse(source);
-					DeleteStatement.parse(source);
-					InsertStatement.parse(source);
-					return SelectStatement.parse(source);*/
+					// TODO: WITH ... SELECT statements
+					// TODO: WITH ... INSERT statements
+					// TODO: WITH ... DELETE statements
+					// TODO: WITH ... UPDATE statements
 				});
 	}
 }
