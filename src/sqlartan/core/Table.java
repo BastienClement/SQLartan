@@ -231,4 +231,15 @@ public class Table extends PersistentStructure<TableColumn> {
 			throw new RuntimeSQLException(e);
 		}
 	}
+
+	/**
+	 * Add a new column to the table
+	 *
+	 * @param name
+	 * @param affinity
+	 */
+	@Deprecated
+	public void addColumn(String name, Affinity affinity) {
+		// TODO
+	}
 }

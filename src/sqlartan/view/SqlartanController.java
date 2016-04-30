@@ -8,10 +8,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import sqlartan.Sqlartan;
-import sqlartan.core.Database;
-import sqlartan.core.PersistentStructure;
-import sqlartan.core.Table;
-import sqlartan.core.View;
+import sqlartan.core.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -238,7 +235,6 @@ public class SqlartanController {
 		db.close();
 	}
 
-
 	/**
 	 * Close the entery application
 	 */
@@ -253,4 +249,123 @@ public class SqlartanController {
 		return db;
 	}
 
+	/**
+	 * Truncate a table
+	 *
+	 * @param table
+	 * @throws SQLException
+	 */
+	private void truncateTable(Table table) throws SQLException {
+		table.truncate();
+		refreshView();
+	}
+
+	/**
+	 * Drop a table
+	 *
+	 * @param table
+	 * @throws SQLException
+	 */
+	private void dropTable(Table table) throws SQLException {
+		table.drop();
+		refreshView();
+	}
+
+	/**
+	 * Duplicate a table
+	 *
+	 * @param table
+	 * @throws SQLException
+	 */
+	private void duplicateTable(Table table, String name) throws SQLException {
+		table.duplicate(name);
+		refreshView();
+	}
+
+	/**
+	 * Rename a table
+	 *
+	 * @param table
+	 * @param name
+	 * @throws SQLException
+	 */
+	private void renameTable(Table table, String name) throws SQLException {
+		table.rename(name);
+		refreshView();
+	}
+
+	/**
+	 * Vacuum a database
+	 *
+	 * @throws SQLException
+	 */
+	private void vacuumDatabase() throws SQLException {
+		db.vacuum();
+		refreshView();
+	}
+
+	/**
+	 * Add a column to the specified table
+	 *
+	 * @param table
+	 * @param name
+	 * @param type
+	 * @throws SQLException
+	 */
+	private void addColumn(Table table, String name, String type) throws SQLException {
+		Affinity affinity = Affinity.forType(type);
+		table.addColumn(name, affinity);
+		refreshView();
+	}
+
+	/**
+	 * Drop the specified column from the table
+	 *
+	 * @param table
+	 * @param name
+	 * @throws SQLException
+	 */
+	private void dropColumn(Table table, String name) throws SQLException {
+		if(table.column(name).isPresent()){
+			table.column(name).get().drop();
+		}
+		refreshView();
+	}
+
+	/**
+	 * Rename the specified column from the table
+	 *
+	 * @param table
+	 * @param name
+	 * @param newName
+	 * @throws SQLException
+	 */
+	private void renameColumn(Table table, String name, String newName) throws SQLException {
+		if(table.column(name).isPresent()){
+			table.column(name).get().rename(newName);
+		}
+		refreshView();
+	}
+
+	/**
+	 * Attach a database to the main database
+	 *
+	 * @param fileName
+	 * @throws SQLException
+	 */
+	private void attachDatabase(String fileName, String databaseName) throws SQLException {
+		db.attach(fileName, databaseName);
+		refreshView();
+	}
+
+	/**
+	 * Detach a database from the main database
+	 *
+	 * @param database
+	 * @throws SQLException
+	 */
+	private void detachDatabase(Database database) throws SQLException {
+		db.detach(database.name());
+		refreshView();
+	}
 }
