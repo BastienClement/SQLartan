@@ -74,9 +74,17 @@ public class Matching<T> {
 	 *                   Will be the return type of the match expression
 	 */
 	@SuppressWarnings("unchecked")
-	public <M extends T, R> Returning<R> when(Class<M> matchClass, Function<? super M, R> expr) {
+	public <M extends T, R> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
 		if (isMatch(matchClass)) {
 			return new MatchedReturning<>(expr.apply((M) value));
+		} else {
+			return new Returning<>();
+		}
+	}
+
+	public <M extends T, R> Returning<R> when(M matchValue, Function<? super M, ? extends R> expr) {
+		if (matchValue == value) {
+			return new MatchedReturning<>(expr.apply(matchValue));
 		} else {
 			return new Returning<>();
 		}
@@ -102,9 +110,17 @@ public class Matching<T> {
 		 * @param <M>        Type of the match case
 		 */
 		@SuppressWarnings("unchecked")
-		public <M extends T> Returning<R> when(Class<M> matchClass, Function<? super M, R> expr) {
+		public <M extends T> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
 			if (isMatch(matchClass)) {
 				return new MatchedReturning<>(expr.apply((M) value));
+			} else {
+				return this;
+			}
+		}
+
+		public <M extends T> Returning<R> when(M matchValue, Supplier<? extends R> expr) {
+			if (matchValue == value) {
+				return new MatchedReturning<>(expr.get());
 			} else {
 				return this;
 			}
@@ -127,14 +143,14 @@ public class Matching<T> {
 		/**
 		 * Returns the value of this match expression or the value from the supplier if none of the cases matched.
 		 */
-		public R orElse(Supplier<R> other) {
+		public R orElse(Supplier<? extends R> other) {
 			return other.get();
 		}
 
 		/**
 		 * Returns the value of this match expression or throws an exception if none of the cases matched.
 		 */
-		public <Z extends Throwable> R orElseThrow(Supplier<Z> supplier) throws Z {
+		public <Z extends Throwable> R orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			throw supplier.get();
 		}
 	}
@@ -147,7 +163,12 @@ public class Matching<T> {
 		}
 
 		@Override
-		public <M extends T> Returning<R> when(Class<M> matchClass, Function<? super M, R> expr) {
+		public <M extends T> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
+			return this;
+		}
+
+		@Override
+		public <M extends T> Returning<R> when(M matchValue, Supplier<? extends R> expr) {
 			return this;
 		}
 
@@ -162,12 +183,12 @@ public class Matching<T> {
 		}
 
 		@Override
-		public R orElse(Supplier<R> other) {
+		public R orElse(Supplier<? extends R> other) {
 			return result;
 		}
 
 		@Override
-		public <Z extends Throwable> R orElseThrow(Supplier<Z> supplier) throws Z {
+		public <Z extends Throwable> R orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			return result;
 		}
 	}
@@ -185,9 +206,18 @@ public class Matching<T> {
 		 * @param <M>        Type of the match case
 		 */
 		@SuppressWarnings("unchecked")
-		public <M extends T> Void when(Class<M> matchClass, Consumer<M> expr) {
+		public <M extends T> Void when(Class<M> matchClass, Consumer<? super M> expr) {
 			if (isMatch(matchClass)) {
 				expr.accept((M) value);
+				return new MatchedVoid();
+			} else {
+				return this;
+			}
+		}
+
+		public <M extends T> Void when(M matchValue, Runnable expr) {
+			if (matchValue == value) {
+				expr.run();
 				return new MatchedVoid();
 			} else {
 				return this;
@@ -204,7 +234,7 @@ public class Matching<T> {
 		/**
 		 * If none of the previous cases were a match, throws the exception returned by the supplied
 		 */
-		public <Z extends Throwable> void orElseThrow(Supplier<Z> supplier) throws Z {
+		public <Z extends Throwable> void orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			throw supplier.get();
 		}
 	}
@@ -214,7 +244,12 @@ public class Matching<T> {
 	 */
 	private class MatchedVoid extends Void {
 		@Override
-		public <M extends T> Void when(Class<M> matchClass, Consumer<M> expr) {
+		public <M extends T> Void when(Class<M> matchClass, Consumer<? super M> expr) {
+			return this;
+		}
+
+		@Override
+		public <M extends T> Void when(M matchValue, Runnable expr) {
 			return this;
 		}
 
@@ -222,6 +257,6 @@ public class Matching<T> {
 		public void orElse(Runnable action) {}
 
 		@Override
-		public <Z extends Throwable> void orElseThrow(Supplier<Z> supplier) throws Z {}
+		public <Z extends Throwable> void orElseThrow(Supplier<? extends Z> supplier) throws Z {}
 	}
 }

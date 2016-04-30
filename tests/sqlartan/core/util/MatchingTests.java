@@ -30,6 +30,8 @@ public class MatchingTests {
 		}
 	}
 
+	private class Elephant extends Animal {}
+
 	@Test
 	public void matchingTests() {
 		Name name = match((Animal) new Mouse(), Name.class)
