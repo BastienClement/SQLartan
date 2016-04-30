@@ -82,9 +82,9 @@ public class Matching<T> {
 		}
 	}
 
-	public <M extends T, R> Returning<R> when(M matchValue, Function<? super M, ? extends R> expr) {
+	public <R> Returning<R> when(T matchValue, Supplier<? extends R> expr) {
 		if (matchValue == value) {
-			return new MatchedReturning<>(expr.apply(matchValue));
+			return new MatchedReturning<>(expr.get());
 		} else {
 			return new Returning<>();
 		}
@@ -118,7 +118,7 @@ public class Matching<T> {
 			}
 		}
 
-		public <M extends T> Returning<R> when(M matchValue, Supplier<? extends R> expr) {
+		public Returning<R> when(T matchValue, Supplier<? extends R> expr) {
 			if (matchValue == value) {
 				return new MatchedReturning<>(expr.get());
 			} else {
@@ -168,7 +168,7 @@ public class Matching<T> {
 		}
 
 		@Override
-		public <M extends T> Returning<R> when(M matchValue, Supplier<? extends R> expr) {
+		public Returning<R> when(T matchValue, Supplier<? extends R> expr) {
 			return this;
 		}
 
@@ -215,7 +215,7 @@ public class Matching<T> {
 			}
 		}
 
-		public <M extends T> Void when(M matchValue, Runnable expr) {
+		public Void when(T matchValue, Runnable expr) {
 			if (matchValue == value) {
 				expr.run();
 				return new MatchedVoid();
@@ -249,7 +249,7 @@ public class Matching<T> {
 		}
 
 		@Override
-		public <M extends T> Void when(M matchValue, Runnable expr) {
+		public Void when(T matchValue, Runnable expr) {
 			return this;
 		}
 
