@@ -1,7 +1,7 @@
 package sqlartan.core.util;
 
 import org.junit.Test;
-import sqlartan.utils.Optionals;
+import sqlartan.util.Optionals;
 import java.util.Optional;
 import static org.junit.Assert.*;
 

@@ -1,7 +1,6 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -14,7 +13,7 @@ import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.util.RuntimeSQLException;
-import sqlartan.utils.Optionals;
+import sqlartan.util.Optionals;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Optional;
