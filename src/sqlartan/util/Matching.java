@@ -55,11 +55,11 @@ public class Matching<T> {
 
 	private Matching(T value) {
 		this.value = value;
-		this.valueClass = value.getClass();
+		this.valueClass = value != null ? value.getClass() : null;
 	}
 
 	private boolean isMatch(Class<?> matchClass) {
-		return matchClass.isAssignableFrom(valueClass);
+		return valueClass != null && matchClass.isAssignableFrom(valueClass);
 	}
 
 	/**
