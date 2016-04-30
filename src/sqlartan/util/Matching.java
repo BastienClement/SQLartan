@@ -83,7 +83,7 @@ public class Matching<T> {
 	}
 
 	public <R> Returning<R> when(T matchValue, Supplier<? extends R> expr) {
-		if (matchValue == value) {
+		if (matchValue == value || (matchValue != null && matchValue.equals(value))) {
 			return new MatchedReturning<>(expr.get());
 		} else {
 			return new Returning<>();
@@ -119,7 +119,7 @@ public class Matching<T> {
 		}
 
 		public Returning<R> when(T matchValue, Supplier<? extends R> expr) {
-			if (matchValue == value) {
+			if (matchValue == value || (matchValue != null && matchValue.equals(value))) {
 				return new MatchedReturning<>(expr.get());
 			} else {
 				return this;
@@ -216,7 +216,7 @@ public class Matching<T> {
 		}
 
 		public Void when(T matchValue, Runnable expr) {
-			if (matchValue == value) {
+			if (matchValue == value || (matchValue != null && matchValue.equals(value))) {
 				expr.run();
 				return new MatchedVoid();
 			} else {
