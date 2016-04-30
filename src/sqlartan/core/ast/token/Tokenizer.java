@@ -29,7 +29,7 @@ public class Tokenizer {
 	}
 
 	@SuppressWarnings("StatementWithEmptyBody")
-	public static TokenSource tokenize(String sql) {
+	public static TokenSource tokenize(String sql) throws TokenizeException {
 		TokenSource.Builder builder = TokenSource.builder();
 
 		char[] input = (sql + " ").toCharArray();
@@ -61,11 +61,11 @@ public class Tokenizer {
 							state = ALPHA_PLACEHOLDER;
 						} else if (c == '$') {
 							// Tcl-style placeholders
-							throw new UnsupportedOperationException();
+							throw new TokenizeException("Tcl-style placeholders are not supported", sql, begin);
 						} else if (c == '\'') {
 							state = STRING;
 						} else if ((c == 'x' || c == 'X') && input[i + 1] == '\'') {
-							throw new UnsupportedOperationException("BLOB literals are not supported");
+							throw new TokenizeException("BLOB literals are not supported", sql, begin);
 						} else if (c == '[') {
 							state = IDENTIFIER;
 							quote_char = ']';
@@ -103,7 +103,7 @@ public class Tokenizer {
 					if (!Character.isLetter(c)) {
 						if (i - begin == 1) {
 							// Empty named placeholder
-							throw new IllegalArgumentException();
+							throw new TokenizeException("Empty named placeholder", sql, begin);
 						} else {
 							String name = slice(input, begin + 1, i);
 							builder.push(new Placeholder.Named(name, begin));
@@ -136,7 +136,7 @@ public class Tokenizer {
 
 				case NUMERIC:
 					if (c == '0' && (input[i + 1] == 'x' || input[i + 1] == 'X')) {
-						throw new UnsupportedOperationException("Hexadecimal integer literals are not supported");
+						throw new TokenizeException("Hexadecimal integer literals are not supported", sql, begin);
 					}
 
 					boolean has_integer_part = false;
@@ -200,7 +200,7 @@ public class Tokenizer {
 					String number = String.valueOf(input, begin, i - begin);
 
 					if (num_begin == i || (!has_decimal_part && !has_integer_part) || !valid_exponent) {
-						throw new IllegalArgumentException("Malformed number: " + number);
+						throw new TokenizeException("Malformed number", sql, begin);
 					}
 
 					builder.push(Literal.from(number, begin));
@@ -258,7 +258,7 @@ public class Tokenizer {
 								continue outer;
 							}
 						} while (--i > begin);
-						throw new IllegalArgumentException("Illegal symbol encountered: '" + fragment + "'");
+						throw new TokenizeException("Illegal symbol", sql, begin);
 					}
 					break;
 
@@ -277,7 +277,7 @@ public class Tokenizer {
 		}
 
 		if (state == STRING || state == IDENTIFIER) {
-			throw new IllegalArgumentException("Unterminated string or identifier");
+			throw new TokenizeException("Unterminated string or identifier", sql, begin);
 		}
 
 		return builder.build();

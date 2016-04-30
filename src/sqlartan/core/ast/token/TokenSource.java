@@ -30,7 +30,7 @@ public class TokenSource {
 		}
 	}
 
-	public static TokenSource from(String sql) {
+	public static TokenSource from(String sql) throws TokenizeException {
 		return Tokenizer.tokenize(sql);
 	}
 

@@ -1,11 +1,12 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.Operator;
 import sqlartan.core.ast.token.TokenSource;
 import java.util.ArrayList;
 
 public class StatementList extends ArrayList<Statement> {
-	public static StatementList parse(String sql) {
+	public static StatementList parse(String sql) throws ParseException {
 		return parse(TokenSource.from(sql));
 	}
 

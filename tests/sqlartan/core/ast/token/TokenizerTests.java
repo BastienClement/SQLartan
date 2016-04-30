@@ -5,7 +5,7 @@ import sqlartan.core.ast.StatementList;
 
 public class TokenizerTests {
 	@Test
-	public void tokenizerTests() {
+	public void tokenizerTests() throws TokenizeException {
 		TokenSource source = TokenSource.from("SELECT * FROM [table]");
 		source.tokens.forEach(System.out::println);
 
