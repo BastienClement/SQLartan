@@ -67,7 +67,7 @@ public class TableVue
 		} catch (SQLException e)
 		{
 			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Bad Resquest");
+			alert.setTitle("Bad Request");
 			alert.setContentText(e.getMessage());
 
 			alert.showAndWait();
@@ -82,7 +82,7 @@ public class TableVue
 			dataView(str, db);
 		} catch (SQLException e) {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Bad Resquest");
+			alert.setTitle("Bad Request");
 			alert.setContentText(e.getMessage());
 
 			alert.showAndWait();
