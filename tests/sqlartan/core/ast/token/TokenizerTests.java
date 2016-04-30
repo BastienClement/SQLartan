@@ -9,10 +9,12 @@ public class TokenizerTests {
 	public void tokenizerTests() throws ParseException {
 		String source = "VACUUM; VACUUM;";
 
-		//TokenSource ts = TokenSource.from(source);
-		//ts.tokens.forEach(System.out::println);
+		TokenSource ts = TokenSource.from(source);
+		ts.tokens.forEach(System.out::println);
+
+		System.out.print("\n");
 
 		StatementList statementList = StatementList.parser.parse(source);
-		statementList.forEach(System.out::println);
+		System.out.println(statementList.toSQL());
 	}
 }

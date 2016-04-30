@@ -13,6 +13,6 @@ public abstract class Token {
 	protected abstract String value();
 
 	public String toString() {
-		return type() + "(" + value() + ", " + offset + ")";
+		return type() + "(" + value() + ")";
 	}
 }

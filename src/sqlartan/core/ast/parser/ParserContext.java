@@ -75,6 +75,9 @@ public class ParserContext {
 		} catch (FastParseException e) {
 			source.rollback();
 			return Optional.empty();
+		} catch (Throwable t) {
+			source.rollback();
+			throw t;
 		}
 	}
 

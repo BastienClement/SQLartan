@@ -210,7 +210,7 @@ public class Tokenizer {
 					break;
 
 				case ALPHA_FRAGMENT:
-					if (!Character.isLetter(c)) {
+					if (c != '_' && !Character.isLetter(c) && !Character.isDigit(c)) {
 						String fragment = String.valueOf(input, begin, i - begin);
 
 						Operator operator;
@@ -278,13 +278,9 @@ public class Tokenizer {
 
 		if (state == STRING || state == IDENTIFIER) {
 			throw new TokenizeException("Unterminated string or identifier", sql, begin);
-		} else {
-			// Push two EOS token to prevent nulls in TokenSource (for look-ahead)
-			EndOfStream eos = EndOfStream.at(sql, length);
-			builder.push(eos);
-			builder.push(eos);
 		}
 
+		builder.push(EndOfStream.at(sql, length));
 		return builder.build();
 	}
 }

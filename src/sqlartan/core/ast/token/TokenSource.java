@@ -42,22 +42,28 @@ public class TokenSource {
 	public final String sql;
 	public final List<Token> tokens;
 	public final int length;
+	public final EndOfStream eos;
 
 	private Token current, next;
 	private int cursor;
 	private Stack<Integer> marks = new Stack<>();
 
 	private TokenSource(List<Token> tokens, String sql) {
+		this.sql = sql;
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.length = tokens.size();
-		this.sql = sql;
+		this.eos = (EndOfStream) tokens.get(length - 1);
 		setCursor(0);
+	}
+
+	private Token safeget(int idx) {
+		return idx < length ? tokens.get(idx) : eos;
 	}
 
 	private void setCursor(int pos) {
 		cursor = pos;
 		current = tokens.get(cursor);
-		next = tokens.get(cursor + 1);
+		next = safeget(cursor + 1);
 	}
 
 	public void consume() {
@@ -67,7 +73,7 @@ public class TokenSource {
 
 		++cursor;
 		current = next;
-		next = tokens.get(cursor + 1);
+		next = safeget(cursor + 1);
 	}
 
 	public void begin() {
