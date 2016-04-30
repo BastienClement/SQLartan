@@ -120,7 +120,7 @@ public class Tokenizer {
 							// Single quote escape
 							++i;
 						} else {
-							String value = String.valueOf(input, begin, i - begin);
+							String value = String.valueOf(input, begin, i - begin).replace("''", "'");
 							builder.push(Literal.from(value));
 							state = State.WHITESPACE;
 						}
