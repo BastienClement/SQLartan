@@ -7,25 +7,25 @@ public class Keyword extends Token {
 	private static Map<String, Keyword> keywords = new HashMap<>();
 	public final String name;
 
-	private Keyword(String name, int offset) {
-		super(offset);
+	private Keyword(String name, String source, int offset) {
+		super(source, offset);
 		this.name = name;
 	}
 
 	private Keyword(String name) {
-		this(name, -1);
+		this(name, "", -1);
 		keywords.put(name, this);
 	}
 
 	private static class OffsetKeyword extends Keyword {
-		private OffsetKeyword(String name, int offset) {
-			super(name, offset);
+		private OffsetKeyword(String name, String source, int offset) {
+			super(name, source, offset);
 		}
 	}
 
-	public static Keyword from(String keyword, int offset) {
+	public static Keyword from(String keyword, String source, int offset) {
 		Keyword ref = keywords.get(keyword.toUpperCase());
-		return ref != null ? new OffsetKeyword(ref.name, offset) : null;
+		return ref != null ? new OffsetKeyword(ref.name, source, offset) : null;
 	}
 
 	protected String type() { return "Keyword"; }

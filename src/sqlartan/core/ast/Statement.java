@@ -1,34 +1,34 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.util.Matching.match;
 
 public abstract class Statement {
-	public static Statement parse(TokenSource source) {
-		return match(source.current(), Statement.class)
+	public static Statement parse(ParserContext context) {
+		return match(context.current(), Statement.class)
 				.when(null, () -> null)
-				.when(EXPLAIN, () -> ExplainStatement.parse(source))
-				.when(ALTER, () -> AlterTableStatement.parse(source))
-				.when(ANALYZE, () -> AnalyzeStatement.parse(source))
-				.when(ATTACH, () -> AttachStatement.parse(source))
-				.when(BEGIN, () -> BeginStatement.parse(source))
-				.when(COMMIT, () -> CommitStatement.parse(source))
-				.when(END, () -> CommitStatement.parse(source))
-				.when(CREATE, () -> CreateStatement.parse(source))
-				.when(DELETE, () -> DeleteStatement.parse(source))
-				.when(DETACH, () -> DetachStatement.parse(source))
-				.when(DROP, () -> DropStatement.parse(source))
-				.when(INSERT, () -> InsertStatement.parse(source))
-				.when(REPLACE, () -> InsertStatement.parse(source))
-				.when(PRAGMA, () -> PragmaStatement.parse(source))
-				.when(REINDEX, () -> ReindexStatement.parse(source))
-				.when(RELEASE, () -> ReleaseStatement.parse(source))
-				.when(ROLLBACK, () -> RollbackStatement.parse(source))
-				.when(SAVEPOINT, () -> SavepointStatement.parse(source))
-				.when(SELECT, () -> SelectStatement.parse(source))
-				.when(UPDATE, () -> UpdateStatement.parse(source))
-				.when(VACUUM, () -> VacuumStatement.parse(source))
+				.when(EXPLAIN, () -> context.parse(ExplainStatement::parse))
+				.when(ALTER, () -> context.parse(AlterTableStatement::parse))
+				.when(ANALYZE, () -> context.parse(AnalyzeStatement::parse))
+				.when(ATTACH, () -> context.parse(AttachStatement::parse))
+				.when(BEGIN, () -> context.parse(BeginStatement::parse))
+				.when(COMMIT, () -> context.parse(CommitStatement::parse))
+				.when(END, () -> context.parse(CommitStatement::parse))
+				.when(CREATE, () -> context.parse(CreateStatement::parse))
+				.when(DELETE, () -> context.parse(DeleteStatement::parse))
+				.when(DETACH, () -> context.parse(DetachStatement::parse))
+				.when(DROP, () -> context.parse(DropStatement::parse))
+				.when(INSERT, () -> context.parse(InsertStatement::parse))
+				.when(REPLACE, () -> context.parse(InsertStatement::parse))
+				.when(PRAGMA, () -> context.parse(PragmaStatement::parse))
+				.when(REINDEX, () -> context.parse(ReindexStatement::parse))
+				.when(RELEASE, () -> context.parse(ReleaseStatement::parse))
+				.when(ROLLBACK, () -> context.parse(RollbackStatement::parse))
+				.when(SAVEPOINT, () -> context.parse(SavepointStatement::parse))
+				.when(SELECT, () -> context.parse(SelectStatement::parse))
+				.when(UPDATE, () -> context.parse(UpdateStatement::parse))
+				.when(VACUUM, () -> context.parse(VacuumStatement::parse))
 				.orElse(() -> {
 					throw new UnsupportedOperationException();
 					// TODO: WITH ... SELECT statements

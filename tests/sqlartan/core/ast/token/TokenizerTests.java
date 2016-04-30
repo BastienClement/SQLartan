@@ -6,10 +6,12 @@ import sqlartan.core.ast.StatementList;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws TokenizeException {
-		TokenSource source = TokenSource.from("SELECT * FROM [table]");
-		source.tokens.forEach(System.out::println);
+		String source = "VACUUM; VACUUM";
 
-		StatementList statementList = StatementList.parse(source);
+		TokenSource ts = TokenSource.from(source);
+		ts.tokens.forEach(System.out::println);
+
+		StatementList statementList = StatementList.parser.parse(source);
 		statementList.forEach(System.out::println);
 	}
 }

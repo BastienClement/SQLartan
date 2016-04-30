@@ -1,15 +1,17 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.token.Keyword;
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserBuilder;
+import sqlartan.core.ast.parser.ParserContext;
+import static sqlartan.core.ast.token.Keyword.VACUUM;
 
 public class VacuumStatement extends Statement {
-	public static final VacuumStatement Singleton = new VacuumStatement();
+	public static final VacuumStatement singleton = new VacuumStatement();
+	public static final ParserBuilder<VacuumStatement> parser = new ParserBuilder<>(VacuumStatement::parse);
 
-	public static VacuumStatement parse(TokenSource source) {
-		return (source.consume(Keyword.VACUUM)) ? Singleton : null;
+	public static VacuumStatement parse(ParserContext context) {
+		context.consume(VACUUM);
+		return singleton;
 	}
 
-	private VacuumStatement() {
-	}
+	private VacuumStatement() {}
 }

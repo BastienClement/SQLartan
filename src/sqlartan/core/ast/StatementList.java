@@ -1,24 +1,16 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.parser.ParseException;
-import sqlartan.core.ast.token.Operator;
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserBuilder;
+import sqlartan.core.ast.parser.ParserContext;
 import java.util.ArrayList;
+import static sqlartan.core.ast.token.Operator.SEMICOLON;
 
 public class StatementList extends ArrayList<Statement> {
-	public static StatementList parse(String sql) throws ParseException {
-		return parse(TokenSource.from(sql));
-	}
+	public static final ParserBuilder<StatementList> parser = new ParserBuilder<>(StatementList::parse);
 
-	public static StatementList parse(TokenSource source) {
+	static StatementList parse(ParserContext context) {
 		StatementList statementList = new StatementList();
-
-		do {
-			Statement statement = Statement.parse(source);
-			if (statement == null) break;
-			statementList.add(statement);
-		} while (source.consume(Operator.SEMICOLON));
-
+		context.parseList(statementList, SEMICOLON, Statement::parse);
 		return statementList;
 	}
 }

@@ -1,8 +1,8 @@
 package sqlartan.core.ast.token;
 
 public class EndOfStream extends Token {
-	private EndOfStream(int offset) {
-		super(offset);
+	private EndOfStream(String source, int offset) {
+		super(source, offset);
 	}
 
 	public boolean equals(Object other) {
@@ -16,9 +16,9 @@ public class EndOfStream extends Token {
 	protected String type() { return "EndOfStream"; }
 	protected String value() { return ""; }
 
-	public static EndOfStream at(int offset) {
-		return new EndOfStream(offset);
+	public static EndOfStream at(String source, int offset) {
+		return new EndOfStream(source, offset);
 	}
 
-	public static final EndOfStream EOS = new EndOfStream(-1);
+	public static final EndOfStream EOS = new EndOfStream("", -1);
 }

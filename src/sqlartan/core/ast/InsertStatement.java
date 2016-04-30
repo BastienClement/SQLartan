@@ -1,9 +1,9 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserContext;
 
 public class InsertStatement extends Statement {
-	public static InsertStatement parse(TokenSource source) {
+	public static InsertStatement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }

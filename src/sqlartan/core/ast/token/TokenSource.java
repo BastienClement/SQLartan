@@ -3,13 +3,18 @@ package sqlartan.core.ast.token;
 import java.util.*;
 
 public class TokenSource {
-	static Builder builder() {
-		return new Builder();
+	static Builder builderFor(String sql) {
+		return new Builder(sql);
 	}
 
 	static class Builder {
+		private final String sql;
 		private List<Token> tokens = new ArrayList<>();
 		private Token last = null;
+
+		private Builder(String sql) {
+			this.sql = sql;
+		}
 
 		public void push(Token token) {
 			tokens.add(token);
@@ -26,7 +31,7 @@ public class TokenSource {
 		}
 
 		public TokenSource build() {
-			return new TokenSource(tokens);
+			return new TokenSource(tokens, sql);
 		}
 	}
 
@@ -34,6 +39,7 @@ public class TokenSource {
 		return Tokenizer.tokenize(sql);
 	}
 
+	public final String sql;
 	public final List<Token> tokens;
 	public final int length;
 
@@ -41,16 +47,40 @@ public class TokenSource {
 	private int cursor;
 	private Stack<Integer> marks = new Stack<>();
 
-	private TokenSource(List<Token> tokens) {
+	private TokenSource(List<Token> tokens, String sql) {
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.length = tokens.size();
+		this.sql = sql;
 		setCursor(0);
 	}
 
 	private void setCursor(int pos) {
 		cursor = pos;
 		current = tokens.get(cursor);
-		next = (cursor + 1 < length) ? tokens.get(cursor + 1) : null;
+		next = tokens.get(cursor + 1);
+	}
+
+	public void consume() {
+		if (current instanceof EndOfStream) {
+			throw new IllegalStateException("Attempted to consume EndOfStreamt token");
+		}
+
+		++cursor;
+		current = next;
+		next = tokens.get(cursor + 1);
+	}
+
+	public void begin() {
+		marks.push(cursor);
+	}
+
+	public int commit() {
+		if (marks.empty()) throw new IllegalStateException();
+		return marks.pop();
+	}
+
+	public void rollback() {
+		setCursor(commit());
 	}
 
 	public Token current() {
@@ -59,32 +89,5 @@ public class TokenSource {
 
 	public Token next() {
 		return next;
-	}
-
-	public void save() {
-		marks.push(cursor);
-	}
-
-	public boolean consume() {
-		if (current != null) {
-			++cursor;
-			current = next;
-			next = (cursor + 1 < length) ? tokens.get(cursor + 1) : null;
-			return true;
-		}
-		return false;
-	}
-
-	public boolean consume(Token token) {
-		return current == token && consume();
-	}
-
-	public <T extends Token> boolean consume(Class<T> tokenClass) {
-		return tokenClass.isAssignableFrom(current.getClass()) && consume();
-	}
-
-	public void restore() {
-		if (marks.empty()) throw new IllegalStateException();
-		setCursor(marks.pop());
 	}
 }

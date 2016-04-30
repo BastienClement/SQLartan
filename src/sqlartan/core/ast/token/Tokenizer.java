@@ -30,7 +30,7 @@ public class Tokenizer {
 
 	@SuppressWarnings("StatementWithEmptyBody")
 	public static TokenSource tokenize(String sql) throws TokenizeException {
-		TokenSource.Builder builder = TokenSource.builder();
+		TokenSource.Builder builder = TokenSource.builderFor(sql);
 
 		char[] input = (sql + " ").toCharArray();
 		int length = input.length;
@@ -88,11 +88,11 @@ public class Tokenizer {
 					if (!Character.isDigit(c)) {
 						if (i - begin == 1) {
 							++max_placeholder;
-							builder.push(new Placeholder.Indexed(max_placeholder, begin));
+							builder.push(new Placeholder.Indexed(max_placeholder, sql, begin));
 						} else {
 							int index = Integer.valueOf(slice(input, begin + 1, i));
 							if (index > max_placeholder) max_placeholder = index;
-							builder.push(new Placeholder.Indexed(index, begin));
+							builder.push(new Placeholder.Indexed(index, sql, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -106,7 +106,7 @@ public class Tokenizer {
 							throw new TokenizeException("Empty named placeholder", sql, begin);
 						} else {
 							String name = slice(input, begin + 1, i);
-							builder.push(new Placeholder.Named(name, begin));
+							builder.push(new Placeholder.Named(name, sql, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -120,7 +120,7 @@ public class Tokenizer {
 							++i;
 						} else {
 							String value = slice(input, begin + 1, i).replace("''", "'");
-							builder.push(Literal.from(value, begin));
+							builder.push(Literal.from(value, sql, begin));
 							state = State.WHITESPACE;
 						}
 					}
@@ -129,7 +129,7 @@ public class Tokenizer {
 				case IDENTIFIER:
 					if (c == quote_char) {
 						String fragment = slice(input, begin + 1, i);
-						builder.push(Identifier.from(fragment, begin));
+						builder.push(Identifier.from(fragment, sql, begin));
 						state = State.WHITESPACE;
 					}
 					break;
@@ -203,7 +203,7 @@ public class Tokenizer {
 						throw new TokenizeException("Malformed number", sql, begin);
 					}
 
-					builder.push(Literal.from(number, begin));
+					builder.push(Literal.from(number, sql, begin));
 
 					state = State.WHITESPACE;
 					--i;
@@ -224,7 +224,7 @@ public class Tokenizer {
 								operator = Operator.NOT_EQ;
 								break;
 							default:
-								operator = Operator.from(fragment, begin);
+								operator = Operator.from(fragment, sql, begin);
 								break;
 						}
 
@@ -235,10 +235,10 @@ public class Tokenizer {
 							} else {
 								builder.push(operator);
 							}
-						} else if ((keyword = Keyword.from(fragment, begin)) != null) {
+						} else if ((keyword = Keyword.from(fragment, sql, begin)) != null) {
 							builder.push(keyword);
 						} else {
-							builder.push(Identifier.from(fragment, begin));
+							builder.push(Identifier.from(fragment, sql, begin));
 						}
 						state = State.WHITESPACE;
 						--i;
@@ -250,7 +250,7 @@ public class Tokenizer {
 						String fragment;
 						do {
 							fragment = String.valueOf(input, begin, i - begin);
-							Operator operator = Operator.from(fragment, begin);
+							Operator operator = Operator.from(fragment, sql, begin);
 							if (operator != null) {
 								builder.push(operator);
 								state = State.WHITESPACE;
@@ -279,7 +279,10 @@ public class Tokenizer {
 		if (state == STRING || state == IDENTIFIER) {
 			throw new TokenizeException("Unterminated string or identifier", sql, begin);
 		} else {
-			builder.push(EndOfStream.at(length));
+			// Push two EOS token to prevent nulls in TokenSource (for look-ahead)
+			EndOfStream eos = EndOfStream.at(sql, length);
+			builder.push(eos);
+			builder.push(eos);
 		}
 
 		return builder.build();

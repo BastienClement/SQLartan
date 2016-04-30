@@ -1,9 +1,9 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserContext;
 
 public class PragmaStatement extends Statement {
-	public static PragmaStatement parse(TokenSource source) {
+	public static PragmaStatement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }

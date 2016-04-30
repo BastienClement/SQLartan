@@ -1,8 +1,8 @@
 package sqlartan.core.ast.token;
 
 public abstract class Placeholder extends Token {
-	private Placeholder(int offset) {
-		super(offset);
+	private Placeholder(String source, int offset) {
+		super(source, offset);
 	}
 
 	protected String type() { return "Placeholder"; }
@@ -10,8 +10,8 @@ public abstract class Placeholder extends Token {
 	public static class Indexed extends Placeholder {
 		public final int index;
 
-		Indexed(int index, int offset) {
-			super(offset);
+		Indexed(int index, String source, int offset) {
+			super(source, offset);
 			this.index = index;
 		}
 
@@ -21,8 +21,8 @@ public abstract class Placeholder extends Token {
 	public static class Named extends Placeholder {
 		public final String name;
 
-		Named(String name, int offset) {
-			super(offset);
+		Named(String name, String source, int offset) {
+			super(source, offset);
 			this.name = name;
 		}
 

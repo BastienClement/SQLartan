@@ -11,25 +11,25 @@ public class Operator extends Token {
 	private static Map<String, Operator> operators = new HashMap<>();
 	public final String symbol;
 
-	private Operator(String symbol, int offset) {
-		super(offset);
+	private Operator(String symbol, String source, int offset) {
+		super(source, offset);
 		this.symbol = symbol;
 	}
 
 	private Operator(String symbol) {
-		this(symbol, -1);
+		this(symbol, "", -1);
 		operators.put(symbol, this);
 	}
 
 	private static class OffsetOperator extends Operator {
-		private OffsetOperator(String name, int offset) {
-			super(name, offset);
+		private OffsetOperator(String name, String source, int offset) {
+			super(name, source, offset);
 		}
 	}
 
-	public static Operator from(String symbol, int offset) {
+	public static Operator from(String symbol, String source, int offset) {
 		Operator ref = operators.get(symbol.toUpperCase());
-		return ref != null ? new OffsetOperator(ref.symbol, offset) : null;
+		return ref != null ? new OffsetOperator(ref.symbol, source, offset) : null;
 	}
 
 	protected String type() { return "Operator"; }

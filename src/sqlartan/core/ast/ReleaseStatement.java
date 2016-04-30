@@ -1,9 +1,9 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.parser.ParserContext;
 
 public class ReleaseStatement extends Statement {
-	public static Statement parse(TokenSource source) {
+	public static Statement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }
