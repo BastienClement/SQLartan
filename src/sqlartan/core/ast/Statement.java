@@ -5,8 +5,8 @@ import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.util.Matching.match;
 
-public abstract class Statement implements Node {
-	public static Statement parse(ParserContext context) {
+public interface Statement extends Node {
+	static Statement parse(ParserContext context) {
 		return match(context.current(), Statement.class)
 				.when(null, () -> null)
 				.when(EXPLAIN, () -> context.parse(ExplainStatement::parse))

@@ -17,5 +17,7 @@ public class StatementList extends ArrayList<Statement> implements Node {
 	@Override
 	public void toSQL(StringBuilder sb) {
 		joinNodes(sb, "; ", this);
+		if (!isEmpty())
+			sb.append(";");
 	}
 }
