@@ -8,6 +8,9 @@ import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.core.ast.token.Keyword.NOT;
 import static sqlartan.core.ast.token.Operator.*;
 
+/**
+ * https://www.sqlite.org/lang_select.html
+ */
 public interface SelectStatement extends Statement {
 	/**
 	 * General SELECT statement parser
