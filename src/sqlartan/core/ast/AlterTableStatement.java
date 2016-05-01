@@ -5,7 +5,12 @@ import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.core.ast.token.Operator.DOT;
 
 public abstract class AlterTableStatement implements Statement {
+	public String schema;
+	public String table;
+
 	public static AlterTableStatement parse(ParserContext context) {
+		AlterTableStatement alter;
+
 		context.consume(ALTER);
 		context.consume(TABLE);
 
@@ -17,15 +22,16 @@ public abstract class AlterTableStatement implements Statement {
 
 		String table = context.consumeIdentifier().value;
 
-		AlterTableStatement alter;
 		if (context.tryConsume(RENAME)) {
 			context.consume(TO);
+
 			RenameTo rename = new RenameTo();
 			rename.newName = context.consumeIdentifier().value;
 			alter = rename;
 		} else {
 			context.consume(ADD);
 			context.tryConsume(COLUMN);
+
 			AddColumn addColumn = new AddColumn();
 			addColumn.columnDefinition = context.parse(ColumnDefinition::parse);
 			alter = addColumn;
@@ -35,9 +41,6 @@ public abstract class AlterTableStatement implements Statement {
 		alter.table = table;
 		return alter;
 	}
-
-	public String schema;
-	public String table;
 
 	@Override
 	public void toSQL(StringBuilder sb) {
