@@ -113,6 +113,10 @@ public class Table extends PersistentStructure<TableColumn> {
 		}
 	}
 
+	public AlterTable alter(){
+		return new AlterTable(this);
+	}
+
 	/**
 	 *
 	 * @param row

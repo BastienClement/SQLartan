@@ -223,4 +223,21 @@ public class TableTests {
 			assertEquals(0, count);
 		}
 	}
+
+	@Test
+	public void alterTests() throws SQLException{
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			AlterTable alter = test.alter();
+			alter.addColumn("d", "FLOAT");
+			alter.execute();
+
+			test = db.table("test").get();
+			
+			assertTrue(test.column("d").isPresent());
+		}
+	}
 }
