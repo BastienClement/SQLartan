@@ -28,7 +28,7 @@ public class Tokenizer {
 		return String.valueOf(input, start, end - start);
 	}
 
-	@SuppressWarnings("StatementWithEmptyBody")
+	@SuppressWarnings({ "StatementWithEmptyBody", "ConstantConditions" })
 	public static TokenSource tokenize(String sql) throws TokenizeException {
 		TokenSource.Builder builder = TokenSource.builderFor(sql);
 
@@ -94,7 +94,7 @@ public class Tokenizer {
 							if (index > max_placeholder) max_placeholder = index;
 							builder.push(Placeholder.forIndex(index, sql, begin));
 						}
-						state = State.WHITESPACE;
+						state = WHITESPACE;
 						--i;
 					}
 					break;
@@ -108,7 +108,7 @@ public class Tokenizer {
 							String name = slice(input, begin + 1, i);
 							builder.push(Placeholder.forName(name, sql, begin));
 						}
-						state = State.WHITESPACE;
+						state = WHITESPACE;
 						--i;
 					}
 					break;
@@ -121,7 +121,7 @@ public class Tokenizer {
 						} else {
 							String value = slice(input, begin + 1, i).replace("''", "'");
 							builder.push(Literal.fromText(value, sql, begin));
-							state = State.WHITESPACE;
+							state = WHITESPACE;
 						}
 					}
 					break;
@@ -130,7 +130,7 @@ public class Tokenizer {
 					if (c == quote_char) {
 						String fragment = slice(input, begin + 1, i);
 						builder.push(Identifier.from(fragment, sql, begin, quote_char != '"'));
-						state = State.WHITESPACE;
+						state = WHITESPACE;
 					}
 					break;
 
@@ -205,7 +205,7 @@ public class Tokenizer {
 
 					builder.push(Literal.fromNumeric(number, sql, begin));
 
-					state = State.WHITESPACE;
+					state = WHITESPACE;
 					--i;
 					break;
 
@@ -218,10 +218,10 @@ public class Tokenizer {
 
 						switch (fragment) {
 							case "==":
-								operator = Operator.EQ;
+								operator = Operator.EQ.at(sql, begin);
 								break;
 							case "!=":
-								operator = Operator.NOT_EQ;
+								operator = Operator.NOT_EQ.at(sql, begin);
 								break;
 							default:
 								operator = Operator.from(fragment, sql, begin);
@@ -229,18 +229,18 @@ public class Tokenizer {
 						}
 
 						if (operator != null) {
-							if (operator == Operator.NOT && builder.last() == Operator.IS) {
-								builder.pop();
-								builder.push(Operator.IS_NOT);
-							} else {
-								builder.push(operator);
-							}
+							builder.push(operator);
 						} else if ((keyword = Keyword.from(fragment, sql, begin)) != null) {
-							builder.push(keyword);
+							if (keyword.equals(Keyword.NOT) && builder.last().equals(Keyword.IS)) {
+								builder.pop();
+								builder.push(Operator.IS_NOT.at(sql, begin));
+							} else {
+								builder.push(keyword);
+							}
 						} else {
 							builder.push(Identifier.from(fragment, sql, begin, false));
 						}
-						state = State.WHITESPACE;
+						state = WHITESPACE;
 						--i;
 					}
 					break;
@@ -253,7 +253,7 @@ public class Tokenizer {
 							Operator operator = Operator.from(fragment, sql, begin);
 							if (operator != null) {
 								builder.push(operator);
-								state = State.WHITESPACE;
+								state = WHITESPACE;
 								--i;
 								continue outer;
 							}

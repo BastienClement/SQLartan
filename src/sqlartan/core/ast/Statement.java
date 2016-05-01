@@ -31,5 +31,6 @@ public interface Statement extends Node {
 				.when(UPDATE, () -> context.parse(UpdateStatement::parse))
 				.when(VACUUM, () -> context.parse(VacuumStatement::parse))
 				.orElseThrow(ParseException.UnexpectedCurrentToken);
+		// Note: This does not handle INSERT / UPDATE / DELETE / INSERT with WITH clauses
 	}
 }

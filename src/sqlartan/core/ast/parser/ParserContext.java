@@ -300,6 +300,9 @@ public class ParserContext {
 	public <N extends Node> List<N> parseList(Token separator, Parser<N> parser) {
 		List<N> list = new ArrayList<>();
 		parseList(list, separator, parser);
+		if (list.isEmpty()) {
+			throw ParseException.UnexpectedCurrentToken;
+		}
 		return list;
 	}
 

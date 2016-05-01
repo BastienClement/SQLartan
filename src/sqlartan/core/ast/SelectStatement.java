@@ -9,10 +9,18 @@ import static sqlartan.core.ast.token.Keyword.NOT;
 import static sqlartan.core.ast.token.Operator.*;
 
 public interface SelectStatement extends Statement {
+	/**
+	 * General SELECT statement parser
+	 * Currently delegates to Simple parser.
+	 * TODO: handle compound selects here
+	 */
 	static SelectStatement parse(ParserContext context) {
 		return context.parse(Simple::parse);
 	}
 
+	/**
+	 * The core a SELECT statement
+	 */
 	class Core implements SelectStatement {
 		public boolean distinct;
 		public List<ResultColumn> columns;
@@ -72,22 +80,58 @@ public interface SelectStatement extends Statement {
 		}
 	}
 
+	/**
+	 * A simple SELECT statement
+	 */
 	class Simple extends Core {
+		public List<OrderingTerm> orderBy;
+		public Expression limit;
+		public Expression offset;
+
 		static Simple parse(ParserContext context) {
 			if (context.tryConsume(WITH)) {
-				// TODO: parse common-table-expression list
+				// With clauses are unsupported
 				throw new UnsupportedOperationException();
 			}
 
+			// Parse the core
 			Simple select = new Simple();
 			Core.parse(context, select);
 
+			// ORDER BY
+			if (context.tryConsume(ORDER)) {
+				context.consume(BY);
+				select.orderBy = context.parseList(COMMA, OrderingTerm::parse);
+			}
+
+			// LIMIT .. OFFSET
+			if (context.tryConsume(LIMIT)) {
+				select.limit = context.parse(Expression::parse);
+				if (context.tryConsume(OFFSET) || context.tryConsume(COMMA)) {
+					select.offset = context.parse(Expression::parse);
+				}
+			}
+
 			return select;
+		}
+
+		@Override
+		public void toSQL(StringBuilder sb) {
+			super.toSQL(sb);
+			if (orderBy != null)
+				joinNodes(sb.append(" ORDER BY "), ", ", orderBy);
+			if (limit != null) {
+				limit.toSQL(sb.append(" LIMIT "));
+				if (offset != null) {
+					offset.toSQL(sb.append(", "));
+				}
+			}
 		}
 	}
 
-
-
+	/**
+	 * Source of data for SELECT statements
+	 */
 	class SelectSource implements Node {
 		public static SelectSource parse(ParserContext context) {
 			return context.alternatives(
@@ -97,46 +141,57 @@ public interface SelectStatement extends Statement {
 		}
 	}
 
+	/**
+	 * Either a table or a sub-query sources
+	 */
 	class TableOrSubquerySource extends SelectSource {
+		public String as;
+
 		public static TableOrSubquerySource parse(ParserContext context) {
-			if (context.current().equals(LEFT_PAREN)) {
+			if (context.current(LEFT_PAREN)) {
+				// Sub query
 				throw new UnsupportedOperationException();
 			} else {
 				return context.parse(TableSource::parse);
 			}
 		}
-
-		public String as;
 	}
 
+	/**
+	 * A table source
+	 */
 	class TableSource extends TableOrSubquerySource {
-		public static TableSource parse(ParserContext context) {
-			TableSource table = new TableSource();
-			if (context.next().equals(DOT)) {
-				table.schema = context.consumeIdentifier().value;
-				context.consume(DOT);
-			}
-
-			table.table = context.consumeIdentifier().value;
-
-			context.tryConsume(AS);
-			table.as = context.optConsumeIdentifier().map(Token::value).orElse(null);
-
-			if (context.tryConsume(INDEXED)) {
-				context.consume(BY);
-				table.index = context.consumeIdentifier().value;
-			} else if (context.tryConsume(NOT)) {
-				context.consume(INDEXED);
-				table.notIndexed = true;
-			}
-
-			return table;
-		}
-
 		public String schema;
 		public String table;
 		public String index;
 		public boolean notIndexed;
+
+		public static TableSource parse(ParserContext context) {
+			TableSource source = new TableSource();
+
+			// Explicit schema name
+			if (context.next(DOT)) {
+				source.schema = context.consumeIdentifier().value;
+				context.consume(DOT);
+			}
+
+			// Table name
+			source.table = context.consumeIdentifier().value;
+
+			// Attempt to consume alias
+			context.tryConsume(AS);
+			source.as = context.optConsumeIdentifier().map(Token::value).orElse(null);
+
+			if (context.tryConsume(INDEXED)) {
+				context.consume(BY);
+				source.index = context.consumeIdentifier().value;
+			} else if (context.tryConsume(NOT)) {
+				context.consume(INDEXED);
+				source.notIndexed = true;
+			}
+
+			return source;
+		}
 
 		@Override
 		public void toSQL(StringBuilder sb) {
@@ -152,8 +207,20 @@ public interface SelectStatement extends Statement {
 		}
 	}
 
+	/**
+	 * A JOIN clause
+	 */
 	class JoinClause extends SelectSource {
 		public static JoinClause parse(ParserContext context) {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	/**
+	 * Term for ORDER BY clause
+	 */
+	class OrderingTerm implements Node {
+		static OrderingTerm parse(ParserContext context) {
 			throw new UnsupportedOperationException();
 		}
 	}
