@@ -38,13 +38,13 @@ public class TableColumn extends Column {
 	 * @param name
 	 */
 	public void rename(String name) {
-		// TODO
+		parentTable().alter().modifyColumn(name(), name);
 	}
 
 	/**
 	 * Drop the column
 	 */
 	public void drop() {
-		// TODO
+		parentTable().alter().dropColumn(name());
 	}
 }

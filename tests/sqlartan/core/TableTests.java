@@ -229,15 +229,23 @@ public class TableTests {
 		try (Database db = Database.createEphemeral()) {
 			// Create simple table
 			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			db.execute("INSERT INTO test VALUES (1, 'abc', 11)");
+			db.execute("INSERT INTO test VALUES (2, 'def', 12)");
+			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
 			Table test = db.table("test").get();
 
 			AlterTable alter = test.alter();
-			alter.addColumn("d", "FLOAT");
+			alter.modifyColumn("c", "d", "FLOAT");
 			alter.execute();
 
+			assertFalse(db.table("test_backup").isPresent());
 			test = db.table("test").get();
-			
+			assertTrue(!test.column("c").isPresent());
 			assertTrue(test.column("d").isPresent());
+
+			// Check if we have exactly 3 rows in the table
+			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
 		}
 	}
 }
