@@ -19,29 +19,24 @@ import java.util.Optional;
  */
 public class SqlartanController {
 
-	private Sqlartan sqlartan;
 	private static Database db = null;
+	TreeItem<DbTreeItem> mainTreeItem;
+	File file;
+	private Sqlartan sqlartan;
 	@FXML
 	private TreeView<DbTreeItem> treeView;
-
 	@FXML
 	private BorderPane borderPane;
-
 	@FXML
 	private StackPane stackPane;
-
-	TreeItem<DbTreeItem> mainTreeItem;
-
-	TableVue tableVue;
-
-	File file;
-
+	static public Database getDB() {
+		return db;
+	}
 	@FXML
 	private void initialize() throws SQLException {
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			if (newValue != null && newValue.getValue().getType() == Type.DATABASE)
-			{
+			if (newValue != null && newValue.getValue().getType() == Type.DATABASE) {
 				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml"));
 
 				TabPane tabPane = null;
@@ -58,9 +53,7 @@ public class SqlartanController {
 
 				stackPane.getChildren().add(tabPane);
 
-			}
-			else if (newValue != null && (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW))
-			{
+			} else if (newValue != null && (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW)) {
 				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
 
 				TabPane tabPane = null;
@@ -75,10 +68,9 @@ public class SqlartanController {
 
 					if (newValue != null) {
 						DbTreeItem treeItem = newValue.getValue();
-						Optional<? extends PersistentStructure <?> > structure = Optional.empty();
+						Optional<? extends PersistentStructure<?>> structure = Optional.empty();
 
-						switch (treeItem.getType())
-						{
+						switch (treeItem.getType()) {
 							case TABLE:
 								structure = db.table(treeItem.getName());
 								break;
@@ -112,28 +104,24 @@ public class SqlartanController {
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
 	}
-
 	/**
 	 * Called by the mainApp to set the link to the mainApp
+	 *
 	 * @param sqlartan
 	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
-
-
 	/**
 	 * To call to refresh the view of the tree
+	 *
 	 * @throws SQLException
 	 */
-	void refreshView() throws SQLException
-	{
-		if (db != null){
+	void refreshView() throws SQLException {
+		if (db != null) {
 			tree(db);
 		}
 	}
-
-
 	/**
 	 * Create the tree for a specific database
 	 *
@@ -159,30 +147,32 @@ public class SqlartanController {
 		                                   .toList());
 
 		mainTreeItem.getChildren().add(trees);
-/*
+
 		// Attached database
-		for (AttachedDatabase adb : database.attached().values()) {
-			TreeItem<DbTreeItem> tItems = new TreeItem<>(adb.name());
+		database.attached().values().forEach(adb -> {
+			TreeItem<DbTreeItem> tItems = new TreeItem<>(new DbTreeItem(adb.name(), Type.DATABASE));
 			tItems.getChildren().addAll(adb.tables()
 			                               .map(Table::name)
+			                               .map(name -> new DbTreeItem(name, Type.TABLE))
 			                               .map(TreeItem::new)
 			                               .toList());
 
 			tItems.getChildren().addAll(adb.views()
 			                               .map(View::name)
+			                               .map(name -> new DbTreeItem(name, Type.VIEW))
 			                               .map(TreeItem::new)
 			                               .toList());
 
 			mainTreeItem.getChildren().add(tItems);
-		}*/
+		});
+
 	}
-
-
 	/**
 	 * Open a database
 	 */
 	@FXML
-	private void openDB() throws SQLException {
+	private void openDB() {
+		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
 		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
@@ -200,55 +190,41 @@ public class SqlartanController {
 				alert.setTitle("Problem while opening database");
 				alert.setContentText("Error: " + e.getMessage());
 
-				ButtonType buttonCanncel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 				ButtonType buttonRetry = new ButtonType("Retry");
 				ButtonType buttonNewFile = new ButtonType("Choos new");
 
-				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCanncel);
-
+				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
 
 				Optional<ButtonType> result = alert.showAndWait();
 
-				if (result.get() == buttonRetry) {
-					continue;
+				if(result.isPresent()){
+					if (result.get() == buttonNewFile) {
+						file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+					}
+					else if(result.get() == buttonCancel){
+						break;
+					}
 				}
-				else if (result.get() == buttonNewFile) {
-					file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-				}
-				else{
-					break;
-				}
-
 			}
 		}
 	}
-
-
 	/**
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDB() throws SQLException
-	{
+	private void closeDB() throws SQLException {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		db.close();
 	}
-
 	/**
 	 * Close the entery application
 	 */
 	@FXML
-	private void close()
-	{
+	private void close() {
 		Platform.exit();
 	}
-
-	static public Database getDB()
-	{
-		return db;
-	}
-
 	/**
 	 * Truncate a table
 	 *
@@ -341,7 +317,7 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	private void renameColumn(Table table, String name, String newName) throws SQLException {
-		if(table.column(name).isPresent()){
+		if (table.column(name).isPresent()) {
 			table.column(name).get().rename(newName);
 		}
 		refreshView();
