@@ -10,6 +10,7 @@ import javafx.stage.FileChooser;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -21,7 +22,7 @@ public class SqlartanController {
 
 	private static Database db = null;
 	TreeItem<DbTreeItem> mainTreeItem;
-	File file;
+
 	private Sqlartan sqlartan;
 	@FXML
 	private TreeView<DbTreeItem> treeView;
@@ -29,9 +30,20 @@ public class SqlartanController {
 	private BorderPane borderPane;
 	@FXML
 	private StackPane stackPane;
+
+
+	/***********
+	 * METHODES*
+	 ***********/
+
+
 	static public Database getDB() {
 		return db;
 	}
+
+	/**
+	 * First methode call when loaded
+	 */
 	@FXML
 	private void initialize() throws SQLException {
 
@@ -83,11 +95,13 @@ public class SqlartanController {
 			}
 		});
 
-		mainTreeItem = new TreeItem<>(); // Hidden
+		mainTreeItem = new TreeItem<>(); // Hidden fake root
 		mainTreeItem.setExpanded(true);
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
 	}
+
+
 	/**
 	 * Called by the mainApp to set the link to the mainApp
 	 *
@@ -96,6 +110,8 @@ public class SqlartanController {
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
+
+
 	/**
 	 * To call to refresh the view of the tree
 	 *
@@ -106,6 +122,8 @@ public class SqlartanController {
 			tree(db);
 		}
 	}
+
+
 	/**
 	 * Create the tree for a specific database
 	 *
@@ -151,21 +169,122 @@ public class SqlartanController {
 		});
 
 	}
+
+
 	/**
-	 * Open a database
+	 * Open the main database
 	 */
 	@FXML
-	private void openDB() {
+	private void openDB()
+	{
+
+		while (true) {
+			File file = openSQLLiteDB();
+
+			if (file == null)
+				break;
+
+			try {
+				db = Database.open(file.getPath());
+				refreshView();
+				break;
+			} catch (SQLException e) {
+
+				Alert alert = new Alert(Alert.AlertType.NONE);
+				alert.setTitle("Problem while opening database");
+				alert.setContentText("Error: " + e.getMessage());
+
+				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				ButtonType buttonRetry = new ButtonType("Retry");
+				ButtonType buttonNewFile = new ButtonType("Choos new");
+
+				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
+
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent()) {
+					if (result.get() == buttonNewFile) {
+						file = openSQLLiteDB();
+					} else if (result.get() == buttonCancel) {
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Attach a database to the main database
+	 */
+	@FXML
+	private void attachDatabase() throws SQLException {
+
+		while (true) {
+			File file = openSQLLiteDB();
+
+			if (file == null)
+				break;
+
+			try {
+				db.attach(file, file.getName());
+				refreshView();
+				break;
+			} catch (SQLException e) {
+
+				Alert alert = new Alert(Alert.AlertType.NONE);
+				alert.setTitle("Problem while attatching database");
+				alert.setContentText("Error: " + e.getMessage());
+
+				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				ButtonType buttonRetry = new ButtonType("Retry");
+				ButtonType buttonNewFile = new ButtonType("Choos new");
+
+				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
+
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent()) {
+					if (result.get() == buttonNewFile) {
+						file = openSQLLiteDB();
+					} else if (result.get() == buttonCancel) {
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+
+	/**
+	 * Open a dialog for the file choos db
+	 * @return the opend database
+	 */
+	@FXML
+	private File openSQLLiteDB() {
 		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
-		file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+		Database tmpDB = null;
+
+		return file;
+	}
+/*
+
+	@FXML
+	private File openSQLLiteDB() {
+		// Create the file popup
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open SQLite database");
+		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+		Database tmpDB = null;
 
 		while (true) {
 			try {
 				if (file == null)
 					break;
-				db = Database.open(file.getPath());
+				tmpDB = Database.open(file.getPath());
 				refreshView();
 				break;
 			} catch (SQLException e) {
@@ -191,7 +310,11 @@ public class SqlartanController {
 				}
 			}
 		}
-	}
+
+		return file;
+	}*/
+
+
 	/**
 	 * Close the current database
 	 */
@@ -201,6 +324,8 @@ public class SqlartanController {
 		stackPane.getChildren().clear();
 		db.close();
 	}
+
+
 	/**
 	 * Close the entery application
 	 */
@@ -208,6 +333,8 @@ public class SqlartanController {
 	private void close() {
 		Platform.exit();
 	}
+
+
 	/**
 	 * Truncate a table
 	 *
@@ -218,6 +345,7 @@ public class SqlartanController {
 		table.truncate();
 		refreshView();
 	}
+
 
 	/**
 	 * Drop a table
@@ -230,6 +358,7 @@ public class SqlartanController {
 		refreshView();
 	}
 
+
 	/**
 	 * Duplicate a table
 	 *
@@ -240,6 +369,7 @@ public class SqlartanController {
 		table.duplicate(name);
 		refreshView();
 	}
+
 
 	/**
 	 * Rename a table
@@ -253,6 +383,7 @@ public class SqlartanController {
 		refreshView();
 	}
 
+
 	/**
 	 * Vacuum a database
 	 *
@@ -262,6 +393,7 @@ public class SqlartanController {
 		db.vacuum();
 		refreshView();
 	}
+
 
 	/**
 	 * Add a column to the specified table
@@ -277,6 +409,7 @@ public class SqlartanController {
 		refreshView();
 	}
 
+
 	/**
 	 * Drop the specified column from the table
 	 *
@@ -290,6 +423,7 @@ public class SqlartanController {
 		}
 		refreshView();
 	}
+
 
 	/**
 	 * Rename the specified column from the table
@@ -306,16 +440,9 @@ public class SqlartanController {
 		refreshView();
 	}
 
-	/**
-	 * Attach a database to the main database
-	 *
-	 * @param fileName
-	 * @throws SQLException
-	 */
-	private void attachDatabase(String fileName, String databaseName) throws SQLException {
-		db.attach(fileName, databaseName);
-		refreshView();
-	}
+
+
+
 
 	/**
 	 * Detach a database from the main database
