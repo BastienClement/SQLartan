@@ -25,6 +25,7 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private static Database db = null;
+
 	TreeItem<DbTreeItem> mainTreeItem;
 
 	private Sqlartan sqlartan;
@@ -36,6 +37,8 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+	@FXML
+	private Menu databaseMenu;
 
 	private List<String> atachedDBs = new LinkedList<>();
 
@@ -186,7 +189,7 @@ public class SqlartanController {
 	@FXML
 	private void openDB()
 	{
-		if (db != null)
+		if (db != null && (!db.isClosed()) )
 		{
 			db.close();
 		}
@@ -224,6 +227,8 @@ public class SqlartanController {
 				}
 			}
 		}
+
+		databaseMenu.setDisable(false);
 	}
 
 
@@ -310,6 +315,7 @@ public class SqlartanController {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		db.close();
+		databaseMenu.setDisable(true);
 	}
 
 

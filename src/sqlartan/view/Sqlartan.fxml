@@ -18,7 +18,7 @@
               <MenuItem mnemonicParsing="false" onAction="#close" text="Quit" />
             </items>
           </Menu>
-            <Menu mnemonicParsing="false" text="Database">
+            <Menu fx:id="databaseMenu" disable="true" mnemonicParsing="false" text="Database">
               <items>
                   <MenuItem mnemonicParsing="false" onAction="#attachDatabase" text="Attached Database" />
                   <Menu fx:id="detatchMenu" mnemonicParsing="false" text="Detatch Database" />
