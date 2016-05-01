@@ -1,6 +1,8 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -13,6 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,6 +34,10 @@ public class SqlartanController {
 	private BorderPane borderPane;
 	@FXML
 	private StackPane stackPane;
+	@FXML
+	private Menu detatchMenu;
+
+	private List<String> atachedDBs = new LinkedList<>();
 
 
 	/***********
@@ -178,6 +186,10 @@ public class SqlartanController {
 	@FXML
 	private void openDB()
 	{
+		if (db != null)
+		{
+			db.close();
+		}
 
 		while (true) {
 			File file = openSQLLiteDB();
@@ -214,14 +226,16 @@ public class SqlartanController {
 		}
 	}
 
+
 	/**
 	 * Attach a database to the main database
 	 */
 	@FXML
 	private void attachDatabase() throws SQLException {
 
+		File file;
 		while (true) {
-			File file = openSQLLiteDB();
+			 file = openSQLLiteDB();
 
 			if (file == null)
 				break;
@@ -254,6 +268,21 @@ public class SqlartanController {
 			}
 		}
 
+		atachedDBs.add(file.getName());
+
+		MenuItem newMenuItem = new MenuItem(file.getName());
+		newMenuItem.setOnAction(event -> {
+			try {
+				db.detach(newMenuItem.getText());
+				refreshView();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+
+		detatchMenu.getItems().add(newMenuItem);
+
+
 	}
 
 
@@ -271,49 +300,6 @@ public class SqlartanController {
 
 		return file;
 	}
-/*
-
-	@FXML
-	private File openSQLLiteDB() {
-		// Create the file popup
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLite database");
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-		Database tmpDB = null;
-
-		while (true) {
-			try {
-				if (file == null)
-					break;
-				tmpDB = Database.open(file.getPath());
-				refreshView();
-				break;
-			} catch (SQLException e) {
-
-				Alert alert = new Alert(Alert.AlertType.NONE);
-				alert.setTitle("Problem while opening database");
-				alert.setContentText("Error: " + e.getMessage());
-
-				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choos new");
-
-				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
-
-				Optional<ButtonType> result = alert.showAndWait();
-
-				if (result.isPresent()) {
-					if (result.get() == buttonNewFile) {
-						file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-					} else if (result.get() == buttonCancel) {
-						break;
-					}
-				}
-			}
-		}
-
-		return file;
-	}*/
 
 
 	/**

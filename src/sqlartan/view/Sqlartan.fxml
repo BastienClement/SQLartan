@@ -21,11 +21,7 @@
             <Menu mnemonicParsing="false" text="Database">
               <items>
                   <MenuItem mnemonicParsing="false" onAction="#attachDatabase" text="Attached Database" />
-                  <Menu mnemonicParsing="false" text="Detatch Database">
-                    <items>
-                      <MenuItem mnemonicParsing="false" text="Action 1" />
-                    </items>
-                  </Menu>
+                  <Menu fx:id="detatchMenu" mnemonicParsing="false" text="Detatch Database" />
                 <MenuItem mnemonicParsing="false" text="Vacuum" />
               </items>
             </Menu>
