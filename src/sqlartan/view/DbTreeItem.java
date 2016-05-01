@@ -3,7 +3,9 @@ package sqlartan.view;
 /**
  * Created by julien on 25.04.16.
  */
-enum Type {DATABASE, TABLE, VIEW}
+enum Type {
+	DATABASE, TABLE, VIEW
+}
 
 public class DbTreeItem {
 
@@ -15,18 +17,22 @@ public class DbTreeItem {
 		this.type = type;
 	}
 
-	public Type getType()
-	{
+	/**
+	 * @return the type of the treeItem
+	 */
+	public Type type() {
 		return type;
 	}
 
-	public String getName()
-	{
+	/**
+	 * @return the name of the TreeItem
+	 */
+	public String name() {
 		return name;
 	}
 
-	public String toString()
-	{
+	@Override
+	public String toString() {
 		return name;
 	}
 }

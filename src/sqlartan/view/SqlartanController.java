@@ -36,68 +36,52 @@ public class SqlartanController {
 	private void initialize() throws SQLException {
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			if (newValue != null && newValue.getValue().getType() == Type.DATABASE) {
-				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml"));
-
+			stackPane.getChildren().clear();
+			if (newValue != null) {
 				TabPane tabPane = null;
-				stackPane.getChildren().clear();
+				switch (newValue.getValue().type()) {
+					case DATABASE: {
+						try {
+							tabPane = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml")).load();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					break;
+					case TABLE:
+					case VIEW: {
+						// Onglets
+						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
 
-				try {
-					tabPane = loader.load();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+						try {
+							tabPane = loader.load();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 
-				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
-
-				stackPane.getChildren().add(tabPane);
-
-			} else if (newValue != null && (newValue.getValue().getType() == Type.TABLE || newValue.getValue().getType() == Type.VIEW)) {
-				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
-
-				TabPane tabPane = null;
-
-				// Onglets
-				try {
-					tabPane = loader.load();
-
-
-					TableTabsController tabsController = loader.getController();
-
-
-					if (newValue != null) {
 						DbTreeItem treeItem = newValue.getValue();
 						Optional<? extends PersistentStructure<?>> structure = Optional.empty();
-
-						switch (treeItem.getType()) {
+						switch (treeItem.type()) {
 							case TABLE:
-								structure = db.table(treeItem.getName());
+								structure = db.table(treeItem.name());
 								break;
 							case VIEW:
-								structure = db.view(treeItem.getName());
+								structure = db.view(treeItem.name());
 								break;
 						}
 
+						TableTabsController tabsController = loader.getController();
 						structure.ifPresent(tabsController::setStructure);
+
 					}
-
-					stackPane.getChildren().clear();
-
-					tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-					tabPane.prefWidthProperty().bind(stackPane.widthProperty());
-
-					stackPane.getChildren().add(tabPane);
-
-				} catch (IOException e) {
-					e.printStackTrace();
+					break;
 				}
 
+				stackPane.getChildren().add(tabPane);
+				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
+				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
 			}
-
-
 		});
-
 
 		mainTreeItem = new TreeItem<>(); // Hidden
 		mainTreeItem.setExpanded(true);
@@ -198,11 +182,10 @@ public class SqlartanController {
 
 				Optional<ButtonType> result = alert.showAndWait();
 
-				if(result.isPresent()){
+				if (result.isPresent()) {
 					if (result.get() == buttonNewFile) {
 						file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-					}
-					else if(result.get() == buttonCancel){
+					} else if (result.get() == buttonCancel) {
 						break;
 					}
 				}
@@ -302,7 +285,7 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	private void dropColumn(Table table, String name) throws SQLException {
-		if(table.column(name).isPresent()){
+		if (table.column(name).isPresent()) {
 			table.column(name).get().drop();
 		}
 		refreshView();

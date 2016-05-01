@@ -25,17 +25,16 @@ public class TableVue {
 	private void dataView(Result res) {
 		tableView.getColumns().clear();
 
-		//Creations des colones
+		// Create columns
 		int i = 0;
 		for (Column c : res.columns()) {
-			final int j = i;
+			final int j = i++;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
 			tableView.getColumns().add(col);
-			//System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
-		//Ajout des donnees
+		// Add datas
 		rows.clear();
 		res.forEach(row -> rows.add(FXCollections.observableArrayList(
 				res.columns().map(c -> row.getString()))
@@ -69,6 +68,11 @@ public class TableVue {
 		return tableView;
 	}
 
+	/**
+	 *
+	 * @param str
+	 * @return the table view
+	 */
 	TableView getTableView(String str) {
 		try {
 			dataView(str, db);
@@ -78,6 +82,10 @@ public class TableVue {
 		return tableView;
 	}
 
+	/**
+	 * Show an alert
+	 * @param e
+	 */
 	private void showAlert(SQLException e) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("Bad Request");
