@@ -120,7 +120,7 @@ public class Tokenizer {
 							++i;
 						} else {
 							String value = slice(input, begin + 1, i).replace("''", "'");
-							builder.push(Literal.from(value, sql, begin));
+							builder.push(Literal.fromText(value, sql, begin));
 							state = State.WHITESPACE;
 						}
 					}
@@ -129,7 +129,7 @@ public class Tokenizer {
 				case IDENTIFIER:
 					if (c == quote_char) {
 						String fragment = slice(input, begin + 1, i);
-						builder.push(Identifier.from(fragment, sql, begin));
+						builder.push(Identifier.from(fragment, sql, begin, quote_char != '"'));
 						state = State.WHITESPACE;
 					}
 					break;
@@ -203,7 +203,7 @@ public class Tokenizer {
 						throw new TokenizeException("Malformed number", sql, begin);
 					}
 
-					builder.push(Literal.from(number, sql, begin));
+					builder.push(Literal.fromNumeric(number, sql, begin));
 
 					state = State.WHITESPACE;
 					--i;
@@ -238,7 +238,7 @@ public class Tokenizer {
 						} else if ((keyword = Keyword.from(fragment, sql, begin)) != null) {
 							builder.push(keyword);
 						} else {
-							builder.push(Identifier.from(fragment, sql, begin));
+							builder.push(Identifier.from(fragment, sql, begin, false));
 						}
 						state = State.WHITESPACE;
 						--i;

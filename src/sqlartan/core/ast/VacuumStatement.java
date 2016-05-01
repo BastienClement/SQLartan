@@ -16,7 +16,7 @@ public class VacuumStatement extends Statement {
 	private VacuumStatement() {}
 
 	@Override
-	public String toSQL() {
-		return "VACUUM";
+	public void toSQL(StringBuilder sb) {
+		sb.append("VACUUM");
 	}
 }

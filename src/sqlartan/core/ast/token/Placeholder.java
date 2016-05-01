@@ -11,7 +11,7 @@ public abstract class Placeholder<T> extends Token<T> {
 		}
 
 		@Override
-		public String value() { return "?" + value; }
+		public String stringValue() { return "?" + value; }
 	}
 
 	public static class Named extends Placeholder<String> {
@@ -20,14 +20,14 @@ public abstract class Placeholder<T> extends Token<T> {
 		}
 
 		@Override
-		public String value() { return "?" + value; }
+		public String stringValue() { return "?" + value; }
 	}
 
-	public static Placeholder<Integer> forIndex(int index, String source, int offset) {
+	public static Indexed forIndex(int index, String source, int offset) {
 		return new Indexed(index, source, offset);
 	}
 
-	public static Placeholder forName(String name, String source, int offset) {
+	public static Named forName(String name, String source, int offset) {
 		return new Named(name, source, offset);
 	}
 }

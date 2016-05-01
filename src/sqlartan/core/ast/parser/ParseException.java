@@ -16,10 +16,4 @@ public class ParseException extends Exception {
 			return new UnexpectedTokenException(context.current());
 		}
 	};
-
-	public static final FastParseException UnexpectedNextToken = new FastParseException() {
-		public ParseException materialize(ParserContext context) {
-			return new UnexpectedTokenException(context.next());
-		}
-	};
 }

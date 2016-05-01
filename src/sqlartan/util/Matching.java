@@ -3,6 +3,7 @@ package sqlartan.util;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -15,6 +16,8 @@ import java.util.function.Supplier;
  * @param <T> Type of the value matched against
  */
 public class Matching<T> {
+	private static Predicate<Object> truth = z -> true;
+
 	/**
 	 * Match expression against the given value.
 	 * The return type of the expression will be given by the first .when() case.
@@ -73,9 +76,13 @@ public class Matching<T> {
 	 * @param <R>        Return type of the expression
 	 *                   Will be the return type of the match expression
 	 */
-	@SuppressWarnings("unchecked")
 	public <M extends T, R> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
-		if (isMatch(matchClass)) {
+		return when(matchClass, truth, expr);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <M extends T, R> Returning<R> when(Class<M> matchClass, Predicate<? super M> pred, Function<? super M, ? extends R> expr) {
+		if (isMatch(matchClass) && pred.test((M) value)) {
 			return new MatchedReturning<>(expr.apply((M) value));
 		} else {
 			return new Returning<>();
@@ -109,9 +116,13 @@ public class Matching<T> {
 		 * @param expr       expression to execute if this case is a match
 		 * @param <M>        Type of the match case
 		 */
-		@SuppressWarnings("unchecked")
 		public <M extends T> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
-			if (isMatch(matchClass)) {
+			return when(matchClass, truth, expr);
+		}
+
+		@SuppressWarnings("unchecked")
+		public <M extends T> Returning<R> when(Class<M> matchClass, Predicate<? super M> pred, Function<? super M, ? extends R> expr) {
+			if (isMatch(matchClass) && pred.test((M) value)) {
 				return new MatchedReturning<>(expr.apply((M) value));
 			} else {
 				return this;
@@ -168,6 +179,11 @@ public class Matching<T> {
 		}
 
 		@Override
+		public <M extends T> Returning<R> when(Class<M> matchClass, Predicate<? super M> pred, Function<? super M, ? extends R> expr) {
+			return this;
+		}
+
+		@Override
 		public Returning<R> when(T matchValue, Supplier<? extends R> expr) {
 			return this;
 		}
@@ -205,9 +221,13 @@ public class Matching<T> {
 		 * @param expr       expression to execute if this case is a match
 		 * @param <M>        Type of the match case
 		 */
-		@SuppressWarnings("unchecked")
 		public <M extends T> Void when(Class<M> matchClass, Consumer<? super M> expr) {
-			if (isMatch(matchClass)) {
+			return when(matchClass, truth, expr);
+		}
+
+		@SuppressWarnings("unchecked")
+		public <M extends T> Void when(Class<M> matchClass, Predicate<? super M> pred, Consumer<? super M> expr) {
+			if (isMatch(matchClass) && pred.test((M) value)) {
 				expr.accept((M) value);
 				return new MatchedVoid();
 			} else {
@@ -244,7 +264,7 @@ public class Matching<T> {
 	 */
 	private class MatchedVoid extends Void {
 		@Override
-		public <M extends T> Void when(Class<M> matchClass, Consumer<? super M> expr) {
+		public <M extends T> Void when(Class<M> matchClass, Predicate<? super M> pred, Consumer<? super M> expr) {
 			return this;
 		}
 

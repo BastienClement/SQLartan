@@ -13,6 +13,8 @@ public abstract class Token<T> {
 		this.value = value;
 	}
 
+	public T value() { return value; }
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) {
@@ -37,12 +39,12 @@ public abstract class Token<T> {
 		}
 	}
 
-	public String value() {
+	public String stringValue() {
 		return value != null ? value.toString() : "";
 	}
 
 	@Override
 	public String toString() {
-		return type.label + "(" + value() + ")";
+		return type.label + "(" + stringValue() + ")";
 	}
 }

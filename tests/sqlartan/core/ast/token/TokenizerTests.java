@@ -7,12 +7,12 @@ import sqlartan.core.ast.parser.ParseException;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "VACUUM; VACUUM;";
+		String source = "select distinct * from main.foo AS b;";
 
-		TokenSource ts = TokenSource.from(source);
-		ts.tokens.forEach(System.out::println);
+		//TokenSource ts = TokenSource.from(source);
+		//ts.tokens.forEach(System.out::println);
 
-		System.out.print("\n");
+		//System.out.print("\n");
 
 		StatementList statementList = StatementList.parser.parse(source);
 		System.out.println(statementList.toSQL());
