@@ -119,6 +119,7 @@ public class SqlartanController {
 	 */
 	void refreshView() throws SQLException {
 		if (db != null) {
+			mainTreeItem.getChildren().clear();
 			tree(db);
 		}
 	}
