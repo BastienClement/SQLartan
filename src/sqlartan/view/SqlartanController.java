@@ -3,12 +3,18 @@ package sqlartan.view;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.TableTabsController;
 import java.io.File;
 import java.io.IOException;
@@ -234,57 +240,62 @@ public class SqlartanController {
 	 * Attach a database to the main database
 	 */
 	@FXML
-	private void attachDatabase() throws SQLException {
+	private void attachButton() throws SQLException {
 
-		File file;
-		while (true) {
-			 file = openSQLLiteDB();
+		Stage stage = new Stage();
+		Pane attachedChooser;
+		AttachedChooserController attachedChooserController = null;
 
-			if (file == null)
-				break;
+		try {
 
-			try {
-				db.attach(file, file.getName());
-				refreshView();
-				break;
-			} catch (SQLException e) {
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/attached/attachedChooser.fxml"));
 
-				Alert alert = new Alert(Alert.AlertType.NONE);
-				alert.setTitle("Problem while attatching database");
-				alert.setContentText("Error: " + e.getMessage());
+			stage.setTitle("SQLartan");
+			attachedChooser = loader.load();
+			attachedChooserController = loader.getController();
+			attachedChooserController.setSqlartanController(this);
+			stage.initModality(Modality.APPLICATION_MODAL);
 
-				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choos new");
+			stage.setScene(new Scene(attachedChooser));
+			stage.showAndWait();
 
-				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
-
-				Optional<ButtonType> result = alert.showAndWait();
-
-				if (result.isPresent()) {
-					if (result.get() == buttonNewFile) {
-						file = openSQLLiteDB();
-					} else if (result.get() == buttonCancel) {
-						break;
-					}
-				}
-			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
 
-		atachedDBs.add(file.getName());
 
-		MenuItem newMenuItem = new MenuItem(file.getName());
-		newMenuItem.setOnAction(event -> {
-			try {
-				db.detach(newMenuItem.getText());
-				detatchMenu.getItems().removeAll(newMenuItem);
-				refreshView();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
+	/**
+	 * Attach a database to the main database
+	 */
+	public void attachDatabase(File file, String dbName) {
 
-		detatchMenu.getItems().add(newMenuItem);
+		try {
+			db.attach(file, dbName);
+
+			atachedDBs.add(dbName);
+
+			MenuItem newMenuItem = new MenuItem(file.getName());
+			newMenuItem.setOnAction(event -> {
+				try {
+					db.detach(newMenuItem.getText());
+					detatchMenu.getItems().removeAll(newMenuItem);
+					refreshView();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
+
+			detatchMenu.getItems().add(newMenuItem);
+
+
+		} catch (SQLException e) {
+
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Problem while attatching database");
+			alert.setHeaderText(null);
+			alert.setContentText(e.getMessage());
+		}
 
 
 	}

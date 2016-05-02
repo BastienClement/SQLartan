@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.SqlartanController">
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="background" stylesheets="@MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.SqlartanController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -21,7 +21,7 @@
           </Menu>
             <Menu fx:id="databaseMenu" disable="true" mnemonicParsing="false" text="Database">
               <items>
-                  <MenuItem mnemonicParsing="false" onAction="#attachDatabase" text="Attached Database" />
+                  <MenuItem mnemonicParsing="false" onAction="#attachButton" text="Attached Database" />
                   <Menu fx:id="detatchMenu" mnemonicParsing="false" text="Detatch Database" />
                 <MenuItem mnemonicParsing="false" text="Vacuum" />
               </items>
@@ -35,7 +35,7 @@
       </MenuBar>
    </top>
    <left>
-      <TreeView fx:id="treeView" cacheShape="false" centerShape="false" focusTraversable="false" prefHeight="333.0" prefWidth="200.0" scaleShape="false" showRoot="false" BorderPane.alignment="CENTER">
+      <TreeView fx:id="treeView" cacheShape="false" centerShape="false" focusTraversable="false" prefHeight="333.0" prefWidth="200.0" scaleShape="false" showRoot="false" stylesheets="@MainTheme.css" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin></TreeView>
