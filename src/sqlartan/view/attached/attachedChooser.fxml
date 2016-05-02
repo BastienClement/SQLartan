@@ -5,31 +5,38 @@
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <Pane fx:id="attachedPane" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.attached.AttachedChooserController">
    <children>
-      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="170.0" prefWidth="452.0">
+      <VBox alignment="CENTER">
          <children>
-            <HBox alignment="CENTER" prefHeight="53.0" prefWidth="600.0">
+            <GridPane>
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.0" minWidth="10.0" prefWidth="114.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="288.0" minWidth="10.0" prefWidth="288.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
                <children>
-                  <Label text="Database Name:" />
-                  <TextField fx:id="dbName" />
+                  <Label prefHeight="29.0" prefWidth="152.0" text="Database Name:" />
+                  <Label prefHeight="20.0" prefWidth="97.0" text="Path:" GridPane.rowIndex="1" />
+                  <TextField fx:id="dbName" GridPane.columnIndex="1" />
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <children>
+                        <TextField fx:id="path" prefHeight="27.0" prefWidth="221.0" />
+                        <Button fx:id="browse" alignment="BOTTOM_LEFT" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#browse" text="Browse" />
+                     </children>
+                  </HBox>
                </children>
-            </HBox>
-            <HBox alignment="CENTER" prefHeight="63.0" prefWidth="600.0">
-               <children>
-                  <Label text="Path:" />
-                  <TextField fx:id="path" />
-                  <Button fx:id="browse" mnemonicParsing="false" onAction="#browse" text="Browse">
-                     <HBox.margin>
-                        <Insets left="30.0" />
-                     </HBox.margin>
-                  </Button>
-               </children>
-            </HBox>
+            </GridPane>
             <ButtonBar prefHeight="40.0" prefWidth="200.0">
               <buttons>
                   <Button fx:id="ok" mnemonicParsing="false" onAction="#validate" text="Attached" />
