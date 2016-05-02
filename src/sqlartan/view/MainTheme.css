@@ -1,15 +1,21 @@
 .background {
-    -fx-background-color: #FADDC6;
+    -fx-background-color: #FFF;
 }
 
 .tree-view {
-    -fx-background-color: #FAF8C6;
+    -fx-background-color: #FFFF;
+    -fx-border-width: 1;
+    -fx-border-color: #D3D3D3;
+    -fx-border-right-width 3;
 
 }
 
-.tree-view, .tree-cell {/*
-	-fx-background-color: black ;
-	-fx-text-fill: white ;*/
+.tree-view, .tree-cell {
+
+}
+
+.table-view{
+    -fx-border-radius: 10;
 }
 
 .tree-cell:selected {

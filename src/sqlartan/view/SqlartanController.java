@@ -1,8 +1,6 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -11,8 +9,8 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.view.tabs.TableTabsController;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -65,7 +63,7 @@ public class SqlartanController {
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
 						try {
-							tabPane = new FXMLLoader(Sqlartan.class.getResource("view/DatabaseTabs.fxml")).load();
+							tabPane = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml")).load();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -74,7 +72,7 @@ public class SqlartanController {
 					case TABLE:
 					case VIEW: {
 						// Onglets
-						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/TableTabs.fxml"));
+						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/TableTabs.fxml"));
 
 						try {
 							tabPane = loader.load();
