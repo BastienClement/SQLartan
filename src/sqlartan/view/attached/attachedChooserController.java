@@ -46,6 +46,8 @@ public class AttachedChooserController {
 		if (file != null) {
 			sqlartanController.attachDatabase(file, dbName.getText());
 		}
+
+		close();
 	}
 
 	@FXML

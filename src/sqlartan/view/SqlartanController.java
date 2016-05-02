@@ -275,7 +275,7 @@ public class SqlartanController {
 
 			atachedDBs.add(dbName);
 
-			MenuItem newMenuItem = new MenuItem(file.getName());
+			MenuItem newMenuItem = new MenuItem(dbName);
 			newMenuItem.setOnAction(event -> {
 				try {
 					db.detach(newMenuItem.getText());
@@ -287,6 +287,8 @@ public class SqlartanController {
 			});
 
 			detatchMenu.getItems().add(newMenuItem);
+
+			refreshView();
 
 
 		} catch (SQLException e) {
