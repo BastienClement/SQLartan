@@ -3,6 +3,9 @@ package sqlartan.core;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -385,5 +388,41 @@ public class Database implements AutoCloseable {
 				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
 		db.detach();
 		attached.remove(name);
+	}
+
+	/**
+	 * Import SQL from a string
+	 *
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
+	private Result importFromString(String sql) throws SQLException{
+		return execute(sql);
+	}
+
+	/**
+	 * Import SQL from a file
+	 *
+	 * @param file
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	private Result importfromFile(File file) throws SQLException, IOException{
+		return execute(new String(Files.readAllBytes(file.toPath())));
+	}
+
+	/**
+	 * Export SQL to a String
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	private String export() throws SQLException{
+		// TODO
+		execute(".dump");
+		return "";
 	}
 }
