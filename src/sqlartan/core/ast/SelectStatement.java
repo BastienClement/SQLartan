@@ -5,9 +5,9 @@ import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
 import java.util.List;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Keyword.NOT;
-import static sqlartan.core.ast.token.Operator.*;
+import static sqlartan.core.ast.token.KeywordToken.*;
+import static sqlartan.core.ast.token.KeywordToken.NOT;
+import static sqlartan.core.ast.token.OperatorToken.*;
 
 /**
  * https://www.sqlite.org/lang_select.html

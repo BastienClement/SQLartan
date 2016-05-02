@@ -1,21 +1,21 @@
 package sqlartan.core.ast.token;
 
-public class Literal extends Token<String> {
-	private Literal(String value, String source, int offset) {
-		super(Type.LITERAL, source, offset, value);
+public class LiteralToken extends Token<String> {
+	private LiteralToken(String value, String source, int offset) {
+		super(TokenType.LITERAL, source, offset, value);
 	}
 
-	public static class Text extends Literal {
+	public static class Text extends LiteralToken {
 		private Text(String value, String source, int offset) {
 			super(value, source, offset);
 		}
 
-		public Identifier toIdentifier() {
-			return Identifier.from(value, source, offset, false);
+		public IdentifierToken toIdentifier() {
+			return IdentifierToken.from(value, source, offset, false);
 		}
 	}
 
-	public static class Numeric extends Literal {
+	public static class Numeric extends LiteralToken {
 		private Numeric(String value, String source, int offset) {
 			super(value, source, offset);
 		}

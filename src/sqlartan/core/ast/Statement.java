@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
+import static sqlartan.core.ast.token.KeywordToken.*;
 import static sqlartan.util.Matching.match;
 
 public interface Statement extends Node {

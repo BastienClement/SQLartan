@@ -2,50 +2,98 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParseException;
-import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Literal;
-import static sqlartan.core.ast.token.Keyword.RAISE;
+import sqlartan.core.ast.token.LiteralToken;
+import static sqlartan.core.ast.token.OperatorToken.DOT;
 import static sqlartan.util.Matching.match;
 
 public interface Expression extends Node {
 	static Expression parse(ParserContext context) {
-		Parser<Expression> parser = match(context.current()).<Parser<Expression>>returning()
-			.when(Literal.class, tok -> LiteralExpression::parse)
-			.when(RAISE, () -> RaiseFunction::parse)
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
-		return context.parse(parser);
+		return context.alternatives(
+			() -> context.parse(Literal::parse),
+			() -> context.parse(ColumnReference::parse),
+			() -> context.parse(RaiseFunction::parse)
+		);
 	}
 
-	abstract class LiteralExpression implements Expression {
+	abstract class Literal implements Expression {
 		public String value;
-		static LiteralExpression parse(ParserContext context) {
-			LiteralExpression expr = match(context.current(), LiteralExpression.class)
-				.when(Literal.Text.class, text -> new TextLiteral())
-				.when(Literal.Numeric.class, num -> new NumericLiteral())
+
+		public Literal() {}
+		public Literal(String value) {
+			this.value = value;
+		}
+
+		static Literal parse(ParserContext context) {
+			return match(context.consume(LiteralToken.class), Literal.class)
+				.when(LiteralToken.Text.class, text -> new TextLiteral(text.value))
+				.when(LiteralToken.Numeric.class, num -> new NumericLiteral(num.value))
 				.orElseThrow(ParseException.UnexpectedCurrentToken);
-			expr.value = context.consume(Literal.class).value;
-			return expr;
 		}
 	}
 
-	class TextLiteral extends LiteralExpression {
+	class TextLiteral extends Literal {
+		public TextLiteral() {}
+		public TextLiteral(String value) { super(value); }
+
 		@Override
 		public void toSQL(SQLBuilder sql) {
 			sql.appendTextLiteral(value);
 		}
 	}
 
-	class NumericLiteral extends LiteralExpression {
+	class NumericLiteral extends Literal {
+		public NumericLiteral() {}
+		public NumericLiteral(String value) { super(value); }
+
 		@Override
 		public void toSQL(SQLBuilder sql) {
 			sql.append(value);
 		}
 	}
 
+	class ColumnReference implements Expression {
+		public String schema;
+		public String table;
+		public String column;
+
+		public ColumnReference(String schema, String table, String column) {
+			this.schema = schema;
+			this.table = table;
+			this.column = column;
+		}
+
+		static ColumnReference parse(ParserContext context) {
+			String table = null, schema = null;
+
+			if (context.next(DOT)) {
+				table = context.consumeIdentifier().value;
+				context.consume(DOT);
+			}
+
+			if (context.next(DOT)) {
+				schema = table;
+				table = context.consumeIdentifier().value;
+				context.consume(DOT);
+			}
+
+			String column = context.consumeIdentifier().value;
+			return new ColumnReference(schema, table, column);
+		}
+
+		@Override
+		public void toSQL(SQLBuilder sql) {
+			if (schema != null)
+				sql.appendIdentifier(schema).append(".");
+			if (table != null)
+				sql.appendIdentifier(table).append(".");
+			sql.appendIdentifier(column);
+		}
+	}
+
 	abstract class RaiseFunction implements Expression {
 		static RaiseFunction parse(ParserContext context) {
-			return null;
+			throw new UnsupportedOperationException();
 		}
 	}
 }

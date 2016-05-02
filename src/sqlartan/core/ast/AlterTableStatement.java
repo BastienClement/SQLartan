@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Operator.DOT;
+import static sqlartan.core.ast.token.KeywordToken.*;
+import static sqlartan.core.ast.token.OperatorToken.DOT;
 
 public abstract class AlterTableStatement implements Statement {
 	public String schema;

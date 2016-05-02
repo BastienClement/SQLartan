@@ -42,7 +42,7 @@ public class TokenSource {
 	public final String sql;
 	public final List<Token<?>> tokens;
 	public final int length;
-	public final EndOfStream eos;
+	public final EndOfStreamToken eos;
 
 	private Token<?> current, next;
 	private int cursor;
@@ -52,7 +52,7 @@ public class TokenSource {
 		this.sql = sql;
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.length = tokens.size();
-		this.eos = (EndOfStream) tokens.get(length - 1);
+		this.eos = (EndOfStreamToken) tokens.get(length - 1);
 		setCursor(0);
 	}
 
@@ -67,7 +67,7 @@ public class TokenSource {
 	}
 
 	public void consume() {
-		if (current instanceof EndOfStream) {
+		if (current instanceof EndOfStreamToken) {
 			throw new IllegalStateException("Attempted to consume EndOfStreamt token");
 		}
 

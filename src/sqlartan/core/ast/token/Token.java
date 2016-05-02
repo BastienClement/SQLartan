@@ -1,12 +1,12 @@
 package sqlartan.core.ast.token;
 
 public abstract class Token<T> {
-	public final Type type;
+	public final TokenType type;
 	public final String source;
 	public final int offset;
 	public final T value;
 
-	protected Token(Type type, String source, int offset, T value) {
+	protected Token(TokenType type, String source, int offset, T value) {
 		this.type = type;
 		this.source = source;
 		this.offset = offset;

@@ -2,10 +2,10 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Identifier;
-import static sqlartan.core.ast.token.Keyword.AS;
-import static sqlartan.core.ast.token.Operator.DOT;
-import static sqlartan.core.ast.token.Operator.MUL;
+import sqlartan.core.ast.token.IdentifierToken;
+import static sqlartan.core.ast.token.KeywordToken.AS;
+import static sqlartan.core.ast.token.OperatorToken.DOT;
+import static sqlartan.core.ast.token.OperatorToken.MUL;
 
 public interface ResultColumn extends Node {
 	static ResultColumn parse(ParserContext context) {
@@ -15,7 +15,7 @@ public interface ResultColumn extends Node {
 				return Wildcard.singleton;
 			},
 			() -> {
-				String table = context.consume(Identifier.class).value;
+				String table = context.consume(IdentifierToken.class).value;
 				context.consume(DOT);
 				context.consume(MUL);
 				return new TableWildcard(table);

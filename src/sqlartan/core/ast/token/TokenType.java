@@ -1,6 +1,6 @@
 package sqlartan.core.ast.token;
 
-public enum Type {
+public enum TokenType {
 	KEYWORD("Keyword"),
 	OPERATOR("Operator"),
 	IDENTIFIER("Identifier"),
@@ -10,7 +10,7 @@ public enum Type {
 
 	public final String label;
 
-	Type(String label) {
+	TokenType(String label) {
 		this.label = label;
 	}
 }

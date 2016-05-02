@@ -3,7 +3,7 @@ package sqlartan.core.ast.parser;
 import sqlartan.core.ast.Node;
 import sqlartan.core.ast.token.TokenSource;
 import java.util.Optional;
-import static sqlartan.core.ast.token.EndOfStream.EOS;
+import static sqlartan.core.ast.token.EndOfStreamToken.EOS;
 
 public final class ParserBuilder<T extends Node> {
 	private final Parser<T> parser;
