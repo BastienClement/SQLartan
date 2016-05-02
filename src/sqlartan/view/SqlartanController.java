@@ -277,6 +277,7 @@ public class SqlartanController {
 		newMenuItem.setOnAction(event -> {
 			try {
 				db.detach(newMenuItem.getText());
+				detatchMenu.getItems().removeAll(newMenuItem);
 				refreshView();
 			} catch (SQLException e) {
 				e.printStackTrace();
