@@ -36,7 +36,7 @@ public class ParserContext {
 	 * @param token      the token to test
 	 * @param tokenClass the class to check
 	 */
-	public boolean match(Token token, Class<? extends Token> tokenClass) {
+	public boolean match(Token<?> token, Class<? extends Token<?>> tokenClass) {
 		return tokenClass.isAssignableFrom(token.getClass());
 	}
 
@@ -46,18 +46,18 @@ public class ParserContext {
 	 * @param token the token to test
 	 * @param other the other token to test
 	 */
-	public boolean match(Token token, Token other) {
+	public boolean match(Token<?> token, Token<?> other) {
 		return token.equals(other);
 	}
 
 	/**
 	 * Returns the current token
 	 */
-	public Token current() {
+	public Token<?> current() {
 		return source.current();
 	}
 
-	public boolean current(Class<? extends Token> token) {
+	public boolean current(Class<? extends Token<?>> token) {
 		return match(current(), token);
 	}
 
@@ -68,15 +68,15 @@ public class ParserContext {
 	/**
 	 * Returns the next token
 	 */
-	public Token next() {
+	public Token<?> next() {
 		return source.next();
 	}
 
-	public boolean next(Class<? extends Token> token) {
+	public boolean next(Class<? extends Token<?>> token) {
 		return match(next(), token);
 	}
 
-	public boolean next(Token token) {
+	public boolean next(Token<?> token) {
 		return match(next(), token);
 	}
 
@@ -110,7 +110,7 @@ public class ParserContext {
 	 * @param <T> the type of the token to return
 	 */
 	@SuppressWarnings("unchecked")
-	private <T extends Token> T unsafeConsume() {
+	private <T extends Token<?>> T unsafeConsume() {
 		T consumed = (T) source.current();
 		source.consume();
 		return consumed;
@@ -123,7 +123,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return the consumed token
 	 */
-	public <T extends Token> T consume(Class<T> token) {
+	public <T extends Token<?>> T consume(Class<T> token) {
 		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -134,7 +134,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return the consumed token
 	 */
-	public <T extends Token> T consume(T token) {
+	public <T extends Token<?>> T consume(T token) {
 		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -161,7 +161,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return true if a matching token was consumed, false otherwise
 	 */
-	public <T extends Token> boolean tryConsume(Class<T> token) {
+	public <T extends Token<?>> boolean tryConsume(Class<T> token) {
 		return optConsume(token).isPresent();
 	}
 
@@ -172,7 +172,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return true if a matching token was consumed, false otherwise
 	 */
-	public <T extends Token> boolean tryConsume(T token) {
+	public <T extends Token<?>> boolean tryConsume(T token) {
 		return optConsume(token).isPresent();
 	}
 
@@ -203,7 +203,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return an optional containing a matching token, if any
 	 */
-	public <T extends Token> Optional<T> optConsume(Class<T> token) {
+	public <T extends Token<?>> Optional<T> optConsume(Class<T> token) {
 		if (current(token)) {
 			return Optional.of(unsafeConsume());
 		} else {
@@ -218,7 +218,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return an optional containing a matching token, if any
 	 */
-	public <T extends Token> Optional<T> optConsume(T token) {
+	public <T extends Token<?>> Optional<T> optConsume(T token) {
 		if (current(token)) {
 			return Optional.of(unsafeConsume());
 		} else {

@@ -9,7 +9,7 @@ public class TokenSource {
 
 	static class Builder {
 		private final String sql;
-		private List<Token> tokens = new ArrayList<>();
+		private List<Token<?>> tokens = new ArrayList<>();
 		private Token last = null;
 
 		private Builder(String sql) {
@@ -21,7 +21,7 @@ public class TokenSource {
 			last = token;
 		}
 
-		public Token last() {
+		public Token<?> last() {
 			return last;
 		}
 
@@ -40,15 +40,15 @@ public class TokenSource {
 	}
 
 	public final String sql;
-	public final List<Token> tokens;
+	public final List<Token<?>> tokens;
 	public final int length;
 	public final EndOfStream eos;
 
-	private Token current, next;
+	private Token<?> current, next;
 	private int cursor;
 	private Stack<Integer> marks = new Stack<>();
 
-	private TokenSource(List<Token> tokens, String sql) {
+	private TokenSource(List<Token<?>> tokens, String sql) {
 		this.sql = sql;
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.length = tokens.size();
@@ -56,7 +56,7 @@ public class TokenSource {
 		setCursor(0);
 	}
 
-	private Token safeget(int idx) {
+	private Token<?> safeget(int idx) {
 		return idx < length ? tokens.get(idx) : eos;
 	}
 
@@ -89,11 +89,11 @@ public class TokenSource {
 		setCursor(commit());
 	}
 
-	public Token current() {
+	public Token<?> current() {
 		return current;
 	}
 
-	public Token next() {
+	public Token<?> next() {
 		return next;
 	}
 }

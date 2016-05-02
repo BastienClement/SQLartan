@@ -1,25 +1,15 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.gen.SQLBuilder;
+
 public interface Node {
 	default String toSQL() {
-		StringBuilder sb = new StringBuilder();
-		toSQL(sb);
-		return sb.toString();
+		SQLBuilder sql = new SQLBuilder();
+		toSQL(sql);
+		return sql.toString();
 	}
 
-	default void toSQL(StringBuilder sb) {
+	default void toSQL(SQLBuilder sql) {
 		throw new UnsupportedOperationException();
-	}
-
-	default void joinNodes(StringBuilder sb, String delim, Iterable<? extends Node> nodes) {
-		boolean first = true;
-		for (Node node : nodes) {
-			if (first) {
-				first = false;
-			} else {
-				sb.append(delim);
-			}
-			sb.append(node.toSQL());
-		}
 	}
 }

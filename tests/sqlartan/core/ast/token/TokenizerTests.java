@@ -7,7 +7,7 @@ import sqlartan.core.ast.parser.ParseException;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "select distinct *, foo.* from main.foo AS b indexed by foobar, x, y not indexed, z Z indexed by foo;";
+		String source = "select distinct *, foo.*, 'a', 2.33e+5 from main.foo AS b;";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens.forEach(System.out::println);

@@ -1,5 +1,6 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
@@ -66,19 +67,19 @@ public interface SelectStatement extends Statement {
 		}
 
 		@Override
-		public void toSQL(StringBuilder sb) {
-			sb.append("SELECT ");
+		public void toSQL(SQLBuilder sql) {
+			sql.append("SELECT ");
 			if (distinct)
-				sb.append("DISTINCT ");
-			joinNodes(sb, ", ", columns);
+				sql.append("DISTINCT ");
+			sql.append(columns);
 			if (from != null)
-				joinNodes(sb.append(" FROM "), ", ", from);
+				sql.append(" FROM ").append(from);
 			if (where != null)
-				where.toSQL(sb.append(" WHERE "));
+				sql.append(" WHERE ").append(where);
 			if (groupBy != null) {
-				joinNodes(sb.append(" GROUP BY "), ",", groupBy);
+				sql.append(" GROUP BY ").append(groupBy);
 				if (having != null)
-					having.toSQL(sb.append(" HAVING "));
+					sql.append(" HAVING ").append(having);
 			}
 		}
 	}
@@ -119,14 +120,14 @@ public interface SelectStatement extends Statement {
 		}
 
 		@Override
-		public void toSQL(StringBuilder sb) {
-			super.toSQL(sb);
+		public void toSQL(SQLBuilder sql) {
+			super.toSQL(sql);
 			if (orderBy != null)
-				joinNodes(sb.append(" ORDER BY "), ", ", orderBy);
+				sql.append(" ORDER BY ").append(orderBy);
 			if (limit != null) {
-				limit.toSQL(sb.append(" LIMIT "));
+				sql.append(" LIMIT ").append(limit);
 				if (offset != null) {
-					offset.toSQL(sb.append(", "));
+					sql.append(", ").append(offset);
 				}
 			}
 		}
@@ -135,7 +136,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * Source of data for SELECT statements
 	 */
-	class SelectSource implements Node {
+	abstract class SelectSource implements Node {
 		public static SelectSource parse(ParserContext context) {
 			return context.alternatives(
 				() -> context.parse(TableOrSubquerySource::parse),
@@ -197,16 +198,16 @@ public interface SelectStatement extends Statement {
 		}
 
 		@Override
-		public void toSQL(StringBuilder sb) {
+		public void toSQL(SQLBuilder sql) {
 			if (schema != null)
-				sb.append(schema).append(".");
-			sb.append(table);
+				sql.appendIdentifier(schema).append(".");
+			sql.appendIdentifier(table);
 			if (as != null)
-				sb.append(" AS ").append(as);
+				sql.append(" AS ").appendIdentifier(as);
 			if (notIndexed)
-				sb.append(" NOT INDEXED");
+				sql.append(" NOT INDEXED");
 			else if (index != null)
-				sb.append(" INDEXED BY ").append(index);
+				sql.append(" INDEXED BY ").appendIdentifier(index);
 		}
 	}
 
