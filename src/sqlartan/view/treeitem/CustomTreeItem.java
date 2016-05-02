@@ -1,21 +1,22 @@
-package sqlartan.view;
+package sqlartan.view.treeitem;
 
-/**
- * Created by julien on 25.04.16.
- */
-enum Type {
-	DATABASE, TABLE, VIEW
-}
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.TreeItem;
 
-public class DbTreeItem {
+public abstract class CustomTreeItem extends TreeItem {
 
 	private String name;
 	private Type type;
 
-	public DbTreeItem(String name, Type type) {
+	public ContextMenu itemContextMenu;
+
+	public CustomTreeItem(String name, Type type) {
 		this.name = name;
 		this.type = type;
+
 	}
+
+	public abstract ContextMenu getMenu();
 
 	/**
 	 * @return the type of the treeItem

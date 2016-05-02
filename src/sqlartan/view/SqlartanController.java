@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -16,6 +15,8 @@ import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.TableTabsController;
+import sqlartan.view.treeitem.*;
+import sqlartan.view.treeitem.Type;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -30,11 +31,11 @@ public class SqlartanController {
 
 	private static Database db = null;
 
-	TreeItem<DbTreeItem> mainTreeItem;
+	TreeItem<CustomTreeItem> mainTreeItem;
 
 	private Sqlartan sqlartan;
 	@FXML
-	private TreeView<DbTreeItem> treeView;
+	private TreeView<CustomTreeItem> treeView;
 	@FXML
 	private BorderPane borderPane;
 	@FXML
@@ -62,6 +63,8 @@ public class SqlartanController {
 	@FXML
 	private void initialize() throws SQLException {
 
+		treeView.setCellFactory(param ->new TreeCellImpl());
+
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			stackPane.getChildren().clear();
 			if (newValue != null) {
@@ -86,7 +89,7 @@ public class SqlartanController {
 							e.printStackTrace();
 						}
 
-						DbTreeItem treeItem = newValue.getValue();
+						CustomTreeItem treeItem = newValue.getValue();
 						Optional<? extends PersistentStructure<?>> structure = Optional.empty();
 						switch (treeItem.type()) {
 							case TABLE:
@@ -149,18 +152,18 @@ public class SqlartanController {
 	void tree(Database database) throws SQLException {
 
 		// Main
-		TreeItem<DbTreeItem> trees = new TreeItem<>(new DbTreeItem(database.name(), Type.DATABASE));
+		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DbTreeItem(database.name(), Type.DATABASE));
 
 		trees.getChildren().addAll(database.tables()
 		                                   .map(Table::name) // .map(table -> table.name())
-		                                   .map(name -> new DbTreeItem(name, Type.TABLE)) // flux de dbtreeitme
+		                                   .map(name -> (CustomTreeItem)new TableTreeItem(name, Type.TABLE)) // flux de dbtreeitme
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
 
 		trees.getChildren().addAll(database.views()
 		                                   .map(View::name)
-		                                   .map(name -> new DbTreeItem(name, Type.VIEW))
+		                                   .map(name -> (CustomTreeItem) new TableTreeItem(name, Type.VIEW))
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -168,16 +171,16 @@ public class SqlartanController {
 
 		// Attached database
 		database.attached().values().forEach(adb -> {
-			TreeItem<DbTreeItem> tItems = new TreeItem<>(new DbTreeItem(adb.name(), Type.DATABASE));
+			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new DbTreeItem(adb.name(), Type.DATABASE));
 			tItems.getChildren().addAll(adb.tables()
 			                               .map(Table::name)
-			                               .map(name -> new DbTreeItem(name, Type.TABLE))
+			                               .map(name ->(CustomTreeItem) new TableTreeItem(name, Type.TABLE))
 			                               .map(TreeItem::new)
 			                               .toList());
 
 			tItems.getChildren().addAll(adb.views()
 			                               .map(View::name)
-			                               .map(name -> new DbTreeItem(name, Type.VIEW))
+			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, Type.VIEW))
 			                               .map(TreeItem::new)
 			                               .toList());
 
