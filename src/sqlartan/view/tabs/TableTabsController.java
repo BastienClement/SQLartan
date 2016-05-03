@@ -35,8 +35,6 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private TableColumn<TableStructure, String> colActions;
 
-	private ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
-
 	private PersistentStructure<?> structure;
 
 	private DataTableView dataTableView = new DataTableView();
@@ -71,20 +69,6 @@ public class TableTabsController extends TabsController {
 				displayStructure();
 			}
 		});
-	}
-
-	public void setStructure(PersistentStructure<?> structure) {
-		this.structure = structure;
-	}
-
-	private void displayStructure() {
-		tableStructures.clear();
-		TableStructure.IDReset();
-		tableStructures.addAll(structure.columns()
-		                                .map(TableStructure::new)
-		                                .toList());
-
-		structureTable.setItems(tableStructures);
 
 		colActions.setCellValueFactory(param -> param.getValue().actionProperty());
 		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
@@ -93,7 +77,21 @@ public class TableTabsController extends TabsController {
 		colNo.setCellValueFactory(param -> param.getValue().noProperty());
 		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
+	}
 
+	public void setStructure(PersistentStructure<?> structure) {
+		this.structure = structure;
+	}
+
+	private void displayStructure() {
+		ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
+
+		TableStructure.IDReset();
+		tableStructures.addAll(structure.columns()
+		                                .map(TableStructure::new)
+		                                .toList());
+
+		structureTable.setItems(tableStructures);
 	}
 
 }

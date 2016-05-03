@@ -52,6 +52,11 @@ public class DatabaseTabsController extends TabsController {
 				displayStructure();
 			}
 		});
+
+		colName.setCellValueFactory(param -> param.getValue().nameProperty());
+		colActions.setCellValueFactory(param -> param.getValue().actionsProperty());
+		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
+		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 	}
 
 	/**
@@ -66,11 +71,6 @@ public class DatabaseTabsController extends TabsController {
 
 
 		structureTable.setItems(dbStructs);
-
-		colName.setCellValueFactory(param -> param.getValue().nameProperty());
-		colActions.setCellValueFactory(param -> param.getValue().actionsProperty());
-		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
-		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 	}
 
 	/**
