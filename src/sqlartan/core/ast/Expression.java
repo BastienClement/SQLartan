@@ -4,6 +4,8 @@ import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.ast.parser.ParserContext;
+import sqlartan.core.ast.token.Identifier;
+import sqlartan.core.ast.token.Literal;
 import sqlartan.core.ast.token.Token;
 import java.util.Optional;
 import static sqlartan.core.ast.token.Keyword.*;
@@ -16,11 +18,12 @@ public abstract class Expression implements Node {
 	}
 
 	public static Expression parseTerminal(ParserContext context) {
-		return context.alternatives(
-			() -> context.parse(Expression.Literal::parse),
-			() -> context.parse(ColumnReference::parse)
-			//() -> context.parse(RaiseFunction::parse)
-		);
+		return match(context.current(), Expression.class)
+			.when(Literal.class, lit -> context.parse(Constant::parse))
+			.when(Identifier.class, id -> context.alternatives(
+				() -> context.parse(ColumnReference::parse)
+			))
+			.orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
 	private static Parser<Expression> parseStep(Parser<Expression> parser, Token<?>... tokens) {
@@ -74,25 +77,25 @@ public abstract class Expression implements Node {
 		}
 	}
 
-	public abstract static class Literal extends Expression {
+	public abstract static class Constant extends Expression {
 		public String value;
 
-		public Literal() {}
-		public Literal(String value) {
+		public Constant() {}
+		public Constant(String value) {
 			this.value = value;
 		}
 
-		public static Literal parse(ParserContext context) {
-			return match(context.consume(sqlartan.core.ast.token.Literal.class), Literal.class)
-				.when(sqlartan.core.ast.token.Literal.Text.class, text -> new TextLiteral(text.value))
-				.when(sqlartan.core.ast.token.Literal.Numeric.class, num -> new NumericLiteral(num.value))
+		public static Constant parse(ParserContext context) {
+			return match(context.consume(Literal.class), Constant.class)
+				.when(Literal.Text.class, text -> new TextConstant(text.value))
+				.when(Literal.Numeric.class, num -> new NumericConstant(num.value))
 				.orElseThrow(ParseException.UnexpectedCurrentToken);
 		}
 	}
 
-	public static class TextLiteral extends Literal {
-		public TextLiteral() {}
-		public TextLiteral(String value) { super(value); }
+	public static class TextConstant extends Constant {
+		public TextConstant() {}
+		public TextConstant(String value) { super(value); }
 
 		@Override
 		public void toSQL(SQLBuilder sql) {
@@ -100,9 +103,9 @@ public abstract class Expression implements Node {
 		}
 	}
 
-	public static class NumericLiteral extends Literal {
-		public NumericLiteral() {}
-		public NumericLiteral(String value) { super(value); }
+	public static class NumericConstant extends Constant {
+		public NumericConstant() {}
+		public NumericConstant(String value) { super(value); }
 
 		@Override
 		public void toSQL(SQLBuilder sql) {
