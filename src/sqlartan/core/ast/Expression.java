@@ -3,14 +3,13 @@ package sqlartan.core.ast;
 import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.LiteralToken;
-import static sqlartan.core.ast.token.OperatorToken.DOT;
+import static sqlartan.core.ast.token.Operator.DOT;
 import static sqlartan.util.Matching.match;
 
 public interface Expression extends Node {
 	static Expression parse(ParserContext context) {
 		return context.alternatives(
-			() -> context.parse(Literal::parse),
+			() -> context.parse(Expression.Literal::parse),
 			() -> context.parse(ColumnReference::parse),
 			() -> context.parse(RaiseFunction::parse)
 		);
@@ -25,9 +24,9 @@ public interface Expression extends Node {
 		}
 
 		static Literal parse(ParserContext context) {
-			return match(context.consume(LiteralToken.class), Literal.class)
-				.when(LiteralToken.Text.class, text -> new TextLiteral(text.value))
-				.when(LiteralToken.Numeric.class, num -> new NumericLiteral(num.value))
+			return match(context.consume(sqlartan.core.ast.token.Literal.class), Literal.class)
+				.when(sqlartan.core.ast.token.Literal.Text.class, text -> new TextLiteral(text.value))
+				.when(sqlartan.core.ast.token.Literal.Numeric.class, num -> new NumericLiteral(num.value))
 				.orElseThrow(ParseException.UnexpectedCurrentToken);
 		}
 	}

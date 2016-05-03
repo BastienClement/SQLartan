@@ -1,8 +1,8 @@
 package sqlartan.core.ast.parser;
 
 import sqlartan.core.ast.Node;
-import sqlartan.core.ast.token.IdentifierToken;
-import sqlartan.core.ast.token.LiteralToken;
+import sqlartan.core.ast.token.Identifier;
+import sqlartan.core.ast.token.Literal;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.TokenSource;
 import sqlartan.util.Matching;
@@ -162,7 +162,7 @@ public class ParserContext {
 	 * Consumes an identifier token
 	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
 	 */
-	public IdentifierToken consumeIdentifier() {
+	public Identifier consumeIdentifier() {
 		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -170,7 +170,7 @@ public class ParserContext {
 	 * Consumes a string literal token
 	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
 	 */
-	public LiteralToken.Text consumeTextLiteral() {
+	public Literal.Text consumeTextLiteral() {
 		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -252,11 +252,11 @@ public class ParserContext {
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
-	public Optional<IdentifierToken> optConsumeIdentifier() {
-		Optional<IdentifierToken> res = Matching.match(current())
-		                                        .when(IdentifierToken.class, id -> id)
-		                                        .when(LiteralToken.Text.class, LiteralToken.Text::toIdentifier)
-		                                        .get();
+	public Optional<Identifier> optConsumeIdentifier() {
+		Optional<Identifier> res = Matching.match(current())
+		                                   .when(Identifier.class, id -> id)
+		                                   .when(Literal.Text.class, Literal.Text::toIdentifier)
+		                                   .get();
 		if (res.isPresent()) source.consume();
 		return res;
 	}
@@ -267,11 +267,11 @@ public class ParserContext {
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
-	public Optional<LiteralToken.Text> optConsumeTextLiteral() {
-		Optional<LiteralToken.Text> res = Matching.match(current())
-		                                          .when(LiteralToken.Text.class, t -> t)
-		                                          .when(IdentifierToken.class, id -> !id.strict, IdentifierToken::toLiteral)
-		                                          .get();
+	public Optional<Literal.Text> optConsumeTextLiteral() {
+		Optional<Literal.Text> res = Matching.match(current())
+		                                     .when(Literal.Text.class, t -> t)
+		                                     .when(Identifier.class, id -> !id.strict, Identifier::toLiteral)
+		                                     .get();
 		if (res.isPresent()) source.consume();
 		return res;
 	}
