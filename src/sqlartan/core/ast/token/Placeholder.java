@@ -1,5 +1,9 @@
 package sqlartan.core.ast.token;
 
+/**
+ * SQL Placeholder
+ * @param <T>
+ */
 public abstract class Placeholder<T> extends Token<T> {
 	private Placeholder(String source, int offset, T value) {
 		super(TokenType.PLACEHOLDER, source, offset, value);

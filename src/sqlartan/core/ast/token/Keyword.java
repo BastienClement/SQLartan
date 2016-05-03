@@ -3,13 +3,32 @@ package sqlartan.core.ast.token;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * SQL Keyword
+ */
 public class Keyword extends Token<String> {
+	/**
+	 * List of defined Keyword tokens
+	 */
 	private static Map<String, Keyword> keywords = new HashMap<>();
 
+	/**
+	 * Token initialization
+	 *
+	 * @param name   the keyword name
+	 * @param source the token source
+	 * @param offset the token offset in the source
+	 */
 	private Keyword(String name, String source, int offset) {
 		super(TokenType.KEYWORD, source, offset, name);
 	}
 
+	/**
+	 * Token default initialization
+	 * This method will register the token in the keywords map.
+	 *
+	 * @param name the token name
+	 */
 	private Keyword(String name) {
 		this(name, "", -1);
 		if (keywords.containsKey(name)) {
@@ -18,6 +37,14 @@ public class Keyword extends Token<String> {
 		keywords.put(name, this);
 	}
 
+	/**
+	 * Constructs a Keyword token.
+	 * If the requested Keyword does not exists, returns null.
+	 *
+	 * @param keyword the keyword name
+	 * @param source  the source code
+	 * @param offset  the offset of the token in the source code
+	 */
 	public static Keyword from(String keyword, String source, int offset) {
 		Keyword ref = keywords.get(keyword.toUpperCase());
 		return ref != null ? new Keyword(ref.value, source, offset) : null;
