@@ -10,6 +10,6 @@ public interface Node {
 	}
 
 	default void toSQL(SQLBuilder sql) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(this.getClass().getCanonicalName());
 	}
 }
