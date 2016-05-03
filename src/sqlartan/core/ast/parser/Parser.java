@@ -9,5 +9,5 @@ import sqlartan.core.ast.Node;
  */
 @FunctionalInterface
 public interface Parser<T extends Node> {
-	<A> T parse(ParserContext context) throws FastParseException;
+	T parse(ParserContext context) throws FastParseException;
 }

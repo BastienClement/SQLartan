@@ -27,17 +27,14 @@ public abstract class Expression implements Node {
 	}
 
 	private static Parser<Expression> parseStep(Parser<Expression> parser, Token<?>... tokens) {
-		return new Parser<Expression>() {
-			@Override
-			public Expression parse(ParserContext context) {
-				Expression lhs = context.parse(parser);
-				Token<?> op;
-				while ((op = consumeAny(context, tokens)) != null) {
-					Expression rhs = context.parse(parser);
-					lhs = new BinaryOperator(lhs, op, rhs);
-				}
-				return lhs;
+		return context -> {
+			Expression lhs = context.parse(parser);
+			Token<?> op;
+			while ((op = consumeAny(context, tokens)) != null) {
+				Expression rhs = context.parse(parser);
+				lhs = new BinaryOperator(lhs, op, rhs);
 			}
+			return lhs;
 		};
 	}
 
