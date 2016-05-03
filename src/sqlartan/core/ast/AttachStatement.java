@@ -1,5 +1,6 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.AS;
 import static sqlartan.core.ast.token.Keyword.ATTACH;
@@ -20,5 +21,10 @@ public class AttachStatement implements Statement {
 		context.consume(AS);
 		attach.schema = context.consumeIdentifier().value;
 		return attach;
+	}
+
+	@Override
+	public void toSQL(SQLBuilder sql) {
+		sql.append("ATTACH ").append(file).append(" AS ").appendIdentifier(schema);
 	}
 }
