@@ -251,7 +251,7 @@ public class SqlartanController {
 
 		try {
 
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/attached/attachedChooser.fxml"));
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/attached/AttachedChooser.fxml"));
 
 			stage.setTitle("SQLartan");
 			attachedChooser = loader.load();
