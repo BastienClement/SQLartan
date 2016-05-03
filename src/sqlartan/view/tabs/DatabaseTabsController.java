@@ -58,6 +58,7 @@ public class DatabaseTabsController extends TabsController {
 	 * Display the structure of the database
 	 */
 	private void displayStructure() {
+		dbStructs.clear();
 		dbStructs.addAll(Stream.concat(database.tables(), database.views())
 		                       .sorted((a, b) -> a.name().compareTo(b.name()))
 		                       .map(DatabaseStructure::new)

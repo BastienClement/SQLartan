@@ -22,9 +22,9 @@ public class DatabaseStructure {
 	public DatabaseStructure(PersistentStructure<?> structure) {
 		this.name = new SimpleStringProperty(structure.name());
 		this.type = new SimpleStringProperty(match(structure)
-				.when(Table.class, t -> "name")
-				.when(View.class, v -> "view")
-				.orElse("unknown"));
+				.when(Table.class, t -> "Table")
+				.when(View.class, v -> "View")
+				.orElse("Unknown"));
 		this.lignes = new SimpleStringProperty("0"); // TODO when nbLignes is done (Bastien will have slept enough)
 	}
 

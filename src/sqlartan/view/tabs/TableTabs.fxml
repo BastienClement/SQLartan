@@ -12,13 +12,13 @@
          <content>
             <TableView fx:id="structureTable" prefHeight="200.0" prefWidth="200.0">
               <columns>
-                <TableColumn prefWidth="75.0" text="#" />
-                  <TableColumn prefWidth="75.0" text="Name" />
-                <TableColumn prefWidth="75.0" text="Type" />
-                  <TableColumn prefWidth="75.0" text="Null" />
-                  <TableColumn prefWidth="104.0" text="Default Value" />
-                  <TableColumn prefWidth="108.0" text="Commentaire" />
-                  <TableColumn prefWidth="75.0" text="Actions" />
+                <TableColumn fx:id="colNo" prefWidth="75.0" text="#" />
+                  <TableColumn fx:id="colName" prefWidth="75.0" text="Name" />
+                <TableColumn fx:id="colType" prefWidth="75.0" text="Type" />
+                  <TableColumn fx:id="colNull" prefWidth="75.0" text="Null" />
+                  <TableColumn fx:id="colDefaultValue" prefWidth="104.0" text="Default Value" />
+                  <TableColumn fx:id="colComment" prefWidth="108.0" text="Commentaire" />
+                  <TableColumn fx:id="colActions" prefWidth="75.0" text="Actions" />
               </columns>
             </TableView>
          </content></Tab>
