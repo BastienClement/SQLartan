@@ -57,10 +57,20 @@ public class ParserContext {
 		return source.current();
 	}
 
+	/**
+	 * Checks if the current token matches the given class
+	 *
+	 * @param token the token class to check
+	 */
 	public boolean current(Class<? extends Token<?>> token) {
 		return match(current(), token);
 	}
 
+	/**
+	 * Checks if the current token matches the given token
+	 *
+	 * @param token the token to check
+	 */
 	public boolean current(Token token) {
 		return match(current(), token);
 	}
@@ -72,10 +82,20 @@ public class ParserContext {
 		return source.next();
 	}
 
+	/**
+	 * Checks if the next token matches the given class
+	 *
+	 * @param token the token class to check
+	 */
 	public boolean next(Class<? extends Token<?>> token) {
 		return match(next(), token);
 	}
 
+	/**
+	 * Checks if the next token matches the given token
+	 *
+	 * @param token the token to check
+	 */
 	public boolean next(Token<?> token) {
 		return match(next(), token);
 	}
@@ -275,18 +295,7 @@ public class ParserContext {
 	 * @return an optional containing the produced node, an empty optional in case of failure
 	 */
 	public <N extends Node> Optional<N> tryParse(Parser<N> parser) {
-		source.begin();
-		try {
-			N res = parser.parse(this);
-			source.commit();
-			return Optional.of(res);
-		} catch (FastParseException e) {
-			source.rollback();
-			return Optional.empty();
-		} catch (Throwable t) {
-			source.rollback();
-			throw t;
-		}
+		return transactionally(() -> parser.parse(this));
 	}
 
 	/**
@@ -336,18 +345,35 @@ public class ParserContext {
 	@SafeVarargs
 	public final <T> T alternatives(Supplier<? extends T>... cases) {
 		for (Supplier<? extends T> item : cases) {
-			begin();
-			try {
-				T node = item.get();
-				commit();
-				return node;
-			} catch (FastParseException e) {
-				rollback();
-			} catch (Throwable t) {
-				source.rollback();
-				throw t;
+			Optional<T> res = transactionally(item);
+			if (res.isPresent()) {
+				return res.get();
 			}
 		}
 		throw ParseException.UnexpectedCurrentToken;
+	}
+
+	/**
+	 * Transactionally executes a supplier function
+	 * If a FastParseException occurs while executing the block, the token source will be rolled back
+	 * to its state at the beginning of the block.
+	 *
+	 * @param block the function to execute
+	 * @param <T>   the return type of the function
+	 * @return
+	 */
+	public <T> Optional<T> transactionally(Supplier<? extends T> block) {
+		begin();
+		try {
+			T res = block.get();
+			commit();
+			return Optional.of(res);
+		} catch (FastParseException e) {
+			rollback();
+			return Optional.empty();
+		} catch (Throwable t) {
+			source.rollback();
+			throw t;
+		}
 	}
 }
