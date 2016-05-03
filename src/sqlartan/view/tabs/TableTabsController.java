@@ -7,8 +7,11 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
+import sqlartan.core.Column;
 import sqlartan.core.PersistentStructure;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.view.DataTableView;
+import java.util.Optional;
 
 
 /**
@@ -48,7 +51,6 @@ public class TableTabsController extends TabsController {
 					displayTab.setContent(dataTableView.getTableView(structure));
 				} else if (newTab == structureTab) {
 					displayStructure();
-
 				}
 		});
 	}
@@ -59,6 +61,7 @@ public class TableTabsController extends TabsController {
 
 	private void displayStructure()
 	{
+
 
 	}
 

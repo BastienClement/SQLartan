@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.view.attached.AttachedChooserController;
+import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.treeitem.Type;
@@ -71,12 +72,17 @@ public class SqlartanController {
 				TabPane tabPane = null;
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
+						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
 						try {
-							tabPane = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml")).load();
+							tabPane = loader.load();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
+
+						DatabaseTabsController tabsController = loader.getController();
+						tabsController.setDatabase(db);
 					}
+
 					break;
 					case TABLE:
 					case VIEW: {
