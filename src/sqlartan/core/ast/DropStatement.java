@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.parser.ParserContext;
 
-public interface DropStatement extends Statement {
-	static DropStatement parse(ParserContext context) {
+public abstract class DropStatement implements Statement {
+	public static DropStatement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }

@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.parser.ParserContext;
 
-public interface ReindexStatement extends Statement {
-	static ReindexStatement parse(ParserContext context) {
+public abstract class ReindexStatement implements Statement {
+	public static ReindexStatement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }

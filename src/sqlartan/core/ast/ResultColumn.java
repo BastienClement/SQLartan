@@ -7,8 +7,8 @@ import static sqlartan.core.ast.token.Keyword.AS;
 import static sqlartan.core.ast.token.Operator.DOT;
 import static sqlartan.core.ast.token.Operator.MUL;
 
-public interface ResultColumn extends Node {
-	static ResultColumn parse(ParserContext context) {
+public abstract class ResultColumn implements Node {
+	public static ResultColumn parse(ParserContext context) {
 		return context.alternatives(
 			() -> {
 				context.consume(MUL);
@@ -30,11 +30,12 @@ public interface ResultColumn extends Node {
 		);
 	}
 
-	class Expr implements ResultColumn {
+	public static class Expr extends ResultColumn {
 		public Expression expr;
 		public String alias;
 
-		public Expr(sqlartan.core.ast.Expression expr) {
+		public Expr() {}
+		public Expr(Expression expr) {
 			this.expr = expr;
 		}
 
@@ -46,7 +47,7 @@ public interface ResultColumn extends Node {
 		}
 	}
 
-	class Wildcard implements ResultColumn {
+	public static class Wildcard extends ResultColumn {
 		public static final Wildcard singleton = new Wildcard();
 		private Wildcard() {}
 
@@ -56,9 +57,10 @@ public interface ResultColumn extends Node {
 		}
 	}
 
-	class TableWildcard implements ResultColumn {
+	public static class TableWildcard extends ResultColumn {
 		public String table;
 
+		public TableWildcard() {}
 		public TableWildcard(String table) {
 			this.table = table;
 		}

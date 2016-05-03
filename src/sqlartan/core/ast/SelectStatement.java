@@ -12,20 +12,20 @@ import static sqlartan.core.ast.token.Operator.*;
 /**
  * https://www.sqlite.org/lang_select.html
  */
-public interface SelectStatement extends Statement {
+public abstract class SelectStatement implements Statement {
 	/**
 	 * General SELECT statement parser
 	 * Currently delegates to Simple parser.
 	 * TODO: handle compound selects here
 	 */
-	static SelectStatement parse(ParserContext context) {
+	public static SelectStatement parse(ParserContext context) {
 		return context.parse(Simple::parse);
 	}
 
 	/**
 	 * The core a SELECT statement
 	 */
-	class Core implements SelectStatement {
+	public static class Core extends SelectStatement {
 		public boolean distinct;
 		public List<ResultColumn> columns;
 		public List<SelectSource> from;
@@ -33,7 +33,7 @@ public interface SelectStatement extends Statement {
 		public List<Expression> groupBy;
 		public Expression having;
 
-		static Core parse(ParserContext context) {
+		public static Core parse(ParserContext context) {
 			Core select = new Core();
 			parse(context, select);
 			return select;
@@ -87,12 +87,12 @@ public interface SelectStatement extends Statement {
 	/**
 	 * A simple SELECT statement
 	 */
-	class Simple extends Core {
+	public static class Simple extends Core {
 		public List<OrderingTerm> orderBy;
 		public Expression limit;
 		public Expression offset;
 
-		static Simple parse(ParserContext context) {
+		public static Simple parse(ParserContext context) {
 			if (context.tryConsume(WITH)) {
 				// With clauses are unsupported
 				throw new UnsupportedOperationException();
@@ -136,7 +136,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * Source of data for SELECT statements
 	 */
-	abstract class SelectSource implements Node {
+	public abstract static class SelectSource implements Node {
 		public static SelectSource parse(ParserContext context) {
 			return context.alternatives(
 				() -> context.parse(TableOrSubquerySource::parse),
@@ -148,7 +148,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * Either a table or a sub-query sources
 	 */
-	class TableOrSubquerySource extends SelectSource {
+	public static class TableOrSubquerySource extends SelectSource {
 		public String as;
 
 		public static TableOrSubquerySource parse(ParserContext context) {
@@ -164,7 +164,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * A table source
 	 */
-	class TableSource extends TableOrSubquerySource {
+	public static class TableSource extends TableOrSubquerySource {
 		public String schema;
 		public String table;
 		public String index;
@@ -214,7 +214,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * A JOIN clause
 	 */
-	class JoinClause extends SelectSource {
+	public static class JoinClause extends SelectSource {
 		public static JoinClause parse(ParserContext context) {
 			throw new UnsupportedOperationException();
 		}
@@ -223,7 +223,7 @@ public interface SelectStatement extends Statement {
 	/**
 	 * Term for ORDER BY clause
 	 */
-	class OrderingTerm implements Node {
+	public static class OrderingTerm implements Node {
 		static OrderingTerm parse(ParserContext context) {
 			throw new UnsupportedOperationException();
 		}

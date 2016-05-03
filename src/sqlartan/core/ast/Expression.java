@@ -6,8 +6,8 @@ import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Operator.DOT;
 import static sqlartan.util.Matching.match;
 
-public interface Expression extends Node {
-	static Expression parse(ParserContext context) {
+public abstract class Expression implements Node {
+	public static Expression parse(ParserContext context) {
 		return context.alternatives(
 			() -> context.parse(Expression.Literal::parse),
 			() -> context.parse(ColumnReference::parse),
@@ -15,7 +15,7 @@ public interface Expression extends Node {
 		);
 	}
 
-	abstract class Literal implements Expression {
+	public abstract static class Literal extends Expression {
 		public String value;
 
 		public Literal() {}
@@ -23,7 +23,7 @@ public interface Expression extends Node {
 			this.value = value;
 		}
 
-		static Literal parse(ParserContext context) {
+		public static Literal parse(ParserContext context) {
 			return match(context.consume(sqlartan.core.ast.token.Literal.class), Literal.class)
 				.when(sqlartan.core.ast.token.Literal.Text.class, text -> new TextLiteral(text.value))
 				.when(sqlartan.core.ast.token.Literal.Numeric.class, num -> new NumericLiteral(num.value))
@@ -31,7 +31,7 @@ public interface Expression extends Node {
 		}
 	}
 
-	class TextLiteral extends Literal {
+	public static class TextLiteral extends Literal {
 		public TextLiteral() {}
 		public TextLiteral(String value) { super(value); }
 
@@ -41,7 +41,7 @@ public interface Expression extends Node {
 		}
 	}
 
-	class NumericLiteral extends Literal {
+	public static class NumericLiteral extends Literal {
 		public NumericLiteral() {}
 		public NumericLiteral(String value) { super(value); }
 
@@ -51,7 +51,7 @@ public interface Expression extends Node {
 		}
 	}
 
-	class ColumnReference implements Expression {
+	public static class ColumnReference extends Expression {
 		public String schema;
 		public String table;
 		public String column;
@@ -62,7 +62,7 @@ public interface Expression extends Node {
 			this.column = column;
 		}
 
-		static ColumnReference parse(ParserContext context) {
+		public static ColumnReference parse(ParserContext context) {
 			String table = null, schema = null;
 
 			if (context.next(DOT)) {
@@ -90,8 +90,8 @@ public interface Expression extends Node {
 		}
 	}
 
-	abstract class RaiseFunction implements Expression {
-		static RaiseFunction parse(ParserContext context) {
+	public abstract static class RaiseFunction extends Expression {
+		public static RaiseFunction parse(ParserContext context) {
 			throw new UnsupportedOperationException();
 		}
 	}

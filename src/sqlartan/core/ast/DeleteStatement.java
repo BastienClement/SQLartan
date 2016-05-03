@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.parser.ParserContext;
 
-public interface DeleteStatement extends Statement {
-	static DeleteStatement parse(ParserContext context) {
+public abstract class DeleteStatement implements Statement {
+	public static DeleteStatement parse(ParserContext context) {
 		throw new UnsupportedOperationException();
 	}
 }
