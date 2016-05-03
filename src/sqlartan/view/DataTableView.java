@@ -15,7 +15,7 @@ import java.sql.SQLException;
 /**
  * Created by julien on 29.04.16.
  */
-public class TableVue {
+public class DataTableView {
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 
 	private TableView<ObservableList<String>> tableView = new TableView<>();
@@ -58,7 +58,7 @@ public class TableVue {
 	}
 
 
-	TableView getTableView(PersistentStructure<?> structure) {
+	public TableView getTableView(PersistentStructure<?> structure) {
 		try {
 			dataView(structure);
 		} catch (SQLException e) {
@@ -73,7 +73,7 @@ public class TableVue {
 	 * @param str
 	 * @return the table view
 	 */
-	TableView getTableView(String str) {
+	public TableView getTableView(String str) {
 		try {
 			dataView(str, db);
 		} catch (SQLException e) {

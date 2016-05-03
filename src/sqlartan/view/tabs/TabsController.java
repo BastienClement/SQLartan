@@ -1,4 +1,4 @@
-package sqlartan.view;
+package sqlartan.view.tabs;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.Pane;
