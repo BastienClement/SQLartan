@@ -7,7 +7,7 @@ import sqlartan.core.ast.parser.ParseException;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "select a or b and c or d";
+		String source = "explain select a or b and c or d";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens.forEach(System.out::println);
