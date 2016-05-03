@@ -56,6 +56,8 @@ public class TableTabsController extends TabsController {
 
 	@FXML
 	private void initialize() {
+
+
 		addPane(new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml")), sqlTab);
 
 		/**
@@ -77,6 +79,9 @@ public class TableTabsController extends TabsController {
 		colNo.setCellValueFactory(param -> param.getValue().noProperty());
 		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
+
+		tabPane.getSelectionModel().clearSelection();
+
 	}
 
 	public void setStructure(PersistentStructure<?> structure) {
@@ -91,7 +96,8 @@ public class TableTabsController extends TabsController {
 		                                .map(TableStructure::new)
 		                                .toList());
 
-		structureTable.setItems(tableStructures);
+
+			structureTable.setItems(tableStructures);
 	}
 
 }

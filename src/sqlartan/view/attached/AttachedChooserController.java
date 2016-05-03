@@ -21,8 +21,6 @@ public class AttachedChooserController {
 	public TextField path;
 	public Pane attachedPane;
 	public TextField dbName;
-	private boolean edited = false;
-	private boolean computed = false;
 
 	private SqlartanController sqlartanController;
 

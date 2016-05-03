@@ -57,6 +57,8 @@ public class DatabaseTabsController extends TabsController {
 		colActions.setCellValueFactory(param -> param.getValue().actionsProperty());
 		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
+
+		tabPane.getSelectionModel().clearSelection();
 	}
 
 	/**
