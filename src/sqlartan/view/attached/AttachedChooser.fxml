@@ -14,9 +14,9 @@
 
 <Pane fx:id="attachedPane" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.attached.AttachedChooserController">
    <children>
-      <VBox alignment="CENTER">
+      <VBox alignment="CENTER" prefHeight="146.0" prefWidth="432.0">
          <children>
-            <GridPane>
+            <GridPane vgap="8.0">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.0" minWidth="10.0" prefWidth="114.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="288.0" minWidth="10.0" prefWidth="288.0" />
@@ -42,6 +42,9 @@
                   <Button fx:id="ok" mnemonicParsing="false" onAction="#validate" text="Attached" />
                 <Button fx:id="cancel" mnemonicParsing="false" onAction="#close" text="Cancel" />
               </buttons>
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
             </ButtonBar>
          </children>
          <padding>

@@ -19,6 +19,7 @@ public class DatabaseTabsController extends TabsController {
 	@FXML
 	private void initialize() {
 		addPane(new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml")), sqlTab);
+
 	}
 
 

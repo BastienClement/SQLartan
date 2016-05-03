@@ -300,6 +300,7 @@ public class SqlartanController {
 			alert.setTitle("Problem while attatching database");
 			alert.setHeaderText(null);
 			alert.setContentText(e.getMessage());
+			alert.show();
 		}
 
 
