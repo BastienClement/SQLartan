@@ -15,29 +15,26 @@ import java.sql.SQLException;
 /**
  * Created by julien on 29.04.16.
  */
-public class TableVue
-{
+public class DataTableView {
 	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 
 	private TableView<ObservableList<String>> tableView = new TableView<>();
 
-	Database db = SqlartanController.getDB();
-
+	private Database db = SqlartanController.getDB();
 
 	private void dataView(Result res) {
 		tableView.getColumns().clear();
 
-		//Creations des colones
+		// Create columns
 		int i = 0;
 		for (Column c : res.columns()) {
-			final int j = i;
+			final int j = i++;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
 			tableView.getColumns().add(col);
-			//System.out.println("Column [" + i++ + "] " + c.name());
 		}
 
-		//Ajout des donnees
+		// Add datas
 		rows.clear();
 		res.forEach(row -> rows.add(FXCollections.observableArrayList(
 				res.columns().map(c -> row.getString()))
@@ -47,47 +44,54 @@ public class TableVue
 	}
 
 
-	void dataView(PersistentStructure<?> structure) throws SQLException {
+	private void dataView(PersistentStructure<?> structure) throws SQLException {
 
-			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
+		//sqlartan.getMainLayout().setCenter(tableView);
+		dataView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
 
 	}
 
-	void dataView(String str, Database db)  throws SQLException {
+	private void dataView(String str, Database db) throws SQLException {
 
-			//sqlartan.getMainLayout().setCenter(tableView);
-			dataView(db.execute(str));
+		//sqlartan.getMainLayout().setCenter(tableView);
+		dataView(db.execute(str));
 	}
 
 
-	TableView getTableView(PersistentStructure<?> structure)
-	{
+	public TableView getTableView(PersistentStructure<?> structure) {
 		try {
 			dataView(structure);
-		} catch (SQLException e)
-		{
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Bad Request");
-			alert.setContentText(e.getMessage());
-
-			alert.showAndWait();
+		} catch (SQLException e) {
+			showAlert(e);
 		}
 
 		return tableView;
 	}
 
-	TableView getTableView(String str)
-	{
+	/**
+	 *
+	 * @param str
+	 * @return the table view
+	 */
+	public TableView getTableView(String str) {
 		try {
 			dataView(str, db);
 		} catch (SQLException e) {
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Bad Request");
-			alert.setContentText(e.getMessage());
-
-			alert.showAndWait();
+			showAlert(e);
 		}
 		return tableView;
 	}
+
+	/**
+	 * Show an alert
+	 * @param e
+	 */
+	private void showAlert(SQLException e) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.setTitle("Bad Request");
+		alert.setContentText(e.getMessage());
+
+		alert.showAndWait();
+	}
 }
+

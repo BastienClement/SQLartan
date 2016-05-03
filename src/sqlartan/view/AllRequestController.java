@@ -11,12 +11,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
 import sqlartan.core.Database;
-import sqlartan.core.Result;
-import java.sql.SQLException;
 
 public class AllRequestController {
 
-	private TableVue tableVue = new TableVue();
+	private DataTableView dataTableView = new DataTableView();
 
 	@FXML
 	Button execute;
@@ -37,7 +35,7 @@ public class AllRequestController {
 
 	public void executeQuery() {
 		userQueryView.getChildren().clear();
-		userQueryView.getChildren().add(tableVue.getTableView(SQLTextQuery.getText()));
+		userQueryView.getChildren().add(dataTableView.getTableView(SQLTextQuery.getText()));
 	}
 
 
