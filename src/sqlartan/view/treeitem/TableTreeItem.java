@@ -3,8 +3,6 @@ package sqlartan.view.treeitem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import sqlartan.view.SqlartanController;
-import sqlartan.view.util.Popup;
-import java.sql.SQLException;
 
 public class TableTreeItem extends StructureTreeItem {
 
@@ -17,11 +15,7 @@ public class TableTreeItem extends StructureTreeItem {
 		MenuItem truncate = new MenuItem("Truncate");
 
 		truncate.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(table -> {
-			try {
-				controller.truncateTable(table);
-			} catch (SQLException e) {
-				Popup.error("Truncate error", e.getMessage());
-			}
+			controller.truncateTable(table);
 		}));
 
 		ContextMenu res = super.getMenu();

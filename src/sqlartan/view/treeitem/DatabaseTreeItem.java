@@ -4,7 +4,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
-import java.sql.SQLException;
 
 public class DatabaseTreeItem extends CustomTreeItem {
 
@@ -16,16 +15,10 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	@Override
 	public ContextMenu getMenu() {
 		MenuItem vacuum = new MenuItem("Vacuum");
-		vacuum.setOnAction(event -> {
-			SqlartanController.getDB().attached(name()).ifPresent(db -> {
-				try {
-					controller.vacuumDatabase(db);
-					Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			});
-		});
+		vacuum.setOnAction(event -> SqlartanController.getDB().attached(name()).ifPresent(db -> {
+			controller.vacuumDatabase(db);
+			Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
+		}));
 
 		return new ContextMenu(vacuum);
 

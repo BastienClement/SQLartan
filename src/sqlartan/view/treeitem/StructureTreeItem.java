@@ -5,7 +5,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
-import java.sql.SQLException;
 
 /**
  * Created by Adriano on 04.05.2016.
@@ -28,32 +27,24 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 			ButtonType no = new ButtonType("NO");
 			Popup.warning("Drop table", "Are you sure to drop the table : " + t.name(), yes, no).ifPresent(type -> {
 				if (type == yes) {
-					try {
-						controller.dropTable(t);
-					} catch (SQLException e) {
-						Popup.error("Drop error", e.getMessage());
-					}
+					controller.dropTable(t);
 				}
 			});
 		}));
 
 		rename.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
 			Popup.input("Rename", "Rename " + t.name() + " into : ", t.name()).ifPresent(name -> {
-				try {
-					if (name.length() > 0 && !t.name().equals(name))
-						controller.renameTable(t, name);
-				} catch (SQLException e) {
-					Popup.error("Rename error", e.getMessage());
-				}
+				if (name.length() > 0 && !t.name().equals(name))
+					controller.renameTable(t, name);
 			});
 		}));
 
 		copie.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
-			try {
-				controller.duplicateTable(t, t.name() + "_Copie");
-			} catch (SQLException e) {
-				Popup.error("Copie error", e.getMessage());
-			}
+			Popup.input("Copy", "Name : ", t.name()).ifPresent(name -> {
+				if (name.length() > 0 && !t.name().equals(name))
+					controller.duplicateTable(t, name);
+			});
+
 		}));
 
 		return new ContextMenu(drop, rename, copie);

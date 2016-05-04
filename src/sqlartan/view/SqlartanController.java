@@ -62,7 +62,7 @@ public class SqlartanController {
 	 * First methode call when loaded
 	 */
 	@FXML
-	private void initialize() throws SQLException {
+	private void initialize() {
 
 		treeView.setCellFactory(param -> new TreeCellImpl(this));
 
@@ -138,10 +138,8 @@ public class SqlartanController {
 
 	/**
 	 * To call to refresh the view of the tree
-	 *
-	 * @throws SQLException
 	 */
-	void refreshView() throws SQLException {
+	void refreshView() {
 		if (db != null) {
 			mainTreeItem.getChildren().clear();
 			tree(db);
@@ -153,9 +151,8 @@ public class SqlartanController {
 	 * Create the tree for a specific database
 	 *
 	 * @param database the database
-	 * @throws SQLException
 	 */
-	void tree(Database database) throws SQLException {
+	void tree(Database database) {
 
 		// Main
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
@@ -192,7 +189,6 @@ public class SqlartanController {
 
 			mainTreeItem.getChildren().add(tItems);
 		});
-
 	}
 
 
@@ -222,7 +218,7 @@ public class SqlartanController {
 				ButtonType buttonNewFile = new ButtonType("Choose new");
 				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
 						buttonCancel, buttonRetry, buttonNewFile);
-				if(res.isPresent()){
+				if (res.isPresent()) {
 					if (res.get() == buttonNewFile)
 						file = openSQLLiteDB();
 					else if (res.get() == buttonCancel)
@@ -239,7 +235,7 @@ public class SqlartanController {
 	 * Attach a database to the main database
 	 */
 	@FXML
-	private void attachButton() throws SQLException {
+	private void attachButton() {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
@@ -276,13 +272,10 @@ public class SqlartanController {
 
 			MenuItem newMenuItem = new MenuItem(dbName);
 			newMenuItem.setOnAction(event -> {
-				try {
-					db.detach(newMenuItem.getText());
-					detatchMenu.getItems().removeAll(newMenuItem);
-					refreshView();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				db.detach(newMenuItem.getText());
+				detatchMenu.getItems().removeAll(newMenuItem);
+				refreshView();
+
 			});
 
 			detatchMenu.getItems().add(newMenuItem);
@@ -304,7 +297,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Open a dialog for the file choos db
+	 * Open a dialog for the file to choose db
 	 *
 	 * @return the opend database
 	 */
@@ -324,7 +317,7 @@ public class SqlartanController {
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDB() throws SQLException {
+	private void closeDB() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		db.close();
@@ -345,9 +338,8 @@ public class SqlartanController {
 	 * Truncate a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	public void truncateTable(Table table) throws SQLException {
+	public void truncateTable(Table table) {
 		table.truncate();
 		refreshView();
 	}
@@ -357,9 +349,8 @@ public class SqlartanController {
 	 * Drop a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	public void dropTable(Table table) throws SQLException {
+	public void dropTable(Table table) {
 		table.drop();
 		refreshView();
 	}
@@ -369,9 +360,8 @@ public class SqlartanController {
 	 * Duplicate a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	public void duplicateTable(Table table, String name) throws SQLException {
+	public void duplicateTable(Table table, String name) {
 		table.duplicate(name);
 		refreshView();
 	}
@@ -382,9 +372,8 @@ public class SqlartanController {
 	 *
 	 * @param table
 	 * @param name
-	 * @throws SQLException
 	 */
-	public void renameTable(Table table, String name) throws SQLException {
+	public void renameTable(Table table, String name) {
 		table.rename(name);
 		refreshView();
 	}
@@ -392,10 +381,8 @@ public class SqlartanController {
 
 	/**
 	 * Vacuum a database
-	 *
-	 * @throws SQLException
 	 */
-	public void vacuumDatabase(Database db) throws SQLException {
+	public void vacuumDatabase(Database db) {
 		db.vacuum();
 		refreshView();
 	}
@@ -407,9 +394,8 @@ public class SqlartanController {
 	 * @param table
 	 * @param name
 	 * @param type
-	 * @throws SQLException
 	 */
-	public void addColumn(Table table, String name, String type) throws SQLException {
+	public void addColumn(Table table, String name, String type) {
 		Affinity affinity = Affinity.forType(type);
 		table.addColumn(name, affinity);
 		refreshView();
@@ -421,9 +407,8 @@ public class SqlartanController {
 	 *
 	 * @param table
 	 * @param name
-	 * @throws SQLException
 	 */
-	public void dropColumn(Table table, String name) throws SQLException {
+	public void dropColumn(Table table, String name) {
 		if (table.column(name).isPresent()) {
 			table.column(name).get().drop();
 		}
@@ -437,9 +422,8 @@ public class SqlartanController {
 	 * @param table
 	 * @param name
 	 * @param newName
-	 * @throws SQLException
 	 */
-	public void renameColumn(Table table, String name, String newName) throws SQLException {
+	public void renameColumn(Table table, String name, String newName) {
 		if (table.column(name).isPresent()) {
 			table.column(name).get().rename(newName);
 		}
@@ -450,9 +434,8 @@ public class SqlartanController {
 	 * Detach a database from the main database
 	 *
 	 * @param database
-	 * @throws SQLException
 	 */
-	public void detachDatabase(Database database) throws SQLException {
+	public void detachDatabase(Database database) {
 		db.detach(database.name());
 		refreshView();
 	}

@@ -28,10 +28,6 @@ public class AttachedDatabase extends Database {
 	public void close() {
 		// We must not call .close() on the Connection from a child Database
 		// Instead detach self
-		try {
-			main.detach(name());
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
+		main.detach(name());
 	}
 }
