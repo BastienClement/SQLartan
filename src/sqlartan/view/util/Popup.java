@@ -3,9 +3,6 @@ package sqlartan.view.util;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
-import sqlartan.core.Table;
-import sqlartan.view.SqlartanController;
-import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -14,10 +11,12 @@ import java.util.Optional;
 public class Popup {
 
 	/**
-	 *  An error popup
-	 * @param message
+	 * A error popup
+	 *
+	 * @param title   the title
+	 * @param message the message
 	 */
-	public static void error(String title, String message){
+	public static void error(String title, String message) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle(title);
 		alert.setContentText(message);
@@ -27,10 +26,11 @@ public class Popup {
 
 	/**
 	 * A warning popup
-	 * @param title the title
-	 * @param message the message
+	 *
+	 * @param title       the title
+	 * @param message     the message
 	 * @param buttonTypes The button types
-	 * @return One of the button types
+	 * @return An optional of one of the button types
 	 */
 	public static Optional<ButtonType> warning(String title, String message, ButtonType... buttonTypes) {
 		Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -42,7 +42,13 @@ public class Popup {
 
 	}
 
-	public static void information(String title, String message){
+	/**
+	 * A information popup
+	 *
+	 * @param title   the title
+	 * @param message the message
+	 */
+	public static void information(String title, String message) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle(title);
 		alert.setHeaderText(null);
@@ -50,7 +56,15 @@ public class Popup {
 		alert.showAndWait();
 	}
 
-	public static Optional<String> input(String title, String message, String placeholder){
+	/**
+	 * A inputDialog popup
+	 *
+	 * @param title       the title
+	 * @param message     the message
+	 * @param placeholder the placeholder
+	 * @return An optional of the inputed string
+	 */
+	public static Optional<String> input(String title, String message, String placeholder) {
 		TextInputDialog dialog = new TextInputDialog(placeholder);
 		dialog.setTitle(title);
 		dialog.setContentText(message);
