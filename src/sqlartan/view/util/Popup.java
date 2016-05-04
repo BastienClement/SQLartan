@@ -16,6 +16,7 @@ public class Popup {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle(title);
 		alert.setContentText(message);
+		alert.setHeaderText(null);
 		alert.showAndWait();
 	}
 
@@ -32,5 +33,14 @@ public class Popup {
 		alert.setContentText(message);
 		alert.getButtonTypes().setAll(buttonTypes);
 		return alert.showAndWait().get();
+
+	}
+
+	public static void information(String title, String message){
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(message);
+		alert.showAndWait();
 	}
 }

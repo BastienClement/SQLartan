@@ -3,6 +3,7 @@ package sqlartan.view.treeitem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import sqlartan.view.SqlartanController;
+import sqlartan.view.util.Popup;
 import java.sql.SQLException;
 
 public class DatabaseTreeItem extends CustomTreeItem {
@@ -18,6 +19,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		vacuum.setOnAction(event -> {
 			try {
 				controller.vacuumDatabase();
+				Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
