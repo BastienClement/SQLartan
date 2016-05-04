@@ -158,7 +158,7 @@ public class SqlartanController {
 	void tree(Database database) throws SQLException {
 
 		// Main
-		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DbTreeItem(database.name(), this));
+		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
 
 		trees.getChildren().addAll(database.tables()
 		                                   .map(Table::name) // .map(table -> table.name())
@@ -177,7 +177,7 @@ public class SqlartanController {
 
 		// Attached database
 		database.attached().values().forEach(adb -> {
-			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new DbTreeItem(adb.name(), this));
+			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new DatabaseTreeItem(adb.name(), this));
 			tItems.getChildren().addAll(adb.tables()
 			                               .map(Table::name)
 			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, this))

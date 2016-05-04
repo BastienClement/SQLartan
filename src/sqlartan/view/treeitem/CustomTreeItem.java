@@ -9,8 +9,6 @@ public abstract class CustomTreeItem extends TreeItem {
 	private String name;
 	protected SqlartanController controller;
 
-	public ContextMenu itemContextMenu;
-
 	public CustomTreeItem(String name, SqlartanController controller) {
 		this.name = name;
 		this.controller = controller;

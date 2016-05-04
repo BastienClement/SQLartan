@@ -10,6 +10,7 @@ import sqlartan.core.Column;
 import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Result;
+import sqlartan.view.util.Popup;
 import java.sql.SQLException;
 
 /**
@@ -55,10 +56,7 @@ public class DataTableView {
 		try {
 			return getTableView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
 		} catch (SQLException e) {
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Bad Request");
-			alert.setContentText(e.getMessage());
-			alert.showAndWait();
+			Popup.error("Bad Request", e.getMessage());
 			return new TableView();
 		}
 
