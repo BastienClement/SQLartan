@@ -3,6 +3,7 @@ package sqlartan.view.treeitem;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
@@ -38,7 +39,19 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 			}
 		});
 		rename.setOnAction(event -> {
-			// TODO menu with the new name
+			Table t = SqlartanController.getDB().table(name()).get();
+			TextInputDialog dialog = new TextInputDialog("walter");
+			dialog.setTitle("Rename");
+			dialog.setHeaderText(null);
+			dialog.setContentText("The new name : ");
+			dialog.showAndWait().ifPresent(name -> {
+				try {
+					if(name.length() > 0)
+						controller.renameTable(t, name);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
 		});
 		copie.setOnAction(event -> {
 			Table t = SqlartanController.getDB().table(name()).get();
