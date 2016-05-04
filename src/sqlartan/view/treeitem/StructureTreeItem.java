@@ -3,7 +3,6 @@ package sqlartan.view.treeitem;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
@@ -25,31 +24,28 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 		MenuItem copie = new MenuItem("Copy");
 
 		drop.setOnAction(event -> {
-			try {
-				Table t = SqlartanController.getDB().table(name()).get();
+			Table t = SqlartanController.getDB().table(name()).get();
+			ButtonType yes = new ButtonType("YES");
+			ButtonType no = new ButtonType("NO");
+			Popup.warning("Drop table", "Are you sure to drop the table : " + t.name(), yes, no).ifPresent(type -> {
+				if (type == yes) {
+					try {
+						controller.dropTable(t);
+					} catch (SQLException e) {
+						Popup.error("Drop error", e.getMessage());
+					}
+				}
+			});
 
-				ButtonType yes = new ButtonType("YES");
-				ButtonType no = new ButtonType("NO");
-				if(Popup.warning("Drop table", "Are you sure to drop the table : " + t.name(), yes, no) == yes)
-					controller.dropTable(t);
-
-			}
-			catch (SQLException e) {
-				Popup.error("Drop error", e.getMessage());
-			}
 		});
 		rename.setOnAction(event -> {
 			Table t = SqlartanController.getDB().table(name()).get();
-			TextInputDialog dialog = new TextInputDialog("walter");
-			dialog.setTitle("Rename");
-			dialog.setHeaderText(null);
-			dialog.setContentText("The new name : ");
-			dialog.showAndWait().ifPresent(name -> {
+			Popup.input("Rename", "Rename " + t.name() + " into : ", t.name()).ifPresent(name -> {
 				try {
-					if(name.length() > 0)
+					if (name.length() > 0 && !t.name().equals(name))
 						controller.renameTable(t, name);
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Popup.error("Rename error", e.getMessage());
 				}
 			});
 		});

@@ -220,13 +220,14 @@ public class SqlartanController {
 				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 				ButtonType buttonRetry = new ButtonType("Retry");
 				ButtonType buttonNewFile = new ButtonType("Choose new");
-				ButtonType res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
+				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
 						buttonCancel, buttonRetry, buttonNewFile);
-
-				if (res == buttonNewFile)
-					file = openSQLLiteDB();
-				else if (res == buttonCancel)
-					break;
+				if(res.isPresent()){
+					if (res.get() == buttonNewFile)
+						file = openSQLLiteDB();
+					else if (res.get() == buttonCancel)
+						break;
+				}
 			}
 		}
 
