@@ -15,6 +15,9 @@ public abstract class CustomTreeItem extends TreeItem {
 
 	}
 
+	/**
+	 * @return a contextMenu
+	 */
 	public abstract ContextMenu getMenu();
 
 	/**
