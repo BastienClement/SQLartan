@@ -46,6 +46,11 @@ public class DataTableView {
 		return tableView;
 	}
 
+	/**
+	 * Return a table view for any type of structure
+	 * @param structure the structure
+	 * @return the table view
+	 */
 	public TableView getTableView(PersistentStructure<?> structure) {
 		try {
 			return getTableView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
