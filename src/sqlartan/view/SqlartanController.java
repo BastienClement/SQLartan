@@ -395,7 +395,7 @@ public class SqlartanController {
 	 *
 	 * @throws SQLException
 	 */
-	public void vacuumDatabase() throws SQLException {
+	public void vacuumDatabase(Database db) throws SQLException {
 		db.vacuum();
 		refreshView();
 	}

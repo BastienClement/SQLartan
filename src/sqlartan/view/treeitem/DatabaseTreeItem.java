@@ -17,12 +17,14 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	public ContextMenu getMenu() {
 		MenuItem vacuum = new MenuItem("Vacuum");
 		vacuum.setOnAction(event -> {
-			try {
-				controller.vacuumDatabase();
-				Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			SqlartanController.getDB().attached(name()).ifPresent(db -> {
+				try {
+					controller.vacuumDatabase(db);
+					Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
 		});
 
 		return new ContextMenu(vacuum);
