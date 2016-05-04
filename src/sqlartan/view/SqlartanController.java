@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -64,7 +65,7 @@ public class SqlartanController {
 	@FXML
 	private void initialize() {
 
-		treeView.setCellFactory(param -> new TreeCellImpl(this));
+		treeView.setCellFactory(param -> new CustomTreeCell(this));
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			stackPane.getChildren().clear();

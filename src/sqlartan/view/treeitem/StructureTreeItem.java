@@ -21,7 +21,6 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 		MenuItem rename = new MenuItem("Rename");
 		MenuItem copie = new MenuItem("Copy");
 
-
 		drop.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
 			ButtonType yes = new ButtonType("YES");
 			ButtonType no = new ButtonType("NO");
