@@ -1,20 +1,61 @@
 package sqlartan.view.treeitem;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
+import sqlartan.core.Table;
+import sqlartan.view.SqlartanController;
+import sqlartan.view.util.Popup;
+import java.sql.SQLException;
 
 public class TableTreeItem extends CustomTreeItem {
 
-
-	public TableTreeItem(String name, Type type) {
-		super(name, type);
+	public TableTreeItem(String name, SqlartanController controller) {
+		super(name, controller);
 	}
 
 	@Override
 	public ContextMenu getMenu() {
+		MenuItem drop = new MenuItem("Drop");
+		MenuItem rename = new MenuItem("Rename");
+		MenuItem copie = new MenuItem("Copie");
+		MenuItem truncate = new MenuItem("Truncate");
 
-		MenuItem tabMenu1 = new MenuItem("Table");
-		tabMenu1.setOnAction(event -> System.out.println("Menu Item Clicked!"));
-		return new ContextMenu(tabMenu1);
+		drop.setOnAction(event -> {
+			try {
+				Table t = SqlartanController.getDB().table(name()).get();
+
+				ButtonType yes = new ButtonType("YES");
+				ButtonType no = new ButtonType("NO");
+				if(Popup.warning("Drop table", "Are you sure to drop the table : " + t.name(), yes, no) == yes)
+					controller.dropTable(t);
+
+			}
+			catch (SQLException e) {
+				Popup.error("Drop error", e.getMessage());
+			}
+		});
+		rename.setOnAction(event -> {
+			// Todo
+		});
+		copie.setOnAction(event -> {
+			Table t = SqlartanController.getDB().table(name()).get();
+			try {
+				controller.duplicateTable(t, t.name() + "_Copie");
+			} catch (SQLException e) {
+				Popup.error("Copie error", e.getMessage());
+			}
+		});
+		truncate.setOnAction(event -> {
+			try {
+				controller.truncateTable(SqlartanController.getDB().table(name()).get());
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+
+		return new ContextMenu(drop, rename, copie, truncate);
+	}
+	@Override
+	public Type type() {
+		return Type.TABLE;
 	}
 }

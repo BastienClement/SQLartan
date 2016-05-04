@@ -2,17 +2,18 @@ package sqlartan.view.treeitem;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TreeItem;
+import sqlartan.view.SqlartanController;
 
 public abstract class CustomTreeItem extends TreeItem {
 
 	private String name;
-	private Type type;
+	protected SqlartanController controller;
 
 	public ContextMenu itemContextMenu;
 
-	public CustomTreeItem(String name, Type type) {
+	public CustomTreeItem(String name, SqlartanController controller) {
 		this.name = name;
-		this.type = type;
+		this.controller = controller;
 
 	}
 
@@ -21,9 +22,7 @@ public abstract class CustomTreeItem extends TreeItem {
 	/**
 	 * @return the type of the treeItem
 	 */
-	public Type type() {
-		return type;
-	}
+	public abstract Type type();
 
 	/**
 	 * @return the name of the TreeItem
