@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public enum Keyword implements Node.KeywordOrOperator<Token.Keyword> {
+public enum Keyword implements Node.KeywordOrOperator {
 	ABORT("ABORT"), ACTION("ACTION"), ADD("ADD"), AFTER("AFTER"), ALL("ALL"), ALTER("ALTER"), ANALYZE("ANALYZE"),
 	AND("AND"), AS("AS"), ASC("ASC"), ATTACH("ATTACH"), AUTOINCREMENT("AUTOINCREMENT"), BEFORE("BEFORE"),
 	BEGIN("BEGIN"), BETWEEN("BETWEEN"), BY("BY"), CASCADE("CASCADE"), CASE("CASE"), CAST("CAST"), CHECK("CHECK"),

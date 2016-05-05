@@ -38,9 +38,9 @@ public class Tokenizer {
 		int length = input.length;
 		State state = WHITESPACE;
 
-		int max_placeholder = 0;
+		int highest_placeholder = 0;
 		char quote_char = '\0';
-		int begin = 0;
+		int token_start = 0;
 
 		outer:
 		for (int i = 0; i < length; ++i) {
@@ -48,7 +48,7 @@ public class Tokenizer {
 			switch (state) {
 				case WHITESPACE:
 					if (!Character.isWhitespace(c)) {
-						begin = i;
+						token_start = i;
 						if (c == '-' && input[i + 1] == '-') {
 							state = SQL_COMMENT;
 							++i;
@@ -63,11 +63,11 @@ public class Tokenizer {
 							state = ALPHA_PLACEHOLDER;
 						} else if (c == '$') {
 							// Tcl-style placeholders
-							throw new TokenizeException("Tcl-style placeholders are not supported", sql, begin);
+							throw new TokenizeException("Tcl-style placeholders are not supported", sql, token_start);
 						} else if (c == '\'') {
 							state = STRING;
 						} else if ((c == 'x' || c == 'X') && input[i + 1] == '\'') {
-							throw new TokenizeException("BLOB literals are not supported", sql, begin);
+							throw new TokenizeException("BLOB literals are not supported", sql, token_start);
 						} else if (c == '[') {
 							state = IDENTIFIER;
 							quote_char = ']';
@@ -87,13 +87,13 @@ public class Tokenizer {
 
 				case NUM_PLACEHOLDER:
 					if (!Character.isDigit(c)) {
-						if (i - begin == 1) {
-							++max_placeholder;
-							builder.push(Token.Placeholder.fromIndex(max_placeholder, sql, begin));
+						if (i - token_start == 1) {
+							++highest_placeholder;
+							builder.push(Token.Placeholder.fromIndex(highest_placeholder, sql, token_start));
 						} else {
-							int index = Integer.valueOf(slice(input, begin + 1, i));
-							if (index > max_placeholder) max_placeholder = index;
-							builder.push(Token.Placeholder.fromIndex(index, sql, begin));
+							int index = Integer.valueOf(slice(input, token_start + 1, i));
+							if (index > highest_placeholder) highest_placeholder = index;
+							builder.push(Token.Placeholder.fromIndex(index, sql, token_start));
 						}
 						state = WHITESPACE;
 						--i;
@@ -102,12 +102,12 @@ public class Tokenizer {
 
 				case ALPHA_PLACEHOLDER:
 					if (!Character.isLetter(c)) {
-						if (i - begin == 1) {
+						if (i - token_start == 1) {
 							// Empty named placeholder
-							throw new TokenizeException("Empty named placeholder", sql, begin);
+							throw new TokenizeException("Empty named placeholder", sql, token_start);
 						} else {
-							String name = slice(input, begin + 1, i);
-							builder.push(Token.Placeholder.fromName(name, sql, begin));
+							String name = slice(input, token_start + 1, i);
+							builder.push(Token.Placeholder.fromName(name, sql, token_start));
 						}
 						state = WHITESPACE;
 						--i;
@@ -120,8 +120,8 @@ public class Tokenizer {
 							// Single quote escape
 							++i;
 						} else {
-							String value = slice(input, begin + 1, i).replace("''", "'");
-							builder.push(Token.Literal.fromText(value, sql, begin));
+							String value = slice(input, token_start + 1, i).replace("''", "'");
+							builder.push(Token.Literal.fromText(value, sql, token_start));
 							state = WHITESPACE;
 						}
 					}
@@ -129,15 +129,15 @@ public class Tokenizer {
 
 				case IDENTIFIER:
 					if (c == quote_char) {
-						String fragment = slice(input, begin + 1, i);
-						builder.push(Token.Identifier.from(fragment, quote_char != '"', sql, begin));
+						String fragment = slice(input, token_start + 1, i);
+						builder.push(Token.Identifier.from(fragment, quote_char != '"', sql, token_start));
 						state = WHITESPACE;
 					}
 					break;
 
 				case NUMERIC:
 					if (c == '0' && (input[i + 1] == 'x' || input[i + 1] == 'X')) {
-						throw new TokenizeException("Hexadecimal integer literals are not supported", sql, begin);
+						throw new TokenizeException("Hexadecimal integer literals are not supported", sql, token_start);
 					}
 
 					boolean has_integer_part = false;
@@ -194,13 +194,13 @@ public class Tokenizer {
 						}
 					}
 
-					String number = String.valueOf(input, begin, i - begin);
+					String number = String.valueOf(input, token_start, i - token_start);
 
 					if (num_begin == i || (!has_decimal_part && !has_integer_part) || !valid_exponent) {
-						throw new TokenizeException("Malformed number", sql, begin);
+						throw new TokenizeException("Malformed number", sql, token_start);
 					}
 
-					builder.push(Token.Literal.fromNumeric(number, sql, begin));
+					builder.push(Token.Literal.fromNumeric(number, sql, token_start));
 
 					state = WHITESPACE;
 					--i;
@@ -208,7 +208,7 @@ public class Tokenizer {
 
 				case ALPHA_FRAGMENT:
 					if (c != '_' && !Character.isLetter(c) && !Character.isDigit(c)) {
-						String fragment = String.valueOf(input, begin, i - begin);
+						String fragment = String.valueOf(input, token_start, i - token_start);
 
 						Operator operator;
 						Keyword keyword;
@@ -226,15 +226,15 @@ public class Tokenizer {
 						}
 
 						if (operator != null) {
-							builder.push(operator.token.at(sql, begin));
+							builder.push(operator.token.at(sql, token_start));
 						} else if ((keyword = Keyword.from(fragment).orElse(null)) != null) {
 							if (keyword == Keyword.NOT && builder.last().equals(Keyword.IS.token)) {
 								builder.pop();
 								keyword = Keyword.IS_NOT;
 							}
-							builder.push(keyword.token.at(sql, begin));
+							builder.push(keyword.token.at(sql, token_start));
 						} else {
-							builder.push(Token.Identifier.from(fragment, false, sql, begin));
+							builder.push(Token.Identifier.from(fragment, false, sql, token_start));
 						}
 						state = WHITESPACE;
 						--i;
@@ -242,19 +242,19 @@ public class Tokenizer {
 					break;
 
 				case SYM_FRAGMENT:
-					if (Character.isLetter(c) || Character.isDigit(c) || Character.isWhitespace(c) || i - begin >= Operator.maxLength) {
+					if (Character.isLetter(c) || Character.isDigit(c) || Character.isWhitespace(c) || i - token_start >= Operator.maxLength) {
 						String fragment;
 						do {
-							fragment = String.valueOf(input, begin, i - begin);
+							fragment = String.valueOf(input, token_start, i - token_start);
 							Operator operator = Operator.from(fragment).orElse(null);
 							if (operator != null) {
-								builder.push(operator.token.at(sql, begin));
+								builder.push(operator.token.at(sql, token_start));
 								state = WHITESPACE;
 								--i;
 								continue outer;
 							}
-						} while (--i > begin);
-						throw new TokenizeException("Illegal symbol", sql, begin);
+						} while (--i > token_start);
+						throw new TokenizeException("Illegal symbol", sql, token_start);
 					}
 					break;
 
@@ -273,7 +273,7 @@ public class Tokenizer {
 		}
 
 		if (state == STRING || state == IDENTIFIER) {
-			throw new TokenizeException("Unterminated string or identifier", sql, begin);
+			throw new TokenizeException("Unterminated string or identifier", sql, token_start);
 		}
 
 		builder.push(Token.EndOfStream.at(sql, length));

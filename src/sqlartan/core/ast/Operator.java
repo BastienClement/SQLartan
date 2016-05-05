@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public enum Operator implements Node.KeywordOrOperator<Token.Operator> {
+public enum Operator implements Node.KeywordOrOperator {
 	CONCAT("||"),
 	MUL("*"), DIV("/"), MOD("%"),
 	PLUS("+"), MINUS("-"),

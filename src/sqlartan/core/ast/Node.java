@@ -22,7 +22,6 @@ public interface Node {
 
 	/**
 	 * Common super-type for Keywords and Operators
-	 * @param <S>
 	 */
-	interface KeywordOrOperator<S extends Token> extends Enumerated, Tokenizable<S> {}
+	interface KeywordOrOperator extends Enumerated, Tokenizable<Token.Wrapper<? extends KeywordOrOperator>> {}
 }
