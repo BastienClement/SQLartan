@@ -88,5 +88,4 @@ public class Operator extends Token<String> {
 	public static final Operator SEMICOLON = new Operator(";");
 	public static final Operator LEFT_PAREN = new Operator("(");
 	public static final Operator RIGHT_PAREN = new Operator(")");
-	public static final Operator IS_NOT = new Operator("IS NOT");
 }

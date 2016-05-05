@@ -50,6 +50,16 @@ public class Keyword extends Token<String> {
 		return ref != null ? new Keyword(ref.value, source, offset) : null;
 	}
 
+	/**
+	 * Constructs a new instance of the same keyword.
+	 *
+	 * @param source the keyword source
+	 * @param offset the offset of the token in the source code
+	 */
+	public Keyword at(String source, int offset) {
+		return new Keyword(value, source, offset);
+	}
+
 	public static final Keyword ABORT = new Keyword("ABORT");
 	public static final Keyword ACTION = new Keyword("ACTION");
 	public static final Keyword ADD = new Keyword("ADD");
@@ -118,6 +128,7 @@ public class Keyword extends Token<String> {
 	public static final Keyword INTERSECT = new Keyword("INTERSECT");
 	public static final Keyword INTO = new Keyword("INTO");
 	public static final Keyword IS = new Keyword("IS");
+	public static final Keyword IS_NOT = new Keyword("IS NOT");
 	public static final Keyword ISNULL = new Keyword("ISNULL");
 	public static final Keyword JOIN = new Keyword("JOIN");
 	public static final Keyword KEY = new Keyword("KEY");
@@ -152,6 +163,7 @@ public class Keyword extends Token<String> {
 	public static final Keyword RIGHT = new Keyword("RIGHT");
 	public static final Keyword ROLLBACK = new Keyword("ROLLBACK");
 	public static final Keyword ROW = new Keyword("ROW");
+	public static final Keyword ROWID = new Keyword("ROWID");
 	public static final Keyword SAVEPOINT = new Keyword("SAVEPOINT");
 	public static final Keyword SELECT = new Keyword("SELECT");
 	public static final Keyword SET = new Keyword("SET");

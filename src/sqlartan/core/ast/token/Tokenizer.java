@@ -228,7 +228,7 @@ public class Tokenizer {
 						} else if ((keyword = Keyword.from(fragment, sql, begin)) != null) {
 							if (keyword.equals(Keyword.NOT) && builder.last().equals(Keyword.IS)) {
 								builder.pop();
-								builder.push(Operator.IS_NOT.at(sql, begin));
+								builder.push(Keyword.IS_NOT.at(sql, begin));
 							} else {
 								builder.push(keyword);
 							}
