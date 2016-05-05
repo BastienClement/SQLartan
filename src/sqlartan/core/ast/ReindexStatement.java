@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.REINDEX;
 import static sqlartan.core.ast.token.Operator.DOT;
@@ -33,7 +33,7 @@ public class ReindexStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("REINDEX ");
 		if (schema != null) sql.append(schema).append(".");
 		sql.append(target);

@@ -1,15 +1,15 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 
 public interface Node {
 	default String toSQL() {
-		SQLBuilder sql = new SQLBuilder();
+		Builder sql = new Builder();
 		toSQL(sql);
 		return sql.toString();
 	}
 
-	default void toSQL(SQLBuilder sql) {
+	default void toSQL(Builder sql) {
 		throw new UnsupportedOperationException(this.getClass().getCanonicalName());
 	}
 }

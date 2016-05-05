@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.RELEASE;
 import static sqlartan.core.ast.token.Keyword.SAVEPOINT;
@@ -23,7 +23,7 @@ public class ReleaseStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("RELEASE ").appendIdentifier(savepoint);
 	}
 }

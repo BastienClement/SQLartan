@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.ast.parser.ParserContext;
@@ -69,7 +69,7 @@ public abstract class Expression implements Node {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.append(lhs).append(" ").append(op.stringValue()).append(" ").append(rhs);
 		}
 	}
@@ -95,7 +95,7 @@ public abstract class Expression implements Node {
 		public TextConstant(String value) { super(value); }
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.appendTextLiteral(value);
 		}
 	}
@@ -105,7 +105,7 @@ public abstract class Expression implements Node {
 		public NumericConstant(String value) { super(value); }
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.append(value);
 		}
 	}
@@ -140,7 +140,7 @@ public abstract class Expression implements Node {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			if (schema != null)
 				sql.appendIdentifier(schema).append(".");
 			if (table != null)

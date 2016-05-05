@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserBuilder;
 import sqlartan.core.ast.parser.ParserContext;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class StatementList extends ArrayList<Statement> implements Node {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append(this, "; ");
 		if (!isEmpty())
 			sql.append(";");

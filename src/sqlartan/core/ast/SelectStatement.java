@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public abstract class SelectStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.append("SELECT ");
 			if (distinct)
 				sql.append("DISTINCT ");
@@ -120,7 +120,7 @@ public abstract class SelectStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			if (orderBy != null)
 				sql.append(" ORDER BY ").append(orderBy);
@@ -198,7 +198,7 @@ public abstract class SelectStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			if (schema != null)
 				sql.appendIdentifier(schema).append(".");
 			sql.appendIdentifier(table);

@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.*;
 import static sqlartan.core.ast.token.Operator.DOT;
@@ -42,7 +42,7 @@ public abstract class AlterTableStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("ALTER TABLE ");
 		if (schema != null)
 			sql.append(schema).append(".");
@@ -58,7 +58,7 @@ public abstract class AlterTableStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(" RENAME TO ").append(name);
 		}
@@ -73,7 +73,7 @@ public abstract class AlterTableStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(" ADD COLUMN ").append(column);
 		}

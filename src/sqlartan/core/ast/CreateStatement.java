@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
@@ -30,7 +30,7 @@ public abstract class CreateStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("CREATE ");
 	}
 }

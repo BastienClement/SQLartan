@@ -8,7 +8,7 @@ import java.util.List;
  * This class wraps a StringBuilder object and provides utility functions for
  * appending Node and lists.
  */
-public class SQLBuilder {
+public class Builder {
 	/**
 	 * The internal StringBuilder object
 	 */
@@ -19,7 +19,7 @@ public class SQLBuilder {
 	 *
 	 * @param part the string to append
 	 */
-	public SQLBuilder append(String part) {
+	public Builder append(String part) {
 		builder.append(part);
 		return this;
 	}
@@ -30,7 +30,7 @@ public class SQLBuilder {
 	 *
 	 * @param node the node to append
 	 */
-	public SQLBuilder append(Node node) {
+	public Builder append(Node node) {
 		node.toSQL(this);
 		return this;
 	}
@@ -41,7 +41,7 @@ public class SQLBuilder {
 	 * @param nodes     the list of nodes to append
 	 * @param separator the separator between each element
 	 */
-	public SQLBuilder append(List<? extends Node> nodes, String separator) {
+	public Builder append(List<? extends Node> nodes, String separator) {
 		boolean first = true;
 		for (Node node : nodes) {
 			if (first) {
@@ -59,7 +59,7 @@ public class SQLBuilder {
 	 * The separator used will be the string ", ".
 	 * @param nodes the list of nodes to append
 	 */
-	public SQLBuilder append(List<? extends Node> nodes) {
+	public Builder append(List<? extends Node> nodes) {
 		return append(nodes, ", ");
 	}
 
@@ -68,7 +68,7 @@ public class SQLBuilder {
 	 * The identifier will be escaped with brackets.
 	 * @param identifier the identifier to append
 	 */
-	public SQLBuilder appendIdentifier(String identifier) {
+	public Builder appendIdentifier(String identifier) {
 		builder.append("[").append(identifier).append("]");
 		return this;
 	}
@@ -79,7 +79,7 @@ public class SQLBuilder {
 	 *
 	 * @param string the string to append
 	 */
-	public SQLBuilder appendTextLiteral(String string) {
+	public Builder appendTextLiteral(String string) {
 		builder.append("'").append(string.replace("'", "''")).append("'");
 		return this;
 	}

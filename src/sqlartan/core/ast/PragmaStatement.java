@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.parser.Util;
 import static sqlartan.core.ast.token.Keyword.PRAGMA;
@@ -52,7 +52,7 @@ public abstract class PragmaStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("PRAGMA ");
 		if (schema != null) sql.append(schema).append(".");
 		sql.append(pragma);
@@ -75,7 +75,7 @@ public abstract class PragmaStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(" = ").appendTextLiteral(value);
 		}
@@ -91,7 +91,7 @@ public abstract class PragmaStatement implements Statement {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append("(").appendTextLiteral(value).append(")");
 		}

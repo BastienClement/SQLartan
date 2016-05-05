@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Identifier;
 import static sqlartan.core.ast.token.Keyword.AS;
@@ -40,7 +40,7 @@ public abstract class ResultColumn implements Node {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.append(expr);
 			if (alias != null)
 				sql.append(" AS ").append(alias);
@@ -52,7 +52,7 @@ public abstract class ResultColumn implements Node {
 		private Wildcard() {}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.append("*");
 		}
 	}
@@ -66,7 +66,7 @@ public abstract class ResultColumn implements Node {
 		}
 
 		@Override
-		public void toSQL(SQLBuilder sql) {
+		public void toSQL(Builder sql) {
 			sql.appendIdentifier(table).append(".*");
 		}
 	}

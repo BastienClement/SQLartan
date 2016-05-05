@@ -1,6 +1,6 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.SQLBuilder;
+import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.token.Keyword.*;
 
@@ -25,7 +25,7 @@ public class RollbackStatement implements Statement {
 	}
 
 	@Override
-	public void toSQL(SQLBuilder sql) {
+	public void toSQL(Builder sql) {
 		sql.append("ROLLBACK");
 		if (savepoint != null) {
 			sql.append(" TO ").append(savepoint);
