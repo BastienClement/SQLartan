@@ -17,12 +17,12 @@ public class AnalyzeStatement implements Statement {
 		context.consume(ANALYZE);
 		AnalyzeStatement analyze = new AnalyzeStatement();
 		if (context.next(DOT)) {
-			analyze.schema = context.consumeIdentifier().value;
+			analyze.schema = context.consumeIdentifier();
 			context.consume(DOT);
-			analyze.subject = context.consumeIdentifier().value;
+			analyze.subject = context.consumeIdentifier();
 			analyze.ambiguous = false;
 		} else {
-			analyze.schema = analyze.subject = context.consumeIdentifier().value;
+			analyze.schema = analyze.subject = context.consumeIdentifier();
 			analyze.ambiguous = true;
 		}
 		return analyze;

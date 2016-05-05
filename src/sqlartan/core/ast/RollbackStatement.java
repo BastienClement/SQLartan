@@ -18,7 +18,7 @@ public class RollbackStatement implements Statement {
 
 		if (context.tryConsume(TO)) {
 			context.tryConsume(SAVEPOINT);
-			rollback.savepoint = context.consumeIdentifier().value;
+			rollback.savepoint = context.consumeIdentifier();
 		}
 
 		return rollback;

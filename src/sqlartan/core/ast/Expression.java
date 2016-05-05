@@ -125,17 +125,17 @@ public abstract class Expression implements Node {
 			String table = null, schema = null;
 
 			if (context.next(DOT)) {
-				table = context.consumeIdentifier().value;
+				table = context.consumeIdentifier();
 				context.consume(DOT);
 			}
 
 			if (context.next(DOT)) {
 				schema = table;
-				table = context.consumeIdentifier().value;
+				table = context.consumeIdentifier();
 				context.consume(DOT);
 			}
 
-			String column = context.consumeIdentifier().value;
+			String column = context.consumeIdentifier();
 			return new ColumnReference(schema, table, column);
 		}
 

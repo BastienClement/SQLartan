@@ -14,7 +14,7 @@ public class DetachStatement implements Statement {
 		context.consume(DETACH);
 		context.tryConsume(DATABASE);
 		DetachStatement detach = new DetachStatement();
-		detach.schema = context.consumeIdentifier().value;
+		detach.schema = context.consumeIdentifier();
 		return detach;
 	}
 

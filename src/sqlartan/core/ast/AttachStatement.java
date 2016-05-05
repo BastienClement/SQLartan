@@ -19,7 +19,7 @@ public class AttachStatement implements Statement {
 		AttachStatement attach = new AttachStatement();
 		attach.file = context.parse(Expression::parse);
 		context.consume(AS);
-		attach.schema = context.consumeIdentifier().value;
+		attach.schema = context.consumeIdentifier();
 		return attach;
 	}
 

@@ -17,7 +17,7 @@ public class SavepointStatement implements Statement {
 
 	public static SavepointStatement parse(ParserContext context) {
 		context.consume(SAVEPOINT);
-		return new SavepointStatement(context.consumeIdentifier().value);
+		return new SavepointStatement(context.consumeIdentifier());
 	}
 
 	@Override

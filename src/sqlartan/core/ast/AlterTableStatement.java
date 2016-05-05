@@ -20,15 +20,15 @@ public abstract class AlterTableStatement implements Statement {
 
 		String schema = null;
 		if (context.next(DOT)) {
-			schema = context.consumeIdentifier().value;
+			schema = context.consumeIdentifier();
 			context.consume(DOT);
 		}
 
-		String table = context.consumeIdentifier().value;
+		String table = context.consumeIdentifier();
 
 		if (context.tryConsume(RENAME)) {
 			context.consume(TO);
-			alter = new RenameTo(context.consumeIdentifier().value);
+			alter = new RenameTo(context.consumeIdentifier());
 		} else {
 			context.consume(ADD);
 			context.tryConsume(COLUMN);

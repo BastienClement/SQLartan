@@ -168,16 +168,16 @@ public class ParserContext {
 	 * Consumes an identifier token
 	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
 	 */
-	public Identifier consumeIdentifier() {
-		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken);
+	public String consumeIdentifier() {
+		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken).value;
 	}
 
 	/**
 	 * Consumes a string literal token
 	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
 	 */
-	public Literal.Text consumeTextLiteral() {
-		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken);
+	public String consumeTextLiteral() {
+		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken).value;
 	}
 
 	/**

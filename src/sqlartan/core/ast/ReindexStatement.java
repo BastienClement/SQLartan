@@ -25,10 +25,10 @@ public class ReindexStatement implements Statement {
 		context.consume(REINDEX);
 		ReindexStatement reindex = new ReindexStatement();
 		if (context.next(DOT)) {
-			reindex.schema = context.consumeIdentifier().value;
+			reindex.schema = context.consumeIdentifier();
 			context.consume(DOT);
 		}
-		reindex.target = context.consumeIdentifier().value;
+		reindex.target = context.consumeIdentifier();
 		return reindex;
 	}
 

@@ -23,7 +23,7 @@ public abstract class ResultColumn implements Node {
 			() -> {
 				Expr expr = new Expr(context.parse(Expression::parse));
 				if (context.tryConsume(AS)) {
-					expr.alias = context.consumeIdentifier().value;
+					expr.alias = context.consumeIdentifier();
 				}
 				return expr;
 			}

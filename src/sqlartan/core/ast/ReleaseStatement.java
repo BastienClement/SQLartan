@@ -19,7 +19,7 @@ public class ReleaseStatement implements Statement {
 	public static Statement parse(ParserContext context) {
 		context.consume(RELEASE);
 		context.tryConsume(SAVEPOINT);
-		return new ReleaseStatement(context.consumeIdentifier().value);
+		return new ReleaseStatement(context.consumeIdentifier());
 	}
 
 	@Override

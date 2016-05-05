@@ -175,12 +175,12 @@ public abstract class SelectStatement implements Statement {
 
 			// Explicit schema name
 			if (context.next(DOT)) {
-				source.schema = context.consumeIdentifier().value;
+				source.schema = context.consumeIdentifier();
 				context.consume(DOT);
 			}
 
 			// Table name
-			source.table = context.consumeIdentifier().value;
+			source.table = context.consumeIdentifier();
 
 			// Attempt to consume alias
 			context.tryConsume(AS);
@@ -188,7 +188,7 @@ public abstract class SelectStatement implements Statement {
 
 			if (context.tryConsume(INDEXED)) {
 				context.consume(BY);
-				source.index = context.consumeIdentifier().value;
+				source.index = context.consumeIdentifier();
 			} else if (context.tryConsume(NOT)) {
 				context.consume(INDEXED);
 				source.notIndexed = true;

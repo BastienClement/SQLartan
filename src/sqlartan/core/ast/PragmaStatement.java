@@ -18,11 +18,11 @@ public abstract class PragmaStatement implements Statement {
 
 		String schema = null;
 		if (context.next(DOT)) {
-			schema = context.consumeIdentifier().value;
+			schema = context.consumeIdentifier();
 			context.consume(DOT);
 		}
 
-		String name = context.consumeIdentifier().value;
+		String name = context.consumeIdentifier();
 		PragmaStatement pragma;
 
 		if (context.tryConsume(EQ)) {
@@ -40,8 +40,8 @@ public abstract class PragmaStatement implements Statement {
 	public static String parsePragmaValue(ParserContext context) {
 		return context.alternatives(
 			() -> context.parse(Util::parseSignedNumber),
-			() -> context.consumeTextLiteral().value,
-			() -> context.consumeIdentifier().value
+			context::consumeTextLiteral,
+			context::consumeIdentifier
 		);
 	}
 
