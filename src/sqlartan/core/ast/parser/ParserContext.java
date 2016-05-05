@@ -360,6 +360,23 @@ public class ParserContext {
 	}
 
 	/**
+	 * Selects the first match from the supplied list of parsers
+	 *
+	 * @param cases a list of parsers
+	 * @param <T>   the type of the returned value
+	 */
+	@SafeVarargs
+	public final <T> T alternatives(Parser<? extends T>... cases) {
+		for (Parser<? extends T> parser : cases) {
+			Optional<? extends T> res = tryParse(parser);
+			if (res.isPresent()) {
+				return res.get();
+			}
+		}
+		throw ParseException.UnexpectedCurrentToken;
+	}
+
+	/**
 	 * Transactionally executes a supplier function
 	 * If a FastParseException occurs while executing the block, the token source will be rolled back
 	 * to its state at the beginning of the block.

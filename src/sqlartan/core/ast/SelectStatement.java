@@ -139,8 +139,8 @@ public abstract class SelectStatement implements Statement {
 	public abstract static class SelectSource implements Node {
 		public static SelectSource parse(ParserContext context) {
 			return context.alternatives(
-				() -> context.parse(TableOrSubquerySource::parse),
-				() -> context.parse(JoinClause::parse)
+				TableOrSubquerySource::parse,
+				JoinClause::parse
 			);
 		}
 	}

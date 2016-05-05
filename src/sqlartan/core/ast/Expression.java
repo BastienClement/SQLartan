@@ -21,7 +21,7 @@ public abstract class Expression implements Node {
 		return match(context.current(), Expression.class)
 			.when(Literal.class, lit -> context.parse(Constant::parse))
 			.when(Identifier.class, id -> context.alternatives(
-				() -> context.parse(ColumnReference::parse)
+				ColumnReference::parse
 			))
 			.orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
