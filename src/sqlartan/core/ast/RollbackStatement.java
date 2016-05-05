@@ -1,9 +1,34 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserContext;
+import static sqlartan.core.ast.token.Keyword.*;
 
-public abstract class RollbackStatement implements Statement {
+/**
+ * https://www.sqlite.org/lang_transaction.html
+ */
+public class RollbackStatement implements Statement {
+	public String savepoint;
+
 	public static RollbackStatement parse(ParserContext context) {
-		throw new UnsupportedOperationException();
+		context.consume(ROLLBACK);
+		context.tryConsume(TRANSACTION);
+
+		RollbackStatement rollback = new RollbackStatement();
+
+		if (context.tryConsume(TO)) {
+			context.tryConsume(SAVEPOINT);
+			rollback.savepoint = context.consumeIdentifier().value;
+		}
+
+		return rollback;
+	}
+
+	@Override
+	public void toSQL(SQLBuilder sql) {
+		sql.append("ROLLBACK");
+		if (savepoint != null) {
+			sql.append(" TO ").append(savepoint);
+		}
 	}
 }
