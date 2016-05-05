@@ -1,16 +1,17 @@
 .background {
-    -fx-background-color: #FADDC6;
+    -fx-background-color: #FFF;
 }
 
 .tree-view {
-    -fx-background-color: #FAF8C6;
+    -fx-background-color: #FFFF;
+    -fx-border-width: 0;
+    -fx-border-color: #dddddd;
+    -fx-border-right: 2;
+    -f-border-top: 0;
+
 
 }
 
-.tree-view, .tree-cell {/*
-	-fx-background-color: black ;
-	-fx-text-fill: white ;*/
-}
 
 .tree-cell:selected {
     -fx-font-weight: bold ;

@@ -261,6 +261,10 @@ public class Matching<T> {
 		public <Z extends Throwable> void orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			throw supplier.get();
 		}
+
+		public final void orElseThrow() {
+			orElseThrow(NoSuchElementException::new);
+		}
 	}
 
 	/**

@@ -83,7 +83,7 @@ public class DatabaseTests {
 			assertSame(attached, main.attached("attached").get());
 			assertFalse(main.attached("foo").isPresent());
 
-			attached.detach();
+			attached.close();
 			assertEquals(0, main.attached().size());
 
 			exception.expect(RuntimeSQLException.class);

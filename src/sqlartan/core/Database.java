@@ -229,13 +229,11 @@ public class Database implements AutoCloseable {
 	public void close() {
 		if (this.connection != null) {
 			try {
+				attached.clear();
 				this.connection.close();
 			} catch (SQLException ignored) {}
 			this.connection = null;
 		}
-
-		attached.values().forEach(AttachedDatabase::close);
-		attached.clear();
 	}
 
 	/**
@@ -382,10 +380,10 @@ public class Database implements AutoCloseable {
 	 *
 	 * @param name
 	 */
-	public void detach(String name) throws SQLException {
+	public void detach(String name) {
 		AttachedDatabase db = attached(name)
 				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
-		db.close();
+		db.detach();
 		attached.remove(name);
 	}
 }
