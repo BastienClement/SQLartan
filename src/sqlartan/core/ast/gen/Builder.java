@@ -85,6 +85,16 @@ public class Builder {
 	}
 
 	/**
+	 * Appends a schema name to the output.
+	 *
+	 * @param schema the schema name
+	 */
+	public Builder appendSchema(String schema) {
+		builder.append(schema).append(".");
+		return this;
+	}
+
+	/**
 	 * Returns the resulting SQL code from this SQLBuilder.
 	 */
 	@Override
