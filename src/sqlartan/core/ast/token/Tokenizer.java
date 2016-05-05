@@ -1,5 +1,7 @@
 package sqlartan.core.ast.token;
 
+import sqlartan.core.ast.Keyword;
+import sqlartan.core.ast.Operator;
 import static sqlartan.core.ast.token.Tokenizer.NumericState.*;
 import static sqlartan.core.ast.token.Tokenizer.State.*;
 
@@ -87,11 +89,11 @@ public class Tokenizer {
 					if (!Character.isDigit(c)) {
 						if (i - begin == 1) {
 							++max_placeholder;
-							builder.push(Placeholder.forIndex(max_placeholder, sql, begin));
+							builder.push(Token.Placeholder.fromIndex(max_placeholder, sql, begin));
 						} else {
 							int index = Integer.valueOf(slice(input, begin + 1, i));
 							if (index > max_placeholder) max_placeholder = index;
-							builder.push(Placeholder.forIndex(index, sql, begin));
+							builder.push(Token.Placeholder.fromIndex(index, sql, begin));
 						}
 						state = WHITESPACE;
 						--i;
@@ -105,7 +107,7 @@ public class Tokenizer {
 							throw new TokenizeException("Empty named placeholder", sql, begin);
 						} else {
 							String name = slice(input, begin + 1, i);
-							builder.push(Placeholder.forName(name, sql, begin));
+							builder.push(Token.Placeholder.fromName(name, sql, begin));
 						}
 						state = WHITESPACE;
 						--i;
@@ -119,7 +121,7 @@ public class Tokenizer {
 							++i;
 						} else {
 							String value = slice(input, begin + 1, i).replace("''", "'");
-							builder.push(Literal.fromText(value, sql, begin));
+							builder.push(Token.Literal.fromText(value, sql, begin));
 							state = WHITESPACE;
 						}
 					}
@@ -128,7 +130,7 @@ public class Tokenizer {
 				case IDENTIFIER:
 					if (c == quote_char) {
 						String fragment = slice(input, begin + 1, i);
-						builder.push(Identifier.from(fragment, sql, begin, quote_char != '"'));
+						builder.push(Token.Identifier.from(fragment, quote_char != '"', sql, begin));
 						state = WHITESPACE;
 					}
 					break;
@@ -198,7 +200,7 @@ public class Tokenizer {
 						throw new TokenizeException("Malformed number", sql, begin);
 					}
 
-					builder.push(Literal.fromNumeric(number, sql, begin));
+					builder.push(Token.Literal.fromNumeric(number, sql, begin));
 
 					state = WHITESPACE;
 					--i;
@@ -213,27 +215,26 @@ public class Tokenizer {
 
 						switch (fragment) {
 							case "==":
-								operator = Operator.EQ.at(sql, begin);
+								operator = Operator.EQ;
 								break;
 							case "!=":
-								operator = Operator.NOT_EQ.at(sql, begin);
+								operator = Operator.NOT_EQ;
 								break;
 							default:
-								operator = Operator.from(fragment, sql, begin);
+								operator = Operator.from(fragment).orElse(null);
 								break;
 						}
 
 						if (operator != null) {
-							builder.push(operator);
-						} else if ((keyword = Keyword.from(fragment, sql, begin)) != null) {
-							if (keyword.equals(Keyword.NOT) && builder.last().equals(Keyword.IS)) {
+							builder.push(operator.token.at(sql, begin));
+						} else if ((keyword = Keyword.from(fragment).orElse(null)) != null) {
+							if (keyword == Keyword.NOT && builder.last().equals(Keyword.IS.token)) {
 								builder.pop();
-								builder.push(Keyword.IS_NOT.at(sql, begin));
-							} else {
-								builder.push(keyword);
+								keyword = Keyword.IS_NOT;
 							}
+							builder.push(keyword.token.at(sql, begin));
 						} else {
-							builder.push(Identifier.from(fragment, sql, begin, false));
+							builder.push(Token.Identifier.from(fragment, false, sql, begin));
 						}
 						state = WHITESPACE;
 						--i;
@@ -241,13 +242,13 @@ public class Tokenizer {
 					break;
 
 				case SYM_FRAGMENT:
-					if (Character.isLetter(c) || Character.isDigit(c) || Character.isWhitespace(c) || i - begin >= Operator.MAX_OPERATOR_LEN) {
+					if (Character.isLetter(c) || Character.isDigit(c) || Character.isWhitespace(c) || i - begin >= Operator.maxLength) {
 						String fragment;
 						do {
 							fragment = String.valueOf(input, begin, i - begin);
-							Operator operator = Operator.from(fragment, sql, begin);
+							Operator operator = Operator.from(fragment).orElse(null);
 							if (operator != null) {
-								builder.push(operator);
+								builder.push(operator.token.at(sql, begin));
 								state = WHITESPACE;
 								--i;
 								continue outer;
@@ -275,7 +276,7 @@ public class Tokenizer {
 			throw new TokenizeException("Unterminated string or identifier", sql, begin);
 		}
 
-		builder.push(EndOfStream.at(sql, length));
+		builder.push(Token.EndOfStream.at(sql, length));
 		return builder.build();
 	}
 }

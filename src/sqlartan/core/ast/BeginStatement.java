@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
+import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.util.Matching.match;
 
 /**
@@ -38,11 +38,14 @@ public class BeginStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("BEGIN")
-		   .append(match(mode)
-			   .when(Mode.Deferred, () -> " DEFERRED")
-			   .when(Mode.Immediate, () -> " IMMEDIATE")
-			   .when(Mode.Exclusive, () -> " EXCLUSIVE")
-			   .orElse(""));
+		sql.append(BEGIN);
+		if (mode != Mode.None) {
+			sql.append(
+				match(mode).when(Mode.Deferred, () -> DEFERRED)
+				           .when(Mode.Immediate, () -> IMMEDIATE)
+				           .when(Mode.Exclusive, () -> EXCLUSIVE)
+				           .orElseThrow()
+			);
+		}
 	}
 }

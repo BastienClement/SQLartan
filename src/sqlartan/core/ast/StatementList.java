@@ -2,15 +2,15 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
+import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
-import static sqlartan.core.ast.token.EndOfStream.EOS;
-import static sqlartan.core.ast.token.Operator.SEMICOLON;
+import static sqlartan.core.ast.Operator.SEMICOLON;
 
 public class StatementList extends ArrayList<Statement> implements Node {
 	public static StatementList parse(ParserContext context) {
 		StatementList statementList = new StatementList();
 		do {
-			if (context.current(EOS)) return statementList;
+			if (context.current(Token.EndOfStream.class)) return statementList;
 			statementList.add(Statement.parse(context));
 		} while(context.tryConsume(SEMICOLON));
 		return statementList;
@@ -18,8 +18,8 @@ public class StatementList extends ArrayList<Statement> implements Node {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append(this, "; ");
+		sql.append(this, SEMICOLON);
 		if (!isEmpty())
-			sql.append(";");
+			sql.append(SEMICOLON);
 	}
 }

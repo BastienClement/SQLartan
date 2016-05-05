@@ -5,8 +5,8 @@ import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import java.util.List;
 import java.util.Optional;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Operator.*;
+import static sqlartan.core.ast.Keyword.*;
+import static sqlartan.core.ast.Operator.*;
 
 /**
  * https://www.sqlite.org/lang_createindex.html
@@ -58,17 +58,17 @@ public class CreateIndexStatement extends CreateStatement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		super.toSQL(sql);
-		if (unique) sql.append("UNIQUE ");
-		sql.append("INDEX ");
-		if (ifNotExists) sql.append("IF NOT EXISTS ");
+		sql.append(CREATE);
+		if (unique) sql.append(UNIQUE);
+		sql.append(INDEX);
+		if (ifNotExists) sql.append(IF, NOT, EXISTS);
 		schema.ifPresent(sql::appendSchema);
-		sql.append(name)
-		   .append(" ON ")
-		   .append(table)
-		   .append(" (")
+		sql.appendIdentifier(name)
+		   .append(ON)
+		   .appendIdentifier(table)
+		   .append(LEFT_PAREN)
 		   .append(columns)
-		   .append(")");
-		where.ifPresent(w -> sql.append(" WHERE ").append(w));
+		   .append(RIGHT_PAREN);
+		where.ifPresent(w -> sql.append(WHERE).append(w));
 	}
 }

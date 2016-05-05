@@ -3,7 +3,7 @@ package sqlartan.core.ast;
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import java.util.Optional;
-import static sqlartan.core.ast.token.Keyword.COLLATE;
+import static sqlartan.core.ast.Keyword.COLLATE;
 
 /**
  * https://www.sqlite.org/lang_createindex.html
@@ -31,7 +31,7 @@ public class IndexedColumn implements Node {
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(expression);
-		collate.ifPresent(c -> sql.append(" COLLATE ").appendIdentifier(c));
-		if (ordering != Ordering.None) sql.append(" ").append(ordering);
+		collate.ifPresent(c -> sql.append(COLLATE).appendIdentifier(c));
+		if (ordering != Ordering.None) sql.append(ordering);
 	}
 }

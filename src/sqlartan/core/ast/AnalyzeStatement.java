@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.ANALYZE;
-import static sqlartan.core.ast.token.Operator.DOT;
+import static sqlartan.core.ast.Keyword.*;
+import static sqlartan.core.ast.Operator.*;
 
 /**
  * https://www.sqlite.org/lang_analyze.html
@@ -30,12 +30,12 @@ public class AnalyzeStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("ANALYZE ");
+		sql.append(ANALYZE);
 		if (ambiguous || schema == null) {
 			sql.appendIdentifier(subject);
 		} else {
 			sql.appendIdentifier(schema)
-			   .append(".")
+			   .append(DOT)
 			   .appendIdentifier(subject);
 		}
 	}

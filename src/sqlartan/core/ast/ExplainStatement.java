@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
+import static sqlartan.core.ast.Keyword.*;
 
 /**
  * https://www.sqlite.org/lang_explain.html
@@ -24,8 +24,8 @@ public class ExplainStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("EXPLAIN ");
-		if (queryPlan) sql.append("QUERY PLAN ");
+		sql.append(EXPLAIN);
+		if (queryPlan) sql.append(QUERY, PLAN);
 		sql.append(statement);
 	}
 }

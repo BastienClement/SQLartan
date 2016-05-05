@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.VACUUM;
+import static sqlartan.core.ast.Keyword.VACUUM;
 
 public class VacuumStatement implements Statement {
 	public static final VacuumStatement instance = new VacuumStatement();
@@ -16,6 +16,6 @@ public class VacuumStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("VACUUM");
+		sql.append(VACUUM);
 	}
 }

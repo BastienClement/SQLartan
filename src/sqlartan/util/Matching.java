@@ -1,5 +1,6 @@
 package sqlartan.util;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -65,6 +66,10 @@ public class Matching<T> {
 		return valueClass != null && matchClass.isAssignableFrom(valueClass);
 	}
 
+	private boolean isEqual(Object o) {
+		return value == o || (value != null && value.equals(o));
+	}
+
 	/**
 	 * Matching case
 	 * If the value matches the given class, expr is executed and its returned value
@@ -125,7 +130,7 @@ public class Matching<T> {
 		}
 
 		public <U> Returning<R> when(U matchValue, Supplier<? extends R> expr) {
-			if (matchValue == value || (matchValue != null && matchValue.equals(value))) {
+			if (isEqual(matchValue)) {
 				return new MatchedReturning<>(expr.get());
 			} else {
 				return this;
@@ -158,6 +163,10 @@ public class Matching<T> {
 		 */
 		public <Z extends Throwable> R orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			throw supplier.get();
+		}
+
+		public final R orElseThrow() {
+			return orElseThrow(NoSuchElementException::new);
 		}
 	}
 
@@ -231,7 +240,7 @@ public class Matching<T> {
 		}
 
 		public <U> Void when(U matchValue, Runnable expr) {
-			if (matchValue == value || (matchValue != null && matchValue.equals(value))) {
+			if (isEqual(matchValue)) {
 				expr.run();
 				return new MatchedVoid();
 			} else {

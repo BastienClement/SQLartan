@@ -4,8 +4,8 @@ import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import java.util.ArrayList;
 import java.util.List;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Operator.*;
+import static sqlartan.core.ast.Keyword.*;
+import static sqlartan.core.ast.Operator.*;
 
 /**
  * https://www.sqlite.org/lang_select.html
@@ -66,18 +66,18 @@ public abstract class SelectStatement implements Statement {
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.append("SELECT ");
+			sql.append(SELECT);
 			if (distinct)
-				sql.append("DISTINCT ");
+				sql.append(DISTINCT);
 			sql.append(columns);
 			if (from != null)
-				sql.append(" FROM ").append(from);
+				sql.append(FROM).append(from);
 			if (where != null)
-				sql.append(" WHERE ").append(where);
+				sql.append(WHERE).append(where);
 			if (groupBy != null) {
-				sql.append(" GROUP BY ").append(groupBy);
+				sql.append(GROUP, BY).append(groupBy);
 				if (having != null)
-					sql.append(" HAVING ").append(having);
+					sql.append(HAVING).append(having);
 			}
 		}
 	}
@@ -121,11 +121,11 @@ public abstract class SelectStatement implements Statement {
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			if (orderBy != null)
-				sql.append(" ORDER BY ").append(orderBy);
+				sql.append(ORDER, BY).append(orderBy);
 			if (limit != null) {
-				sql.append(" LIMIT ").append(limit);
+				sql.append(LIMIT).append(limit);
 				if (offset != null) {
-					sql.append(", ").append(offset);
+					sql.append(COMMA).append(offset);
 				}
 			}
 		}
@@ -198,14 +198,14 @@ public abstract class SelectStatement implements Statement {
 		@Override
 		public void toSQL(Builder sql) {
 			if (schema != null)
-				sql.appendIdentifier(schema).append(".");
+				sql.appendIdentifier(schema).append(DOT);
 			sql.appendIdentifier(table);
 			if (as != null)
-				sql.append(" AS ").appendIdentifier(as);
+				sql.append(AS).appendIdentifier(as);
 			if (notIndexed)
-				sql.append(" NOT INDEXED");
+				sql.append(NOT, INDEXED);
 			else if (index != null)
-				sql.append(" INDEXED BY ").appendIdentifier(index);
+				sql.append(INDEXED, BY).appendIdentifier(index);
 		}
 	}
 

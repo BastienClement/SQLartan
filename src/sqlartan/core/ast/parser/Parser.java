@@ -1,8 +1,8 @@
 package sqlartan.core.ast.parser;
 
+import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.TokenSource;
 import java.util.Optional;
-import static sqlartan.core.ast.token.EndOfStream.EOS;
 
 /**
  * A parser function returning a Node instance from a ParserContext.
@@ -18,7 +18,7 @@ public interface Parser<T> {
 		ParserContext context = new ParserContext(source);
 		try {
 			T res = parser.parse(context);
-			if (!context.current().equals(EOS)) {
+			if (!(context.current() instanceof Token.EndOfStream)) {
 				throw ParseException.UnexpectedCurrentToken;
 			}
 			return res;

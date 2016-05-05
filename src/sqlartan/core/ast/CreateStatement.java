@@ -1,11 +1,10 @@
 package sqlartan.core.ast;
 
-import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import sqlartan.util.Matching;
-import static sqlartan.core.ast.token.Keyword.*;
+import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.util.Matching.match;
 
 /**
@@ -20,17 +19,12 @@ public abstract class CreateStatement implements Statement {
 		);
 	}
 
-	private static <T> Matching<Token<T>>.Returning<CreateStatement> doMatch(Token<T> token, ParserContext context) {
+	private static <T> Matching<Token>.Returning<CreateStatement> doMatch(Token token, ParserContext context) {
 		return match(token, CreateStatement.class)
 			.when(INDEX, () -> CreateIndexStatement.parse(context))
 			.when(TABLE, () -> CreateTableStatement.parse(context))
 			.when(TRIGGER, () -> CreateTriggerStatement.parse(context))
 			.when(VIEW, () -> CreateViewStatement.parse(context))
 			.when(VIRTUAL, () -> CreateVirtualTableStatement.parse(context));
-	}
-
-	@Override
-	public void toSQL(Builder sql) {
-		sql.append("CREATE ");
 	}
 }

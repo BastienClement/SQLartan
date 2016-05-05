@@ -1,15 +1,15 @@
 package sqlartan.core.ast.parser;
 
-import sqlartan.core.ast.token.Identifier;
-import sqlartan.core.ast.token.Literal;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.token.Tokenizable;
 import sqlartan.util.Matching;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import static sqlartan.core.ast.token.Operator.DOT;
+import static sqlartan.core.ast.Operator.COMMA;
+import static sqlartan.core.ast.Operator.DOT;
 
 /**
  * A parsing context
@@ -36,8 +36,8 @@ public class ParserContext {
 	 * @param token      the token to test
 	 * @param tokenClass the class to check
 	 */
-	public boolean match(Token<?> token, Class<? extends Token<?>> tokenClass) {
-		return tokenClass.isAssignableFrom(token.getClass());
+	public boolean match(Tokenizable<?> token, Class<? extends Token> tokenClass) {
+		return tokenClass.isAssignableFrom(token.token().getClass());
 	}
 
 	/**
@@ -46,14 +46,14 @@ public class ParserContext {
 	 * @param token the token to test
 	 * @param other the other token to test
 	 */
-	public boolean match(Token<?> token, Token<?> other) {
-		return token.equals(other);
+	public boolean match(Tokenizable<?> token, Tokenizable<?> other) {
+		return token.token().equals(other.token());
 	}
 
 	/**
 	 * Returns the current token
 	 */
-	public Token<?> current() {
+	public Token current() {
 		return source.current();
 	}
 
@@ -62,7 +62,7 @@ public class ParserContext {
 	 *
 	 * @param token the token class to check
 	 */
-	public boolean current(Class<? extends Token<?>> token) {
+	public boolean current(Class<? extends Token> token) {
 		return match(current(), token);
 	}
 
@@ -71,14 +71,14 @@ public class ParserContext {
 	 *
 	 * @param token the token to check
 	 */
-	public boolean current(Token token) {
+	public boolean current(Tokenizable<?> token) {
 		return match(current(), token);
 	}
 
 	/**
 	 * Returns the next token
 	 */
-	public Token<?> next() {
+	public Token next() {
 		return source.next();
 	}
 
@@ -87,7 +87,7 @@ public class ParserContext {
 	 *
 	 * @param token the token class to check
 	 */
-	public boolean next(Class<? extends Token<?>> token) {
+	public boolean next(Class<? extends Token> token) {
 		return match(next(), token);
 	}
 
@@ -96,7 +96,7 @@ public class ParserContext {
 	 *
 	 * @param token the token to check
 	 */
-	public boolean next(Token<?> token) {
+	public boolean next(Tokenizable<?> token) {
 		return match(next(), token);
 	}
 
@@ -130,7 +130,7 @@ public class ParserContext {
 	 * @param <T> the type of the token to return
 	 */
 	@SuppressWarnings("unchecked")
-	private <T extends Token<?>> T unsafeConsume() {
+	private <T extends Token> T unsafeConsume() {
 		T consumed = (T) source.current();
 		source.consume();
 		return consumed;
@@ -150,7 +150,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return the consumed token
 	 */
-	public <T extends Token<?>> T consume(Class<T> token) {
+	public <T extends Token> T consume(Class<T> token) {
 		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -161,7 +161,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return the consumed token
 	 */
-	public <T extends Token<?>> T consume(T token) {
+	public <T extends Token, S extends Tokenizable<T>> T consume(S token) {
 		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
@@ -170,8 +170,8 @@ public class ParserContext {
 	 *
 	 * @param tokens the tokens to consume
 	 */
-	public void consume(Token<?>... tokens) {
-		for (Token<?> token : tokens) consume(token);
+	public void consume(Tokenizable<?>... tokens) {
+		for (Tokenizable<?> token : tokens) consume(token);
 	}
 
 	/**
@@ -197,7 +197,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return true if a matching token was consumed, false otherwise
 	 */
-	public <T extends Token<?>> boolean tryConsume(Class<T> token) {
+	public <T extends Token> boolean tryConsume(Class<T> token) {
 		return optConsume(token).isPresent();
 	}
 
@@ -205,10 +205,9 @@ public class ParserContext {
 	 * Attempts to consume a token equals to the given token
 	 *
 	 * @param token the token to consume
-	 * @param <T>   the type of the token to consume
 	 * @return true if a matching token was consumed, false otherwise
 	 */
-	public <T extends Token<?>> boolean tryConsume(T token) {
+	public boolean tryConsume(Tokenizable<?> token) {
 		return optConsume(token).isPresent();
 	}
 
@@ -223,12 +222,11 @@ public class ParserContext {
 	 *
 	 * @param first the first token to consume
 	 * @param nexts the tokens to consume if the first was a match
-	 * @param <T>   the type of the token to consume
 	 * @return true if a matching token was consumed, false otherwise
 	 */
-	public <T extends Token<?>> boolean tryConsume(T first, Token<?>... nexts) {
+	public boolean tryConsume(Tokenizable<?> first, Tokenizable<?>... nexts) {
 		if (!optConsume(first).isPresent()) return false;
-		for (Token<?> token : nexts) consume(token);
+		for (Tokenizable<?> token : nexts) consume(token);
 		return true;
 	}
 
@@ -259,7 +257,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return an optional containing a matching token, if any
 	 */
-	public <T extends Token<?>> Optional<T> optConsume(Class<T> token) {
+	public <T extends Token> Optional<T> optConsume(Class<T> token) {
 		if (current(token)) {
 			return Optional.of(unsafeConsume());
 		} else {
@@ -274,7 +272,7 @@ public class ParserContext {
 	 * @param <T>   the type of the token to consume
 	 * @return an optional containing a matching token, if any
 	 */
-	public <T extends Token<?>> Optional<T> optConsume(T token) {
+	public <T extends Token, S extends Tokenizable<T>> Optional<T> optConsume(S token) {
 		if (current(token)) {
 			return Optional.of(unsafeConsume());
 		} else {
@@ -289,12 +287,13 @@ public class ParserContext {
 	 * @return an optional containing a matching token, if any
 	 */
 	public Optional<String> optConsumeIdentifier() {
-		Optional<Identifier> res = Matching.match(current())
-		                                   .when(Identifier.class, id -> id)
-		                                   .when(Literal.Text.class, Literal.Text::toIdentifier)
-		                                   .get();
+		Optional<Token.Identifier> res =
+			Matching.match(current())
+			        .when(Token.Identifier.class, id -> id)
+			        .when(Token.Literal.Text.class, Token.Literal.Text::toIdentifier)
+			        .get();
 		if (res.isPresent()) source.consume();
-		return res.map(Token::value);
+		return res.map(Token.Identifier::value);
 	}
 
 	/**
@@ -304,12 +303,13 @@ public class ParserContext {
 	 * @return an optional containing a matching token, if any
 	 */
 	public Optional<String> optConsumeTextLiteral() {
-		Optional<Literal.Text> res = Matching.match(current())
-		                                     .when(Literal.Text.class, t -> t)
-		                                     .when(Identifier.class, id -> !id.strict, Identifier::toLiteral)
-		                                     .get();
+		Optional<Token.Literal.Text> res =
+			Matching.match(current())
+			        .when(Token.Literal.Text.class, t -> t)
+			        .when(Token.Identifier.class, id -> !id.strict, Token.Identifier::toLiteral)
+			        .get();
 		if (res.isPresent()) source.consume();
-		return res.map(Token::value);
+		return res.map(Token.Literal.Text::value);
 	}
 
 	/**
@@ -344,13 +344,17 @@ public class ParserContext {
 	 * @param <N>       the type of node produced by the parser
 	 * @return a list of nodes produced by the parser
 	 */
-	public <N> List<N> parseList(Token separator, Parser<N> parser) {
+	public <N> List<N> parseList(Tokenizable<?> separator, Parser<N> parser) {
 		List<N> list = new ArrayList<>();
 		parseList(list, separator, parser);
 		if (list.isEmpty()) {
 			throw ParseException.UnexpectedCurrentToken;
 		}
 		return list;
+	}
+
+	public <N> List<N> parseList(Parser<N> parser) {
+		return parseList(COMMA, parser);
 	}
 
 	/**
@@ -362,7 +366,7 @@ public class ParserContext {
 	 * @param <N>       the type of node produced by the parser
 	 * @return true if at least one node was produced, false if the resulting list is empty
 	 */
-	public <N> boolean parseList(List<N> list, Token separator, Parser<N> parser) {
+	public <N> boolean parseList(List<N> list, Tokenizable<?> separator, Parser<N> parser) {
 		do {
 			Optional<N> item = tryParse(parser);
 			if (item.isPresent()) {
@@ -372,6 +376,10 @@ public class ParserContext {
 			}
 		} while (tryConsume(separator));
 		return !list.isEmpty();
+	}
+
+	public <N> boolean parseList(List<N> list, Parser<N> parser) {
+		return parseList(list, COMMA, parser);
 	}
 
 	/**
@@ -415,7 +423,6 @@ public class ParserContext {
 	 *
 	 * @param block the function to execute
 	 * @param <T>   the return type of the function
-	 * @return
 	 */
 	public <T> Optional<T> transactionally(Supplier<? extends T> block) {
 		begin();

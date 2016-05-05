@@ -2,9 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.AS;
-import static sqlartan.core.ast.token.Keyword.ATTACH;
-import static sqlartan.core.ast.token.Keyword.DATABASE;
+import static sqlartan.core.ast.Keyword.*;
 
 /**
  * https://www.sqlite.org/lang_attach.html
@@ -25,6 +23,6 @@ public class AttachStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("ATTACH ").append(file).append(" AS ").appendIdentifier(schema);
+		sql.append(ATTACH).append(file).append(AS).appendIdentifier(schema);
 	}
 }

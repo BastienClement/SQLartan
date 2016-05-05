@@ -2,13 +2,17 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.ASC;
-import static sqlartan.core.ast.token.Keyword.DESC;
+import static sqlartan.core.ast.Keyword.ASC;
+import static sqlartan.core.ast.Keyword.DESC;
 
 public enum Ordering implements Node {
-	None,
-	Asc,
-	Desc;
+	None(null), Asc(ASC), Desc(DESC);
+
+	public final Keyword keyword;
+
+	Ordering(Keyword keyword) {
+		this.keyword = keyword;
+	}
 
 	public static Ordering parse(ParserContext context) {
 		if (context.tryConsume(ASC)) {
@@ -22,9 +26,6 @@ public enum Ordering implements Node {
 
 	@Override
 	public void toSQL(Builder sql) {
-		switch (this) {
-			case Asc: sql.append("ASC"); break;
-			case Desc: sql.append("DESC"); break;
-		}
+		if (keyword != null) sql.append(keyword);
 	}
 }

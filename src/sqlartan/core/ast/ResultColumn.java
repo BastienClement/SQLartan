@@ -2,10 +2,10 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Identifier;
-import static sqlartan.core.ast.token.Keyword.AS;
-import static sqlartan.core.ast.token.Operator.DOT;
-import static sqlartan.core.ast.token.Operator.MUL;
+import sqlartan.core.ast.token.Token;
+import static sqlartan.core.ast.Keyword.AS;
+import static sqlartan.core.ast.Operator.DOT;
+import static sqlartan.core.ast.Operator.MUL;
 
 public abstract class ResultColumn implements Node {
 	public static ResultColumn parse(ParserContext context) {
@@ -15,7 +15,7 @@ public abstract class ResultColumn implements Node {
 				return Wildcard.singleton;
 			},
 			() -> {
-				String table = context.consume(Identifier.class).value;
+				String table = context.consume(Token.Identifier.class).value;
 				context.consume(DOT);
 				context.consume(MUL);
 				return new TableWildcard(table);
@@ -43,7 +43,7 @@ public abstract class ResultColumn implements Node {
 		public void toSQL(Builder sql) {
 			sql.append(expr);
 			if (alias != null)
-				sql.append(" AS ").append(alias);
+				sql.append(AS).appendIdentifier(alias);
 		}
 	}
 
@@ -53,7 +53,7 @@ public abstract class ResultColumn implements Node {
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.append("*");
+			sql.append(MUL);
 		}
 	}
 
@@ -67,7 +67,7 @@ public abstract class ResultColumn implements Node {
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.appendIdentifier(table).append(".*");
+			sql.appendIdentifier(table).append(DOT, MUL);
 		}
 	}
 }

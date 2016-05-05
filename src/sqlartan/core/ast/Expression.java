@@ -4,12 +4,11 @@ import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Identifier;
-import sqlartan.core.ast.token.Literal;
 import sqlartan.core.ast.token.Token;
+import sqlartan.core.ast.token.Tokenizable;
 import java.util.Optional;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Operator.*;
+import static sqlartan.core.ast.Keyword.*;
+import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.match;
 
 public abstract class Expression implements Node {
@@ -19,17 +18,18 @@ public abstract class Expression implements Node {
 
 	public static Expression parseTerminal(ParserContext context) {
 		return match(context.current(), Expression.class)
-			.when(Literal.class, lit -> Constant.parse(context))
-			.when(Identifier.class, id -> context.alternatives(
+			.when(Token.Literal.class, lit -> Constant.parse(context))
+			.when(Token.Identifier.class, id -> context.alternatives(
 				ColumnReference::parse
 			))
 			.orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
-	private static Parser<Expression> parseStep(Parser<Expression> parser, Token<?>... tokens) {
+	@SafeVarargs
+	private static Parser<Expression> parseStep(Parser<Expression> parser, Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>>... tokens) {
 		return context -> {
 			Expression lhs = parser.parse(context);
-			Token<?> op;
+			KeywordOrOperator op;
 			while ((op = consumeAny(context, tokens)) != null) {
 				Expression rhs = parser.parse(context);
 				lhs = new BinaryOperator(lhs, op, rhs);
@@ -38,11 +38,11 @@ public abstract class Expression implements Node {
 		};
 	}
 
-	private static Token<?> consumeAny(ParserContext context, Token<?>[] tokens) {
-		for (Token<?> token : tokens) {
-			Optional<Token<?>> consumed = context.optConsume(token);
+	private static KeywordOrOperator consumeAny(ParserContext context, Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>>[] tokens) {
+		for (Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>> token : tokens) {
+			Optional<? extends Token.Wrapper<? extends KeywordOrOperator>> consumed = context.optConsume(token);
 			if (consumed.isPresent()) {
-				return consumed.get();
+				return consumed.get().node();
 			}
 		}
 		return null;
@@ -59,10 +59,10 @@ public abstract class Expression implements Node {
 
 	public static class BinaryOperator extends Expression {
 		public Expression lhs;
-		public Token<?> op;
+		public KeywordOrOperator op;
 		public Expression rhs;
 
-		public BinaryOperator(Expression lhs, Token<?> op, Expression rhs) {
+		public BinaryOperator(Expression lhs, KeywordOrOperator op, Expression rhs) {
 			this.lhs = lhs;
 			this.op = op;
 			this.rhs = rhs;
@@ -70,7 +70,7 @@ public abstract class Expression implements Node {
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.append(lhs).append(" ").append(op.stringValue()).append(" ").append(rhs);
+			sql.append(lhs).append(op).append(rhs);
 		}
 	}
 
@@ -83,9 +83,9 @@ public abstract class Expression implements Node {
 		}
 
 		public static Constant parse(ParserContext context) {
-			return match(context.consume(Literal.class), Constant.class)
-				.when(Literal.Text.class, text -> new TextConstant(text.value))
-				.when(Literal.Numeric.class, num -> new NumericConstant(num.value))
+			return match(context.consume(Token.Literal.class), Constant.class)
+				.when(Token.Literal.Text.class, text -> new TextConstant(text.value))
+				.when(Token.Literal.Numeric.class, num -> new NumericConstant(num.value))
 				.orElseThrow(ParseException.UnexpectedCurrentToken);
 		}
 	}
@@ -106,7 +106,7 @@ public abstract class Expression implements Node {
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.append(value);
+			sql.appendRaw(value);
 		}
 	}
 
@@ -142,9 +142,9 @@ public abstract class Expression implements Node {
 		@Override
 		public void toSQL(Builder sql) {
 			if (schema != null)
-				sql.appendIdentifier(schema).append(".");
+				sql.appendIdentifier(schema).append(DOT);
 			if (table != null)
-				sql.appendIdentifier(table).append(".");
+				sql.appendIdentifier(table).append(DOT);
 			sql.appendIdentifier(column);
 		}
 	}

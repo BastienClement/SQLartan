@@ -1,6 +1,9 @@
 package sqlartan.core.ast.token;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 public class TokenSource {
 	static Builder builderFor(String sql) {
@@ -9,7 +12,7 @@ public class TokenSource {
 
 	static class Builder {
 		private final String sql;
-		private List<Token<?>> tokens = new ArrayList<>();
+		private List<Token> tokens = new ArrayList<>();
 		private Token last = null;
 
 		private Builder(String sql) {
@@ -21,7 +24,7 @@ public class TokenSource {
 			last = token;
 		}
 
-		public Token<?> last() {
+		public Token last() {
 			return last;
 		}
 
@@ -40,23 +43,23 @@ public class TokenSource {
 	}
 
 	public final String sql;
-	public final List<Token<?>> tokens;
+	public final List<Token> tokens;
 	public final int length;
-	public final EndOfStream eos;
+	public final Token.EndOfStream eos;
 
-	private Token<?> current, next;
+	private Token current, next;
 	private int cursor;
 	private Stack<Integer> marks = new Stack<>();
 
-	private TokenSource(List<Token<?>> tokens, String sql) {
+	private TokenSource(List<Token> tokens, String sql) {
 		this.sql = sql;
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.length = tokens.size();
-		this.eos = (EndOfStream) tokens.get(length - 1);
+		this.eos = (Token.EndOfStream) tokens.get(length - 1);
 		setCursor(0);
 	}
 
-	private Token<?> safeget(int idx) {
+	private Token safeget(int idx) {
 		return idx < length ? tokens.get(idx) : eos;
 	}
 
@@ -67,8 +70,8 @@ public class TokenSource {
 	}
 
 	public void consume() {
-		if (current instanceof EndOfStream) {
-			throw new IllegalStateException("Attempted to consume EndOfStreamt token");
+		if (current instanceof Token.EndOfStream) {
+			throw new IllegalStateException("Attempted to consume EndOfStream token");
 		}
 
 		++cursor;
@@ -89,11 +92,11 @@ public class TokenSource {
 		setCursor(commit());
 	}
 
-	public Token<?> current() {
+	public Token current() {
 		return current;
 	}
 
-	public Token<?> next() {
+	public Token next() {
 		return next;
 	}
 }

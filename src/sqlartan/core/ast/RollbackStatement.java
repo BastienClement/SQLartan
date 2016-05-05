@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
+import static sqlartan.core.ast.Keyword.*;
 
 /**
  * https://www.sqlite.org/lang_transaction.html
@@ -26,9 +26,9 @@ public class RollbackStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("ROLLBACK");
+		sql.append(ROLLBACK);
 		if (savepoint != null) {
-			sql.append(" TO ").append(savepoint);
+			sql.append(TO).appendIdentifier(savepoint);
 		}
 	}
 }

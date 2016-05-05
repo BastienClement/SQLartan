@@ -2,32 +2,25 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Operator.DOT;
+import java.util.Optional;
+import static sqlartan.core.ast.Keyword.*;
 
 /**
  * https://www.sqlite.org/lang_altertable.html
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class AlterTableStatement implements Statement {
-	public String schema;
+	public Optional<String> schema = Optional.empty();
 	public String table;
 
 	public static AlterTableStatement parse(ParserContext context) {
+		context.consume(ALTER, TABLE);
 		AlterTableStatement alter;
 
-		context.consume(ALTER);
-		context.consume(TABLE);
-
-		String schema = null;
-		if (context.next(DOT)) {
-			schema = context.consumeIdentifier();
-			context.consume(DOT);
-		}
-
+		Optional<String> schema = context.optConsumeSchema();
 		String table = context.consumeIdentifier();
 
-		if (context.tryConsume(RENAME)) {
-			context.consume(TO);
+		if (context.tryConsume(RENAME, TO)) {
 			alter = new RenameTo(context.consumeIdentifier());
 		} else {
 			context.consume(ADD);
@@ -35,7 +28,7 @@ public abstract class AlterTableStatement implements Statement {
 			alter = new AddColumn(ColumnDefinition.parse(context));
 		}
 
-		if (schema != null) alter.schema = schema;
+		alter.schema = schema;
 		alter.table = table;
 
 		return alter;
@@ -43,10 +36,9 @@ public abstract class AlterTableStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("ALTER TABLE ");
-		if (schema != null)
-			sql.append(schema).append(".");
-		sql.append(table);
+		sql.append(ALTER, TABLE);
+		schema.ifPresent(sql::appendSchema);
+		sql.appendIdentifier(table);
 	}
 
 	public static class RenameTo extends AlterTableStatement {
@@ -60,7 +52,7 @@ public abstract class AlterTableStatement implements Statement {
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
-			sql.append(" RENAME TO ").append(name);
+			sql.append(RENAME, TO).appendIdentifier(name);
 		}
 	}
 
@@ -75,7 +67,7 @@ public abstract class AlterTableStatement implements Statement {
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
-			sql.append(" ADD COLUMN ").append(column);
+			sql.append(ADD, COLUMN).append(column);
 		}
 	}
 }

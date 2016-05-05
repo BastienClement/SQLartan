@@ -2,9 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.token.Keyword.COMMIT;
-import static sqlartan.core.ast.token.Keyword.END;
-import static sqlartan.core.ast.token.Keyword.TRANSACTION;
+import static sqlartan.core.ast.Keyword.*;
 
 /**
  * https://www.sqlite.org/lang_transaction.html
@@ -24,6 +22,6 @@ public class CommitStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append("COMMIT");
+		sql.append(COMMIT);
 	}
 }
