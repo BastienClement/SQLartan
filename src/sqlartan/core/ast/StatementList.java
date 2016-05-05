@@ -4,6 +4,7 @@ import sqlartan.core.ast.gen.SQLBuilder;
 import sqlartan.core.ast.parser.ParserBuilder;
 import sqlartan.core.ast.parser.ParserContext;
 import java.util.ArrayList;
+import static sqlartan.core.ast.token.EndOfStream.EOS;
 import static sqlartan.core.ast.token.Operator.SEMICOLON;
 
 public class StatementList extends ArrayList<Statement> implements Node {
@@ -11,7 +12,10 @@ public class StatementList extends ArrayList<Statement> implements Node {
 
 	static StatementList parse(ParserContext context) {
 		StatementList statementList = new StatementList();
-		context.parseList(statementList, SEMICOLON, Statement::parse);
+		do {
+			if (context.current(EOS)) return statementList;
+			statementList.add(context.parse(Statement::parse));
+		} while(context.tryConsume(SEMICOLON));
 		return statementList;
 	}
 
