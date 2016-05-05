@@ -17,7 +17,7 @@ public class AttachStatement implements Statement {
 		context.consume(ATTACH);
 		context.tryConsume(DATABASE);
 		AttachStatement attach = new AttachStatement();
-		attach.file = context.parse(Expression::parse);
+		attach.file = Expression.parse(context);
 		context.consume(AS);
 		attach.schema = context.consumeIdentifier();
 		return attach;

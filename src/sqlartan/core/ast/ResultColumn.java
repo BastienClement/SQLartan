@@ -21,7 +21,7 @@ public abstract class ResultColumn implements Node {
 				return new TableWildcard(table);
 			},
 			() -> {
-				Expr expr = new Expr(context.parse(Expression::parse));
+				Expr expr = new Expr(Expression.parse(context));
 				if (context.tryConsume(AS)) {
 					expr.alias = context.consumeIdentifier();
 				}

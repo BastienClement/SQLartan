@@ -18,13 +18,13 @@ public class IndexedColumn implements Node {
 
 	public static IndexedColumn parse(ParserContext context) {
 		IndexedColumn column = new IndexedColumn();
-		column.expression = context.parse(Expression::parse);
+		column.expression = Expression.parse(context);
 
 		if (context.tryConsume(COLLATE)) {
 			column.collate = Optional.of(context.consumeIdentifier());
 		}
 
-		column.ordering = context.parse(Ordering::parse);
+		column.ordering = Ordering.parse(context);
 		return column;
 	}
 

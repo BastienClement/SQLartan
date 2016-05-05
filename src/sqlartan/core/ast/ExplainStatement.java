@@ -18,7 +18,7 @@ public class ExplainStatement implements Statement {
 			context.consume(PLAN);
 			explain.queryPlan = true;
 		}
-		explain.statement = context.parse(Statement::parse);
+		explain.statement = Statement.parse(context);
 		return explain;
 	}
 

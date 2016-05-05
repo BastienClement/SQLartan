@@ -26,9 +26,9 @@ public abstract class PragmaStatement implements Statement {
 		PragmaStatement pragma;
 
 		if (context.tryConsume(EQ)) {
-			pragma = new Set(schema, name, context.parse(PragmaStatement::parsePragmaValue));
+			pragma = new Set(schema, name, PragmaStatement.parsePragmaValue(context));
 		} else if (context.tryConsume(LEFT_PAREN)) {
-			pragma = new Call(schema, name, context.parse(PragmaStatement::parsePragmaValue));
+			pragma = new Call(schema, name, PragmaStatement.parsePragmaValue(context));
 			context.consume(RIGHT_PAREN);
 		} else {
 			pragma = new Get(schema, name);
@@ -39,7 +39,7 @@ public abstract class PragmaStatement implements Statement {
 
 	public static String parsePragmaValue(ParserContext context) {
 		return context.alternatives(
-			() -> context.parse(Util::parseSignedNumber),
+			Util.consumeSignedNumber(context),
 			context::consumeTextLiteral,
 			context::consumeIdentifier
 		);

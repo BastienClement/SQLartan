@@ -32,7 +32,7 @@ public abstract class AlterTableStatement implements Statement {
 		} else {
 			context.consume(ADD);
 			context.tryConsume(COLUMN);
-			alter = new AddColumn(context.parse(ColumnDefinition::parse));
+			alter = new AddColumn(ColumnDefinition.parse(context));
 		}
 
 		if (schema != null) alter.schema = schema;

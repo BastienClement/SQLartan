@@ -50,7 +50,7 @@ public class CreateIndexStatement extends CreateStatement {
 		context.consume(RIGHT_PAREN);
 
 		if (context.tryConsume(WHERE)) {
-			create.where = Optional.of(context.parse(Expression::parse));
+			create.where = Optional.of(Expression.parse(context));
 		}
 
 		return create;

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import static sqlartan.core.ast.token.Operator.DOT;
 
 /**
  * A parsing context
@@ -165,11 +166,20 @@ public class ParserContext {
 	}
 
 	/**
+	 * Consumes a chain of tokens
+	 *
+	 * @param tokens the tokens to consume
+	 */
+	public void consume(Token<?>... tokens) {
+		for (Token<?> token : tokens) consume(token);
+	}
+
+	/**
 	 * Consumes an identifier token
 	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
 	 */
 	public String consumeIdentifier() {
-		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken).value;
+		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
 	/**
@@ -177,7 +187,7 @@ public class ParserContext {
 	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
 	 */
 	public String consumeTextLiteral() {
-		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken).value;
+		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
 	/**
@@ -200,6 +210,26 @@ public class ParserContext {
 	 */
 	public <T extends Token<?>> boolean tryConsume(T token) {
 		return optConsume(token).isPresent();
+	}
+
+	/**
+	 * Attempts to consume a chain of tokens.
+	 *
+	 * If the first token is a match, then every following tokens must also be a match
+	 * and tryConsume() returns true.
+	 *
+	 * If the first token is not a match, the next tokens are not consumed and tryConsume()
+	 * returns false.
+	 *
+	 * @param first the first token to consume
+	 * @param nexts the tokens to consume if the first was a match
+	 * @param <T>   the type of the token to consume
+	 * @return true if a matching token was consumed, false otherwise
+	 */
+	public <T extends Token<?>> boolean tryConsume(T first, Token<?>... nexts) {
+		if (!optConsume(first).isPresent()) return false;
+		for (Token<?> token : nexts) consume(token);
+		return true;
 	}
 
 	/**
@@ -258,13 +288,13 @@ public class ParserContext {
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
-	public Optional<Identifier> optConsumeIdentifier() {
+	public Optional<String> optConsumeIdentifier() {
 		Optional<Identifier> res = Matching.match(current())
 		                                   .when(Identifier.class, id -> id)
 		                                   .when(Literal.Text.class, Literal.Text::toIdentifier)
 		                                   .get();
 		if (res.isPresent()) source.consume();
-		return res;
+		return res.map(Token::value);
 	}
 
 	/**
@@ -273,24 +303,26 @@ public class ParserContext {
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
-	public Optional<Literal.Text> optConsumeTextLiteral() {
+	public Optional<String> optConsumeTextLiteral() {
 		Optional<Literal.Text> res = Matching.match(current())
 		                                     .when(Literal.Text.class, t -> t)
 		                                     .when(Identifier.class, id -> !id.strict, Identifier::toLiteral)
 		                                     .get();
 		if (res.isPresent()) source.consume();
-		return res;
+		return res.map(Token::value);
 	}
 
 	/**
-	 * Executes another parser procedure
-	 *
-	 * @param parser the parser procedure to execute
-	 * @param <N>    the type of node produced by the parser
-	 * @return the node produced by the parser
+	 * Optionally consumes schema name prefix
 	 */
-	public <N> N parse(Parser<N> parser) {
-		return parser.parse(this);
+	public Optional<String> optConsumeSchema() {
+		if (next(DOT)) {
+			String schema = consumeIdentifier();
+			consume(DOT);
+			return Optional.of(schema);
+		} else {
+			return Optional.empty();
+		}
 	}
 
 	/**

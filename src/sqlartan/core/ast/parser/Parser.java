@@ -17,7 +17,7 @@ public interface Parser<T> {
 		TokenSource source = TokenSource.from(sql);
 		ParserContext context = new ParserContext(source);
 		try {
-			T res = context.parse(parser);
+			T res = parser.parse(context);
 			if (!context.current().equals(EOS)) {
 				throw ParseException.UnexpectedCurrentToken;
 			}

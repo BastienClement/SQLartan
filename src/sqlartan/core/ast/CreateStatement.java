@@ -22,11 +22,11 @@ public abstract class CreateStatement implements Statement {
 
 	private static <T> Matching<Token<T>>.Returning<CreateStatement> doMatch(Token<T> token, ParserContext context) {
 		return match(token, CreateStatement.class)
-			.when(INDEX, () -> context.parse(CreateIndexStatement::parse))
-			.when(TABLE, () -> context.parse(CreateTableStatement::parse))
-			.when(TRIGGER, () -> context.parse(CreateTriggerStatement::parse))
-			.when(VIEW, () -> context.parse(CreateViewStatement::parse))
-			.when(VIRTUAL, () -> context.parse(CreateVirtualTableStatement::parse));
+			.when(INDEX, () -> CreateIndexStatement.parse(context))
+			.when(TABLE, () -> CreateTableStatement.parse(context))
+			.when(TRIGGER, () -> CreateTriggerStatement.parse(context))
+			.when(VIEW, () -> CreateViewStatement.parse(context))
+			.when(VIRTUAL, () -> CreateVirtualTableStatement.parse(context));
 	}
 
 	@Override

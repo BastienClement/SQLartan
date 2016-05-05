@@ -2,11 +2,9 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
 import java.util.List;
 import static sqlartan.core.ast.token.Keyword.*;
-import static sqlartan.core.ast.token.Keyword.NOT;
 import static sqlartan.core.ast.token.Operator.*;
 
 /**
@@ -19,7 +17,7 @@ public abstract class SelectStatement implements Statement {
 	 * TODO: handle compound selects here
 	 */
 	public static SelectStatement parse(ParserContext context) {
-		return context.parse(Simple::parse);
+		return Simple.parse(context);
 	}
 
 	/**
@@ -48,12 +46,12 @@ public abstract class SelectStatement implements Statement {
 			if (context.tryConsume(FROM)) {
 				select.from = new ArrayList<>();
 				if (!context.parseList(select.from, COMMA, TableOrSubquerySource::parse)) {
-					select.from.add(context.parse(JoinClause::parse));
+					select.from.add(JoinClause.parse(context));
 				}
 			}
 
 			if (context.tryConsume(WHERE)) {
-				select.where = context.parse(Expression::parse);
+				select.where = Expression.parse(context);
 			}
 
 			if (context.tryConsume(GROUP)) {
@@ -61,7 +59,7 @@ public abstract class SelectStatement implements Statement {
 				select.groupBy = context.parseList(COMMA, Expression::parse);
 
 				if (context.tryConsume(HAVING)) {
-					select.having = context.parse(Expression::parse);
+					select.having = Expression.parse(context);
 				}
 			}
 		}
@@ -110,9 +108,9 @@ public abstract class SelectStatement implements Statement {
 
 			// LIMIT .. OFFSET
 			if (context.tryConsume(LIMIT)) {
-				select.limit = context.parse(Expression::parse);
+				select.limit = Expression.parse(context);
 				if (context.tryConsume(OFFSET) || context.tryConsume(COMMA)) {
-					select.offset = context.parse(Expression::parse);
+					select.offset = Expression.parse(context);
 				}
 			}
 
@@ -156,7 +154,7 @@ public abstract class SelectStatement implements Statement {
 				// Sub query
 				throw new UnsupportedOperationException();
 			} else {
-				return context.parse(TableSource::parse);
+				return TableSource.parse(context);
 			}
 		}
 	}
@@ -184,7 +182,7 @@ public abstract class SelectStatement implements Statement {
 
 			// Attempt to consume alias
 			context.tryConsume(AS);
-			source.as = context.optConsumeIdentifier().map(Token::value).orElse(null);
+			source.as = context.optConsumeIdentifier().orElse(null);
 
 			if (context.tryConsume(INDEXED)) {
 				context.consume(BY);

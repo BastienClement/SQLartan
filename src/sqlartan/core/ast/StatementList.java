@@ -11,7 +11,7 @@ public class StatementList extends ArrayList<Statement> implements Node {
 		StatementList statementList = new StatementList();
 		do {
 			if (context.current(EOS)) return statementList;
-			statementList.add(context.parse(Statement::parse));
+			statementList.add(Statement.parse(context));
 		} while(context.tryConsume(SEMICOLON));
 		return statementList;
 	}

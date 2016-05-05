@@ -14,12 +14,12 @@ import static sqlartan.util.Matching.match;
 
 public abstract class Expression implements Node {
 	public static Expression parse(ParserContext context) {
-		return context.parse(parseOrStep);
+		return parseOrStep.parse(context);
 	}
 
 	public static Expression parseTerminal(ParserContext context) {
 		return match(context.current(), Expression.class)
-			.when(Literal.class, lit -> context.parse(Constant::parse))
+			.when(Literal.class, lit -> Constant.parse(context))
 			.when(Identifier.class, id -> context.alternatives(
 				ColumnReference::parse
 			))
@@ -28,10 +28,10 @@ public abstract class Expression implements Node {
 
 	private static Parser<Expression> parseStep(Parser<Expression> parser, Token<?>... tokens) {
 		return context -> {
-			Expression lhs = context.parse(parser);
+			Expression lhs = parser.parse(context);
 			Token<?> op;
 			while ((op = consumeAny(context, tokens)) != null) {
-				Expression rhs = context.parse(parser);
+				Expression rhs = parser.parse(context);
 				lhs = new BinaryOperator(lhs, op, rhs);
 			}
 			return lhs;
