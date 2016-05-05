@@ -72,8 +72,7 @@ public class Tokenizer {
 						} else if (c == '"' || c == '`') {
 							state = IDENTIFIER;
 							quote_char = c;
-						} else if (Character.isDigit(c) || (c == '.' && Character.isDigit(input[i + 1])) ||
-								(c == '-' && (input[i + 1] == '.' || Character.isDigit(input[i + 1])))) {
+						} else if (Character.isDigit(c) || (c == '.' && Character.isDigit(input[i + 1]))) {
 							state = NUMERIC;
 							--i;
 						} else if (Character.isLetter(c)) {
@@ -143,10 +142,6 @@ public class Tokenizer {
 					boolean has_decimal_part = false;
 					boolean valid_exponent = true;
 					NumericState ns = INTEGER;
-
-					if (c == '-') {
-						++i;
-					}
 
 					int num_begin = i;
 					scan:
