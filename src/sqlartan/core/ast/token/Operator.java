@@ -12,7 +12,7 @@ public class Operator extends Token<String> {
 	 * The length of the lengthiest operator
 	 * While parsing symbolic token, the lexer will always stops after parsing this number of characters.
 	 */
-	public static final int MAX_OPERATOR_LEN = 2;
+	static int MAX_OPERATOR_LEN = 0;
 
 	/**
 	 * The list of every defined operator tokens
@@ -40,6 +40,9 @@ public class Operator extends Token<String> {
 		this(symbol, "", -1);
 		if (operators.containsKey(symbol)) {
 			throw new IllegalStateException("An instance of " + symbol + " already exists");
+		}
+		if (symbol.length() > MAX_OPERATOR_LEN) {
+			MAX_OPERATOR_LEN = symbol.length();
 		}
 		operators.put(symbol, this);
 	}
