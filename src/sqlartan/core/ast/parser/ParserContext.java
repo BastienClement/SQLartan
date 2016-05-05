@@ -1,6 +1,5 @@
 package sqlartan.core.ast.parser;
 
-import sqlartan.core.ast.Node;
 import sqlartan.core.ast.token.Identifier;
 import sqlartan.core.ast.token.Literal;
 import sqlartan.core.ast.token.Token;
@@ -134,6 +133,13 @@ public class ParserContext {
 		T consumed = (T) source.current();
 		source.consume();
 		return consumed;
+	}
+
+	/**
+	 * Unconditionally consumes a token
+	 */
+	public void consume() {
+		source.consume();
 	}
 
 	/**
@@ -283,7 +289,7 @@ public class ParserContext {
 	 * @param <N>    the type of node produced by the parser
 	 * @return the node produced by the parser
 	 */
-	public <N extends Node> N parse(Parser<N> parser) {
+	public <N> N parse(Parser<N> parser) {
 		return parser.parse(this);
 	}
 
@@ -294,7 +300,7 @@ public class ParserContext {
 	 * @param <N>    the type of node produced by the parser
 	 * @return an optional containing the produced node, an empty optional in case of failure
 	 */
-	public <N extends Node> Optional<N> tryParse(Parser<N> parser) {
+	public <N> Optional<N> tryParse(Parser<N> parser) {
 		return transactionally(() -> parser.parse(this));
 	}
 
@@ -306,7 +312,7 @@ public class ParserContext {
 	 * @param <N>       the type of node produced by the parser
 	 * @return a list of nodes produced by the parser
 	 */
-	public <N extends Node> List<N> parseList(Token separator, Parser<N> parser) {
+	public <N> List<N> parseList(Token separator, Parser<N> parser) {
 		List<N> list = new ArrayList<>();
 		parseList(list, separator, parser);
 		if (list.isEmpty()) {
@@ -324,7 +330,7 @@ public class ParserContext {
 	 * @param <N>       the type of node produced by the parser
 	 * @return true if at least one node was produced, false if the resulting list is empty
 	 */
-	public <N extends Node> boolean parseList(List<N> list, Token separator, Parser<N> parser) {
+	public <N> boolean parseList(List<N> list, Token separator, Parser<N> parser) {
 		do {
 			Optional<N> item = tryParse(parser);
 			if (item.isPresent()) {
