@@ -9,6 +9,8 @@ import sqlartan.core.Column;
  * Créé le 03.05.2016.
  *
  * @author Adriano Ruberto
+ *
+ * Represent the structure tab for a view or a table
  */
 public class TableStructure {
 	private static int ID = 0;

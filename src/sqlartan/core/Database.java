@@ -380,7 +380,7 @@ public class Database implements AutoCloseable {
 	 *
 	 * @param name
 	 */
-	public void detach(String name) throws SQLException {
+	public void detach(String name) {
 		AttachedDatabase db = attached(name)
 				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
 		db.detach();
