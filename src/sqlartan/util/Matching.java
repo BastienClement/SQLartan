@@ -80,7 +80,6 @@ public class Matching<T> {
 		return when(matchClass, truth, expr);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <M, R> Returning<R> when(Class<M> matchClass, Predicate<? super M> predicate, Function<? super M, ? extends R> expr) {
 		return new Returning<R>().when(matchClass, predicate, expr);
 	}
