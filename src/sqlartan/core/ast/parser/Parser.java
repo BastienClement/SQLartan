@@ -1,5 +1,9 @@
 package sqlartan.core.ast.parser;
 
+import sqlartan.core.ast.token.TokenSource;
+import java.util.Optional;
+import static sqlartan.core.ast.token.EndOfStream.EOS;
+
 /**
  * A parser function returning a Node instance from a ParserContext.
  *
@@ -8,4 +12,26 @@ package sqlartan.core.ast.parser;
 @FunctionalInterface
 public interface Parser<T> {
 	T parse(ParserContext context) throws FastParseException;
+
+	static <T> T parse(String sql, Parser<T> parser) throws ParseException {
+		TokenSource source = TokenSource.from(sql);
+		ParserContext context = new ParserContext(source);
+		try {
+			T res = context.parse(parser);
+			if (!context.current().equals(EOS)) {
+				throw ParseException.UnexpectedCurrentToken;
+			}
+			return res;
+		} catch (FastParseException e) {
+			throw e.materialize(context);
+		}
+	}
+
+	static <T> Optional<T> tryParse(String sql, Parser<T> parser) {
+		try {
+			return Optional.of(parse(sql, parser));
+		} catch (ParseException e) {
+			return Optional.empty();
+		}
+	}
 }
