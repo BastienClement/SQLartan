@@ -113,6 +113,7 @@ public class ColumnConstraint implements Node {
 			context.consume(CHECK, LEFT_PAREN);
 			Check check = new Check();
 			check.expression = Expression.parse(context);
+			context.consume(RIGHT_PAREN);
 			return check;
 		}
 

@@ -1,9 +1,9 @@
 package sqlartan.core.ast.gen;
 
 import sqlartan.core.ast.Keyword;
-import sqlartan.core.ast.Node;
 import sqlartan.core.ast.Operator;
 import java.util.List;
+import java.util.function.Function;
 import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.dispatch;
 
@@ -79,7 +79,7 @@ public class Builder {
 	 *
 	 * @param node the node to append
 	 */
-	public Builder append(Node node) {
+	public Builder append(Buildable node) {
 		node.toSQL(this);
 		return this;
 	}
@@ -90,17 +90,21 @@ public class Builder {
 	 * @param nodes     the list of nodes to append
 	 * @param separator the separator between each element
 	 */
-	public Builder append(List<? extends Node> nodes, Node.Enumerated separator) {
+	public <T> Builder append(List<? extends T> nodes, Function<? super T, ? extends Buildable> adapter, Buildable separator) {
 		boolean first = true;
-		for (Node node : nodes) {
+		for (T item : nodes) {
 			if (first) {
 				first = false;
 			} else if (separator != Keyword.VOID) {
 				separator.toSQL(this);
 			}
-			node.toSQL(this);
+			adapter.apply(item).toSQL(this);
 		}
 		return this;
+	}
+
+	public Builder append(List<? extends Buildable> nodes, Buildable separator) {
+		return append(nodes, Function.identity(), separator);
 	}
 
 	/**
@@ -109,8 +113,12 @@ public class Builder {
 	 *
 	 * @param nodes the list of nodes to append
 	 */
-	public Builder append(List<? extends Node> nodes) {
-		return append(nodes, COMMA);
+	public <T> Builder append(List<? extends T> nodes, Function<? super T, ? extends Buildable> adapter) {
+		return append(nodes, adapter, COMMA);
+	}
+
+	public Builder append(List<? extends Buildable> nodes) {
+		return append(nodes, Function.identity(), COMMA);
 	}
 
 	/**

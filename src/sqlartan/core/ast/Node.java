@@ -1,5 +1,6 @@
 package sqlartan.core.ast;
 
+import sqlartan.core.ast.gen.Buildable;
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.Tokenizable;
@@ -7,7 +8,7 @@ import sqlartan.core.ast.token.Tokenizable;
 /**
  * SQL AST node
  */
-public interface Node {
+public interface Node extends Buildable {
 	/**
 	 * Serialize this node back to a SQL string
 	 */

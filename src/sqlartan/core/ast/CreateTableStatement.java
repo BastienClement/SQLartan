@@ -70,6 +70,19 @@ public abstract class CreateTableStatement extends CreateStatement {
 			create.withoutRowid = context.tryConsume(WITHOUT, ROWID);
 			return create;
 		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			super.toSQL(sql);
+			sql.append(LEFT_PAREN).append(columns);
+			if (!contraints.isEmpty()) {
+				sql.append(COMMA).append(contraints);
+			}
+			sql.append(RIGHT_PAREN);
+			if (withoutRowid) {
+				sql.append(WITHOUT, ROWID);
+			}
+		}
 	}
 
 	/**
@@ -82,6 +95,12 @@ public abstract class CreateTableStatement extends CreateStatement {
 			As create = new As();
 			create.select = SelectStatement.parse(context);
 			return create;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			super.toSQL(sql);
+			sql.append(AS).append(select);
 		}
 	}
 }

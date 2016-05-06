@@ -3,10 +3,7 @@ package sqlartan.core.ast;
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import static sqlartan.core.ast.Keyword.VOID;
 import static sqlartan.core.ast.Operator.*;
 
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
@@ -14,7 +11,6 @@ public class TypeDefinition implements Node {
 	public String name;
 	public Optional<SignedNumber> length = Optional.empty();
 	public Optional<SignedNumber> scale = Optional.empty();
-	public List<ColumnConstraint> constraints = new ArrayList<>();
 
 	public static TypeDefinition parse(ParserContext context) {
 		TypeDefinition type = new TypeDefinition();
@@ -33,7 +29,6 @@ public class TypeDefinition implements Node {
 			context.consume(RIGHT_PAREN);
 		}
 
-		context.parseList(type.constraints, VOID, ColumnConstraint::parse);
 		return type;
 	}
 
@@ -45,6 +40,5 @@ public class TypeDefinition implements Node {
 			scale.ifPresent(s -> sql.append(COMMA).appendRaw(s.value));
 			sql.append(RIGHT_PAREN);
 		});
-		sql.append(constraints, VOID);
 	}
 }
