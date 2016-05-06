@@ -32,7 +32,7 @@ public class Tokenizer {
 
 	@SuppressWarnings({ "StatementWithEmptyBody", "ConstantConditions" })
 	public static TokenSource tokenize(String sql) throws TokenizeException {
-		TokenSource.Builder builder = TokenSource.builderFor(sql);
+		TokenSource.Builder builder = TokenSource.builder();
 
 		char[] input = (sql + " ").toCharArray();
 		int length = input.length;

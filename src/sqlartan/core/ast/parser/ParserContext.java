@@ -125,6 +125,14 @@ public class ParserContext {
 	}
 
 	/**
+	 * Resets the current transaction by moving the restore point to the current position
+	 */
+	public void reset() {
+		source.commit();
+		source.begin();
+	}
+
+	/**
 	 * Consumes a token and cast it to the requested type
 	 * This operation is unsafe and the actual type of the token is not checked
 	 *
@@ -347,8 +355,7 @@ public class ParserContext {
 	 */
 	public <N> List<N> parseList(Tokenizable<?> separator, Parser<N> parser) {
 		List<N> list = new ArrayList<>();
-		parseList(list, separator, parser);
-		if (list.isEmpty()) {
+		if (!parseList(list, separator, parser)) {
 			throw ParseException.UnexpectedCurrentToken;
 		}
 		return list;
@@ -368,14 +375,20 @@ public class ParserContext {
 	 * @return true if at least one node was produced, false if the resulting list is empty
 	 */
 	public <N> boolean parseList(List<N> list, Tokenizable<?> separator, Parser<N> parser) {
-		do {
-			Optional<N> item = optParse(parser);
-			if (item.isPresent()) {
-				list.add(item.get());
-			} else {
-				break;
-			}
-		} while (separator == Keyword.VOID || tryConsume(separator));
+		try {
+			begin();
+			do {
+				Optional<N> item = optParse(parser);
+				reset();
+				if (item.isPresent()) {
+					list.add(item.get());
+				} else {
+					break;
+				}
+			} while (separator == Keyword.VOID || tryConsume(separator));
+		} finally {
+			rollback();
+		}
 		return !list.isEmpty();
 	}
 

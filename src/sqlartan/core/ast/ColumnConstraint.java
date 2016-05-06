@@ -1,6 +1,7 @@
 package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import java.util.Optional;
@@ -26,7 +27,7 @@ public class ColumnConstraint implements Node {
 			.when(DEFAULT, () -> Default.parse(context))
 			.when(COLLATE, () -> Collate.parse(context))
 			.when(REFERENCES, () -> ForeignKey.parse(context))
-			.orElseThrow();
+			.orElseThrow(ParseException.UnexpectedCurrentToken);
 
 		constraint.name = name;
 		return constraint;

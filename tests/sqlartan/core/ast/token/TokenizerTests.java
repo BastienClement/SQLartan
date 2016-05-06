@@ -8,10 +8,10 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "SELECT * FROM foo WHERE a < 2 * 4 + 1";
+		String source = "CREATE TABLE foo (a, b, c)";
 
 		TokenSource ts = TokenSource.from(source);
-		ts.tokens.forEach(System.out::println);
+		ts.tokens().forEach(System.out::println);
 
 		System.out.print("\n");
 
