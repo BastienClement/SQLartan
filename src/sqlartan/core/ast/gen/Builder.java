@@ -5,6 +5,7 @@ import sqlartan.core.ast.Node;
 import sqlartan.core.ast.Operator;
 import java.util.List;
 import static sqlartan.core.ast.Operator.*;
+import static sqlartan.util.Matching.dispatch;
 
 /**
  * SQL Generator helper
@@ -56,6 +57,15 @@ public class Builder {
 		return this;
 	}
 
+	public Builder append(KeywordOrOperator... items) {
+		for (KeywordOrOperator item : items) {
+			//noinspection Convert2MethodRef
+			dispatch(item).when(Keyword.class, kw -> append(kw))
+			              .when(Operator.class, op -> append(op));
+		}
+		return this;
+	}
+
 	public Builder appendUnary(Operator operator) {
 		if (last == Spacing.Space) builder.append(" ");
 		builder.append(operator.symbol);
@@ -85,7 +95,7 @@ public class Builder {
 		for (Node node : nodes) {
 			if (first) {
 				first = false;
-			} else {
+			} else if (separator != Keyword.VOID) {
 				separator.toSQL(this);
 			}
 			node.toSQL(this);

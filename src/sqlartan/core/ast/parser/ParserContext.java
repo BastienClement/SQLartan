@@ -1,5 +1,6 @@
 package sqlartan.core.ast.parser;
 
+import sqlartan.core.ast.Keyword;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.TokenSource;
 import sqlartan.core.ast.token.Tokenizable;
@@ -374,7 +375,7 @@ public class ParserContext {
 			} else {
 				break;
 			}
-		} while (tryConsume(separator));
+		} while (separator == Keyword.VOID || tryConsume(separator));
 		return !list.isEmpty();
 	}
 

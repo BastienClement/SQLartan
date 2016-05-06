@@ -31,7 +31,7 @@ public enum Keyword implements Node.KeywordOrOperator {
 	SAVEPOINT("SAVEPOINT"), SELECT("SELECT"), SET("SET"), TABLE("TABLE"), TEMP("TEMP"), TEMPORARY("TEMPORARY"),
 	THEN("THEN"), TO("TO"), TRANSACTION("TRANSACTION"), TRIGGER("TRIGGER"), UNION("UNION"), UNIQUE("UNIQUE"),
 	UPDATE("UPDATE"), USING("USING"), VACUUM("VACUUM"), VALUES("VALUES"), VIEW("VIEW"), VIRTUAL("VIRTUAL"),
-	WHEN("WHEN"), WHERE("WHERE"), WITH("WITH"), WITHOUT("WITHOUT");
+	WHEN("WHEN"), WHERE("WHERE"), WITH("WITH"), WITHOUT("WITHOUT"), VOID(null);
 
 	/**
 	 * The operator symbol
@@ -68,6 +68,7 @@ public enum Keyword implements Node.KeywordOrOperator {
 		Map<String, Keyword> kws = new HashMap<>();
 
 		for (Keyword keyword : values()) {
+			if (keyword == VOID) continue;
 			String name = keyword.name;
 
 			if (kws.containsKey(name)) {
