@@ -218,12 +218,4 @@ public abstract class SelectStatement implements Statement {
 		}
 	}
 
-	/**
-	 * Term for ORDER BY clause
-	 */
-	public static class OrderingTerm implements Node {
-		static OrderingTerm parse(ParserContext context) {
-			throw new UnsupportedOperationException();
-		}
-	}
 }
