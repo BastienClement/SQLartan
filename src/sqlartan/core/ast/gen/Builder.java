@@ -121,6 +121,14 @@ public class Builder {
 		return append(nodes, Function.identity(), COMMA);
 	}
 
+	public Builder appendIdentifiers(List<String> identifiers, Buildable separator) {
+		return append(identifiers, id -> sql -> sql.appendIdentifier(id), separator);
+	}
+
+	public Builder appendIdentifiers(List<String> identifiers) {
+		return appendIdentifiers(identifiers, COMMA);
+	}
+
 	/**
 	 * Appends an identifier to the output.
 	 * The identifier will be escaped with brackets.

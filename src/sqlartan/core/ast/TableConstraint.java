@@ -109,7 +109,7 @@ public abstract class TableConstraint implements Node {
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(FOREIGN, KEY, LEFT_PAREN)
-			   .append(columns, col -> s -> s.appendIdentifier(col))
+			   .appendIdentifiers(columns)
 			   .append(RIGHT_PAREN)
 			   .append(foreignKey);
 		}
