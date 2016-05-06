@@ -333,7 +333,7 @@ public class ParserContext {
 	 * @param <N>    the type of node produced by the parser
 	 * @return an optional containing the produced node, an empty optional in case of failure
 	 */
-	public <N> Optional<N> tryParse(Parser<N> parser) {
+	public <N> Optional<N> optParse(Parser<N> parser) {
 		return transactionally(() -> parser.parse(this));
 	}
 
@@ -369,7 +369,7 @@ public class ParserContext {
 	 */
 	public <N> boolean parseList(List<N> list, Tokenizable<?> separator, Parser<N> parser) {
 		do {
-			Optional<N> item = tryParse(parser);
+			Optional<N> item = optParse(parser);
 			if (item.isPresent()) {
 				list.add(item.get());
 			} else {
@@ -409,7 +409,7 @@ public class ParserContext {
 	@SafeVarargs
 	public final <T> T alternatives(Parser<? extends T>... cases) {
 		for (Parser<? extends T> parser : cases) {
-			Optional<? extends T> res = tryParse(parser);
+			Optional<? extends T> res = optParse(parser);
 			if (res.isPresent()) {
 				return res.get();
 			}
