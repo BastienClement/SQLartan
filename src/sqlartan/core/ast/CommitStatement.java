@@ -7,6 +7,7 @@ import static sqlartan.core.ast.Keyword.*;
 /**
  * https://www.sqlite.org/lang_transaction.html
  */
+@SuppressWarnings("WeakerAccess")
 public class CommitStatement implements Statement {
 	public static final CommitStatement instance = new CommitStatement();
 

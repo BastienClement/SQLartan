@@ -8,13 +8,9 @@ import static sqlartan.util.Matching.match;
 /**
  * https://www.sqlite.org/lang_transaction.html
  */
+@SuppressWarnings("WeakerAccess")
 public class BeginStatement implements Statement {
-	public enum Mode {
-		None,
-		Deferred,
-		Immediate,
-		Exclusive
-	}
+	public enum Mode {None, Deferred, Immediate, Exclusive}
 
 	public Mode mode = Mode.None;
 
@@ -39,13 +35,16 @@ public class BeginStatement implements Statement {
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(BEGIN);
-		if (mode != Mode.None) {
-			sql.append(
-				match(mode).when(Mode.Deferred, () -> DEFERRED)
-				           .when(Mode.Immediate, () -> IMMEDIATE)
-				           .when(Mode.Exclusive, () -> EXCLUSIVE)
-				           .orElseThrow()
-			);
+		switch (mode) {
+			case Deferred:
+				sql.append(DEFERRED);
+				break;
+			case Immediate:
+				sql.append(IMMEDIATE);
+				break;
+			case Exclusive:
+				sql.append(EXCLUSIVE);
+				break;
 		}
 	}
 }

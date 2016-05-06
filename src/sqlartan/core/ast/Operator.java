@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * SQL language operators
+ */
 public enum Operator implements Node.KeywordOrOperator {
 	CONCAT("||"),
 	MUL("*"), DIV("/"), MOD("%"),

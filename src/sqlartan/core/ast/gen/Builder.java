@@ -56,6 +56,13 @@ public class Builder {
 		return this;
 	}
 
+	public Builder appendUnary(Operator operator) {
+		if (last == Spacing.Space) builder.append(" ");
+		builder.append(operator.symbol);
+		last = Spacing.NoSpace;
+		return this;
+	}
+
 	/**
 	 * Appends a Node to the output.
 	 * The toSQL method on the given node will be called with this builder as parameter.

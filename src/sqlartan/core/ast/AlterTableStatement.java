@@ -8,7 +8,7 @@ import static sqlartan.core.ast.Keyword.*;
 /**
  * https://www.sqlite.org/lang_altertable.html
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class AlterTableStatement implements Statement {
 	public Optional<String> schema = Optional.empty();
 	public String table;
@@ -20,12 +20,10 @@ public abstract class AlterTableStatement implements Statement {
 		Optional<String> schema = context.optConsumeSchema();
 		String table = context.consumeIdentifier();
 
-		if (context.tryConsume(RENAME, TO)) {
-			alter = new RenameTo(context.consumeIdentifier());
+		if (context.current(RENAME)) {
+			alter = RenameTo.parse(context);
 		} else {
-			context.consume(ADD);
-			context.tryConsume(COLUMN);
-			alter = new AddColumn(ColumnDefinition.parse(context));
+			alter = AddColumn.parse(context);
 		}
 
 		alter.schema = schema;
@@ -41,12 +39,17 @@ public abstract class AlterTableStatement implements Statement {
 		sql.appendIdentifier(table);
 	}
 
+	/**
+	 * ALTER TABLE ... RENAME TO ... ;
+	 */
 	public static class RenameTo extends AlterTableStatement {
 		public String name;
 
-		public RenameTo() {}
-		public RenameTo(String name) {
-			this.name = name;
+		public static RenameTo parse(ParserContext context) {
+			context.consume(RENAME, TO);
+			RenameTo rename = new RenameTo();
+			rename.name = context.consumeIdentifier();
+			return rename;
 		}
 
 		@Override
@@ -56,12 +59,17 @@ public abstract class AlterTableStatement implements Statement {
 		}
 	}
 
+	/**
+	 * ALTER TABLE ... ADD COLUMN ... ;
+	 */
 	public static class AddColumn extends AlterTableStatement {
 		public ColumnDefinition column;
 
-		public AddColumn() {}
-		public AddColumn(ColumnDefinition column) {
-			this.column = column;
+		public static AddColumn parse(ParserContext context) {
+			context.consume(ADD, COLUMN);
+			AddColumn addColumn = new AddColumn();
+			addColumn.column = ColumnDefinition.parse(context);
+			return addColumn;
 		}
 
 		@Override

@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * SQL language keywords
+ */
 public enum Keyword implements Node.KeywordOrOperator {
 	ABORT("ABORT"), ACTION("ACTION"), ADD("ADD"), AFTER("AFTER"), ALL("ALL"), ALTER("ALTER"), ANALYZE("ANALYZE"),
 	AND("AND"), AS("AS"), ASC("ASC"), ATTACH("ATTACH"), AUTOINCREMENT("AUTOINCREMENT"), BEFORE("BEFORE"),

@@ -7,6 +7,7 @@ import static sqlartan.core.ast.Keyword.*;
 /**
  * https://www.sqlite.org/lang_explain.html
  */
+@SuppressWarnings("WeakerAccess")
 public class ExplainStatement implements Statement {
 	public Statement statement;
 	public boolean queryPlan;
@@ -14,10 +15,7 @@ public class ExplainStatement implements Statement {
 	public static ExplainStatement parse(ParserContext context) {
 		context.consume(EXPLAIN);
 		ExplainStatement explain = new ExplainStatement();
-		if (context.tryConsume(QUERY)) {
-			context.consume(PLAN);
-			explain.queryPlan = true;
-		}
+		explain.queryPlan = context.tryConsume(QUERY, PLAN);
 		explain.statement = Statement.parse(context);
 		return explain;
 	}

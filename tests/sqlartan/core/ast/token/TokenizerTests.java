@@ -8,7 +8,7 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "create unique index if not exists t.foo on bar ( a DESC , b ASC ) where c < 5;";
+		String source = "SELECT * FROM foo WHERE a < 2 * 4 + 1";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens.forEach(System.out::println);

@@ -8,18 +8,16 @@ import static sqlartan.core.ast.Keyword.SAVEPOINT;
 /**
  * https://www.sqlite.org/lang_savepoint.html
  */
+@SuppressWarnings("WeakerAccess")
 public class ReleaseStatement implements Statement {
 	public String savepoint;
-
-	public ReleaseStatement() {}
-	public ReleaseStatement(String savepoint) {
-		this.savepoint = savepoint;
-	}
 
 	public static Statement parse(ParserContext context) {
 		context.consume(RELEASE);
 		context.tryConsume(SAVEPOINT);
-		return new ReleaseStatement(context.consumeIdentifier());
+		ReleaseStatement release = new ReleaseStatement();
+		release.savepoint = context.consumeIdentifier();
+		return release;
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public abstract class CreateStatement implements Statement {
 		);
 	}
 
-	private static <T> Matching<Token>.Returning<CreateStatement> doMatch(Token token, ParserContext context) {
+	private static Matching<Token>.Returning<CreateStatement> doMatch(Token token, ParserContext context) {
 		return match(token, CreateStatement.class)
 			.when(INDEX, () -> CreateIndexStatement.parse(context))
 			.when(TABLE, () -> CreateTableStatement.parse(context))

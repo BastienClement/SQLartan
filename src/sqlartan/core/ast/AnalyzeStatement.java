@@ -8,6 +8,7 @@ import static sqlartan.core.ast.Operator.*;
 /**
  * https://www.sqlite.org/lang_analyze.html
  */
+@SuppressWarnings("WeakerAccess")
 public class AnalyzeStatement implements Statement {
 	public String schema;
 	public String subject;

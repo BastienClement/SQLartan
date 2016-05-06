@@ -18,26 +18,29 @@ public abstract class CreateTableStatement extends CreateStatement {
 	public Optional<String> schema;
 	public String name;
 
-	public CreateTableStatement() {}
-	public CreateTableStatement(boolean t, boolean ine, Optional<String> s, String n) {
-		this.temporary = t;
-		this.ifNotExists = ine;
-		this.schema = s;
-		this.name = n;
-	}
-
 	public static CreateTableStatement parse(ParserContext context) {
 		boolean temporary = context.tryConsume(TEMP) || context.tryConsume(TEMPORARY);
+
 		context.consume(TABLE);
+
 		boolean ifNotExists = context.tryConsume(IF, NOT, EXISTS);
 		Optional<String> schema = context.optConsumeSchema();
 		String name = context.consumeIdentifier();
 
+		CreateTableStatement create;
+
 		if (context.current(AS)) {
-			return As.parse(context, temporary, ifNotExists, schema, name);
+			create = As.parse(context);
 		} else {
-			return Def.parse(context, temporary, ifNotExists, schema, name);
+			create = Def.parse(context);
 		}
+
+		create.temporary = temporary;
+		create.ifNotExists = ifNotExists;
+		create.schema = schema;
+		create.name = name;
+
+		return create;
 	}
 
 	@Override
@@ -51,20 +54,15 @@ public abstract class CreateTableStatement extends CreateStatement {
 	}
 
 	/**
-	 * CREATE TABLE ... ( columns ... )
+	 * CREATE TABLE ... ( columns ... ) ;
 	 */
 	public static class Def extends CreateTableStatement {
 		public List<ColumnDefinition> columns;
 		public List<TableConstraint> contraints = new ArrayList<>();
 		public boolean withoutRowid;
 
-		public Def() {}
-		private Def(boolean t, boolean ine, Optional<String> s, String n) {
-			super(t, ine, s, n);
-		}
-
-		public static Def parse(ParserContext context, boolean t, boolean ine, Optional<String> s, String n) {
-			Def create = new Def(t, ine, s, n);
+		public static Def parse(ParserContext context) {
+			Def create = new Def();
 			context.consume(LEFT_PAREN);
 			create.columns = context.parseList(ColumnDefinition::parse);
 			context.parseList(create.contraints, TableConstraint::parse);
@@ -75,18 +73,13 @@ public abstract class CreateTableStatement extends CreateStatement {
 	}
 
 	/**
-	 * CREATE TABLE ... AS ...
+	 * CREATE TABLE ... AS ... ;
 	 */
 	public static class As extends CreateTableStatement {
 		public SelectStatement select;
 
-		public As() {}
-		private As(boolean t, boolean ine, Optional<String> s, String n) {
-			super(t, ine, s, n);
-		}
-
 		public static As parse(ParserContext context, boolean t, boolean ine, Optional<String> s, String n) {
-			As create = new As(t, ine, s, n);
+			As create = new As();
 			create.select = SelectStatement.parse(context);
 			return create;
 		}

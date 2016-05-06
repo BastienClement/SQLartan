@@ -438,4 +438,17 @@ public class ParserContext {
 			throw t;
 		}
 	}
+
+
+	/**
+	 * Binds a Parser to this ParserContext.
+	 * Each call of the returned Supplier object will execute the parser on this
+	 * context and return the result.
+	 *
+	 * @param parser  the parser to bind
+	 * @param <T>     the type of elements returned by the parser
+	 */
+	public <T> Supplier<T> bind(Parser<T> parser) {
+		return () -> parser.parse(this);
+	}
 }

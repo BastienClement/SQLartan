@@ -2,51 +2,42 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.parser.Util;
 import java.util.Optional;
 import static sqlartan.core.ast.Keyword.PRAGMA;
 import static sqlartan.core.ast.Operator.*;
+import static sqlartan.util.Matching.match;
 
 /**
  * https://www.sqlite.org/pragma.html#syntax
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class PragmaStatement implements Statement {
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	public String pragma;
 
 	public static PragmaStatement parse(ParserContext context) {
 		context.consume(PRAGMA);
 
 		Optional<String> schema = context.optConsumeSchema();
-
 		String name = context.consumeIdentifier();
-		PragmaStatement pragma;
 
-		if (context.tryConsume(EQ)) {
-			pragma = new Set(schema, name, PragmaStatement.parsePragmaValue(context));
-		} else if (context.tryConsume(LEFT_PAREN)) {
-			pragma = new Call(schema, name, PragmaStatement.parsePragmaValue(context));
-			context.consume(RIGHT_PAREN);
-		} else {
-			pragma = new Get(schema, name);
-		}
+		PragmaStatement pragma = match(context.current(), PragmaStatement.class)
+			.when(EQ, context.bind(Set::parse))
+			.when(LEFT_PAREN, context.bind(Call::parse))
+			.orElse(Get::new);
+
+		pragma.schema = schema;
+		pragma.pragma = name;
 
 		return pragma;
 	}
 
 	public static String parsePragmaValue(ParserContext context) {
 		return context.alternatives(
-			Util.consumeSignedNumber(context),
+			() -> SignedNumber.parse(context).toSQL(),
 			context::consumeTextLiteral,
 			context::consumeIdentifier
 		);
-	}
-
-	public PragmaStatement() {}
-	public PragmaStatement(Optional<String> schema, String pragma) {
-		this.schema = schema;
-		this.pragma = pragma;
 	}
 
 	@Override
@@ -56,20 +47,22 @@ public abstract class PragmaStatement implements Statement {
 		sql.appendRaw(pragma);
 	}
 
-	public static class Get extends PragmaStatement {
-		public Get() {}
-		public Get(Optional<String> schema, String pragma) {
-			super(schema, pragma);
-		}
-	}
+	/**
+	 * PRAGMA ... ;
+	 */
+	public static class Get extends PragmaStatement {}
 
+	/**
+	 * PRAGMA ... = ... ;
+	 */
 	public static class Set extends PragmaStatement {
 		public String value;
 
-		public Set() {}
-		public Set(Optional<String> schema, String pragma, String value) {
-			super(schema, pragma);
-			this.value = value;
+		public static Set parse(ParserContext context) {
+			context.consume(EQ);
+			Set set = new Set();
+			set.value = parsePragmaValue(context);
+			return set;
 		}
 
 		@Override
@@ -79,13 +72,18 @@ public abstract class PragmaStatement implements Statement {
 		}
 	}
 
+	/**
+	 * PRAGMA ... ( ... ) ;
+	 */
 	public static class Call extends PragmaStatement {
 		public String value;
 
-		public Call() {}
-		public Call(Optional<String> schema, String pragma, String value) {
-			super(schema, pragma);
-			this.value = value;
+		public static Call parse(ParserContext context) {
+			context.consume(LEFT_PAREN);
+			Call call = new Call();
+			call.value = parsePragmaValue(context);
+			context.consume(RIGHT_PAREN);
+			return call;
 		}
 
 		@Override

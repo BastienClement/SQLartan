@@ -32,6 +32,6 @@ public class IndexedColumn implements Node {
 	public void toSQL(Builder sql) {
 		sql.append(expression);
 		collate.ifPresent(c -> sql.append(COLLATE).appendIdentifier(c));
-		if (ordering != Ordering.None) sql.append(ordering);
+		sql.append(ordering);
 	}
 }

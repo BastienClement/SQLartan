@@ -7,6 +7,7 @@ import static sqlartan.core.ast.Keyword.*;
 /**
  * https://www.sqlite.org/lang_attach.html
  */
+@SuppressWarnings("WeakerAccess")
 public class AttachStatement implements Statement {
 	public Expression file;
 	public String schema;
@@ -23,6 +24,9 @@ public class AttachStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append(ATTACH).append(file).append(AS).appendIdentifier(schema);
+		sql.append(ATTACH)
+		   .append(file)
+		   .append(AS)
+		   .appendIdentifier(schema);
 	}
 }

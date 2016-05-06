@@ -2,53 +2,55 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Token;
+import java.util.Optional;
 import static sqlartan.core.ast.Keyword.AS;
 import static sqlartan.core.ast.Operator.DOT;
 import static sqlartan.core.ast.Operator.MUL;
 
+@SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public abstract class ResultColumn implements Node {
 	public static ResultColumn parse(ParserContext context) {
 		return context.alternatives(
-			() -> {
-				context.consume(MUL);
-				return Wildcard.singleton;
-			},
-			() -> {
-				String table = context.consume(Token.Identifier.class).value;
-				context.consume(DOT);
-				context.consume(MUL);
-				return new TableWildcard(table);
-			},
-			() -> {
-				Expr expr = new Expr(Expression.parse(context));
-				if (context.tryConsume(AS)) {
-					expr.alias = context.consumeIdentifier();
-				}
-				return expr;
-			}
+			Wildcard::parse,
+			TableWildcard::parse,
+			Expr::parse
 		);
 	}
 
+	/**
+	 * SELECT a , 2, sqlite_version() ... ;
+	 */
 	public static class Expr extends ResultColumn {
-		public Expression expr;
-		public String alias;
+		public Expression expression;
+		public Optional<String> alias = Optional.empty();
 
-		public Expr() {}
-		public Expr(Expression expr) {
-			this.expr = expr;
+		public static Expr parse(ParserContext context) {
+			Expr expr = new Expr();
+			expr.expression = Expression.parse(context);
+			if (context.tryConsume(AS)) {
+				expr.alias = Optional.of(context.consumeIdentifier());
+			}
+			return expr;
 		}
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.append(expr);
-			if (alias != null)
-				sql.append(AS).appendIdentifier(alias);
+			sql.append(expression);
+			alias.ifPresent(sql.append(AS)::appendIdentifier);
 		}
 	}
 
+	/**
+	 * SELECT * ... ;
+	 */
 	public static class Wildcard extends ResultColumn {
-		public static final Wildcard singleton = new Wildcard();
+		public static final Wildcard instance = new Wildcard();
+
+		public static Wildcard parse(ParserContext context) {
+			context.consume(MUL);
+			return instance;
+		}
+
 		private Wildcard() {}
 
 		@Override
@@ -57,12 +59,17 @@ public abstract class ResultColumn implements Node {
 		}
 	}
 
+	/**
+	 * SELECT foo.* ... ;
+	 */
 	public static class TableWildcard extends ResultColumn {
 		public String table;
 
-		public TableWildcard() {}
-		public TableWildcard(String table) {
-			this.table = table;
+		public static TableWildcard parse(ParserContext context) {
+			TableWildcard wildcard = new TableWildcard();
+			wildcard.table = context.consumeIdentifier();
+			context.consume(DOT, MUL);
+			return wildcard;
 		}
 
 		@Override

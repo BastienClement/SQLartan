@@ -12,15 +12,8 @@ import static sqlartan.core.ast.Keyword.REINDEX;
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public class ReindexStatement implements Statement {
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	public String target;
-
-	public ReindexStatement() {}
-
-	public ReindexStatement(Optional<String> schema, String target) {
-		this.schema = schema;
-		this.target = target;
-	}
 
 	public static ReindexStatement parse(ParserContext context) {
 		context.consume(REINDEX);

@@ -5,9 +5,15 @@ import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.Keyword.ASC;
 import static sqlartan.core.ast.Keyword.DESC;
 
-public enum Ordering implements Node {
+/**
+ * Ordering terms (ASC / DESC)
+ */
+public enum Ordering implements Node.Enumerated {
 	None(null), Asc(ASC), Desc(DESC);
 
+	/**
+	 * The associated keyword value
+	 */
 	public final Keyword keyword;
 
 	Ordering(Keyword keyword) {
