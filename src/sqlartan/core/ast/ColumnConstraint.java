@@ -3,7 +3,6 @@ package sqlartan.core.ast;
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
-import sqlartan.core.ast.token.Token;
 import java.util.Optional;
 import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.LEFT_PAREN;
@@ -133,11 +132,11 @@ public class ColumnConstraint implements Node {
 		}
 
 		public static class Value extends Default {
-			public String value;
+			public LiteralValue value;
 
 			public static Value parse(ParserContext context) {
 				Value value = new Value();
-				value.value = context.consume(Token.Literal.class).value;
+				value.value = LiteralValue.parse(context);
 				return value;
 			}
 		}

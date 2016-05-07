@@ -9,8 +9,8 @@ import static sqlartan.core.ast.Operator.*;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public class TypeDefinition implements Node {
 	public String name;
-	public Optional<SignedNumber> length = Optional.empty();
-	public Optional<SignedNumber> scale = Optional.empty();
+	public Optional<LiteralValue.Numeric> length = Optional.empty();
+	public Optional<LiteralValue.Numeric> scale = Optional.empty();
 
 	public static TypeDefinition parse(ParserContext context) {
 		TypeDefinition type = new TypeDefinition();
@@ -22,9 +22,9 @@ public class TypeDefinition implements Node {
 		while (context.tryConsume(Token.Identifier.class));
 
 		if (context.tryConsume(LEFT_PAREN)) {
-			type.length = Optional.of(SignedNumber.parse(context));
+			type.length = Optional.of(LiteralValue.Numeric.parse(context));
 			if (context.tryConsume(COMMA)) {
-				type.scale = Optional.of(SignedNumber.parse(context));
+				type.scale = Optional.of(LiteralValue.Numeric.parse(context));
 			}
 			context.consume(RIGHT_PAREN);
 		}

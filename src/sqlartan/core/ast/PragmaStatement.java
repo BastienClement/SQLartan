@@ -32,14 +32,6 @@ public abstract class PragmaStatement implements Statement {
 		return pragma;
 	}
 
-	public static String parsePragmaValue(ParserContext context) {
-		return context.alternatives(
-			() -> SignedNumber.parse(context).toSQL(),
-			context::consumeTextLiteral,
-			context::consumeIdentifier
-		);
-	}
-
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(PRAGMA);
@@ -56,19 +48,19 @@ public abstract class PragmaStatement implements Statement {
 	 * PRAGMA ... = ... ;
 	 */
 	public static class Set extends PragmaStatement {
-		public String value;
+		public LiteralValue value;
 
 		public static Set parse(ParserContext context) {
 			context.consume(EQ);
 			Set set = new Set();
-			set.value = parsePragmaValue(context);
+			set.value = LiteralValue.parseValue(context);
 			return set;
 		}
 
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
-			sql.append(EQ).appendTextLiteral(value);
+			sql.append(EQ).append(value);
 		}
 	}
 
@@ -76,12 +68,12 @@ public abstract class PragmaStatement implements Statement {
 	 * PRAGMA ... ( ... ) ;
 	 */
 	public static class Call extends PragmaStatement {
-		public String value;
+		public LiteralValue value;
 
 		public static Call parse(ParserContext context) {
 			context.consume(LEFT_PAREN);
 			Call call = new Call();
-			call.value = parsePragmaValue(context);
+			call.value = LiteralValue.parseValue(context);
 			context.consume(RIGHT_PAREN);
 			return call;
 		}
@@ -90,7 +82,7 @@ public abstract class PragmaStatement implements Statement {
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(LEFT_PAREN)
-			   .appendTextLiteral(value)
+			   .append(value)
 			   .append(RIGHT_PAREN);
 		}
 	}
