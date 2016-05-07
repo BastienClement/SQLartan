@@ -47,8 +47,7 @@ public class Builder {
 			builder.append(" ");
 		}
 		builder.append(operator.symbol);
-		if (operator == SEMICOLON) builder.append("\n");
-		last = (operator == LEFT_PAREN || operator == DOT || operator == SEMICOLON) ? Spacing.NoSpace : Spacing.Space;
+		last = (operator == LEFT_PAREN || operator == DOT) ? Spacing.NoSpace : Spacing.Space;
 		return this;
 	}
 

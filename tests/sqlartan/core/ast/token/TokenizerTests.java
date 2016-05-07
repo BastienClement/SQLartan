@@ -8,7 +8,7 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "CREATE TABLE foo (a INT PRIMARY KEY AUTOINCREMENT, b VARCHAR, c FLOAT(2, 3) UNIQUE NOT NULL CHECK (c < 3), UNIQUE (a, b) ON CONFLICT REPLACE, FOREIGN KEY (a, c) REFERENCES foo)";
+		String source = "CREATE TEMPORARY TRIGGER IF NOT EXISTS foo.bar INSTEAD OF UPDATE OF a, b, c ON baz FOR EACH ROW WHEN a < 2 BEGIN SELECT * FROM foo; DELETE FROM baz; END";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens().forEach(System.out::println);

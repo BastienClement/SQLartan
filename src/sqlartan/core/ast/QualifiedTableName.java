@@ -12,9 +12,9 @@ import static sqlartan.core.ast.Keyword.*;
 public class QualifiedTableName implements Node {
 	public enum Indexed { Undefined, Indexed, NotIndexed }
 
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	public String name;
-	public Indexed indexed;
+	public Indexed indexed = Indexed.Undefined;
 	public String index;
 
 	public static QualifiedTableName parse(ParserContext context) {

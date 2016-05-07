@@ -14,9 +14,9 @@ import static sqlartan.core.ast.Keyword.*;
 public class DeleteStatement implements Statement {
 	public Optional<WithClause> with = Optional.empty();
 	public QualifiedTableName table;
-	public Optional<Expression> where;
+	public Optional<Expression> where = Optional.empty();
 	public List<OrderingTerm> orderBy = new ArrayList<>();
-	public Optional<LimitClause> limit;
+	public Optional<LimitClause> limit = Optional.empty();
 
 	public static DeleteStatement parse(ParserContext context) {
 		DeleteStatement delete = new DeleteStatement();

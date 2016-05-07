@@ -379,8 +379,8 @@ public class ParserContext {
 			begin();
 			do {
 				Optional<N> item = optParse(parser);
-				reset();
 				if (item.isPresent()) {
+					reset();
 					list.add(item.get());
 				} else {
 					break;
