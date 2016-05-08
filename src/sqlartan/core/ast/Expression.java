@@ -23,11 +23,12 @@ public abstract class Expression implements Node {
 
 	private static Expression parseFinal(ParserContext context) {
 		return context.alternatives(
+			Group::parse,
+			Function::parse,
 			LiteralValue::parse,
 			Placeholder::parse,
-			UnaryOperator::parse,
-			Function::parse,
-			ColumnReference::parse
+			ColumnReference::parse,
+			UnaryOperator::parse
 		);
 	}
 
@@ -65,6 +66,61 @@ public abstract class Expression implements Node {
 	private static Parser<Expression> parseEqStep = parseStep(parseCompStep, EQ, NOT_EQ, IS, IS_NOT, IN, LIKE, GLOB, MATCH, REGEXP);
 	private static Parser<Expression> parseAndStep = parseStep(parseEqStep, AND);
 	private static Parser<Expression> parseOrStep = parseStep(parseAndStep, OR);
+
+	/**
+	 * [bind-parameter]
+	 */
+	public static class Placeholder extends Expression {
+		public Token.Placeholder placeholder;
+
+		public Placeholder(Token.Placeholder placeholder) {
+			this.placeholder = placeholder;
+		}
+
+		public static Placeholder parse(ParserContext context) {
+			return new Placeholder(context.consume(Token.Placeholder.class));
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.appendRaw(placeholder.stringValue());
+		}
+	}
+
+	/**
+	 * { { (schema) . } (table) . } (column)
+	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static class ColumnReference extends Expression {
+		public Optional<String> schema;
+		public Optional<String> table;
+		public String column;
+
+		public static ColumnReference parse(ParserContext context) {
+			Optional<String> table, schema = Optional.empty();
+
+			if ((table = context.optConsumeSchema()).isPresent()) {
+				if ((schema = context.optConsumeSchema()).isPresent()) {
+					Optional<String> t = schema;
+					schema = table;
+					table = t;
+				}
+			}
+
+			String column = context.consumeIdentifier();
+
+			ColumnReference ref = new ColumnReference();
+			ref.schema = schema;
+			ref.table = table;
+			ref.column = column;
+			return ref;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.appendSchema(schema).appendSchema(table).appendIdentifier(column);
+		}
+	}
 
 	/**
 	 * (unary-operator) [expr]
@@ -108,26 +164,6 @@ public abstract class Expression implements Node {
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(lhs).append(op).append(rhs);
-		}
-	}
-
-	/**
-	 * [bind-parameter]
-	 */
-	public static class Placeholder extends Expression {
-		public Token.Placeholder placeholder;
-
-		public Placeholder(Token.Placeholder placeholder) {
-			this.placeholder = placeholder;
-		}
-
-		public static Placeholder parse(ParserContext context) {
-			return new Placeholder(context.consume(Token.Placeholder.class));
-		}
-
-		@Override
-		public void toSQL(Builder sql) {
-			sql.appendRaw(placeholder.stringValue());
 		}
 	}
 
@@ -208,37 +244,24 @@ public abstract class Expression implements Node {
 	}
 
 	/**
-	 * { { (schema) . } (table) . } (column)
+	 * "(" [expr] ")"
 	 */
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	public static class ColumnReference extends Expression {
-		public Optional<String> schema;
-		public Optional<String> table;
-		public String column;
+	public static class Group extends Expression {
+		public Expression expression;
 
-		public static ColumnReference parse(ParserContext context) {
-			Optional<String> table, schema = Optional.empty();
+		public static Group parse(ParserContext context) {
+			context.consume(LEFT_PAREN);
+			Expression expr = Expression.parse(context);
+			context.consume(RIGHT_PAREN);
 
-			if ((table = context.optConsumeSchema()).isPresent()) {
-				if ((schema = context.optConsumeSchema()).isPresent()) {
-					Optional<String> t = schema;
-					schema = table;
-					table = t;
-				}
-			}
-
-			String column = context.consumeIdentifier();
-
-			ColumnReference ref = new ColumnReference();
-			ref.schema = schema;
-			ref.table = table;
-			ref.column = column;
-			return ref;
+			Group group = new Group();
+			group.expression = expr;
+			return group;
 		}
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.appendSchema(schema).appendSchema(table).appendIdentifier(column);
+			sql.append(LEFT_PAREN).append(expression).append(RIGHT_PAREN);
 		}
 	}
 

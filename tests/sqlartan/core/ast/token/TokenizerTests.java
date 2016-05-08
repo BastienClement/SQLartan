@@ -8,7 +8,7 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "SELECT SUM(*) AS bar FROM foobar";
+		String source = "SELECT (2 * 3) + 5";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens().forEach(System.out::println);
