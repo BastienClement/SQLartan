@@ -5,6 +5,7 @@ import sqlartan.core.ast.Operator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import static sqlartan.core.ast.Keyword.NOT;
 import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.dispatch;
 
@@ -121,10 +122,9 @@ public class Builder {
 		return this;
 	}
 
-	public Builder appendUnary(Operator operator) {
-		if (last == Spacing.Space) builder.append(" ");
-		builder.append(operator.symbol);
-		last = Spacing.NoSpace;
+	public Builder appendUnary(KeywordOrOperator operator) {
+		append(operator);
+		if (operator != NOT) last = Spacing.NoSpace;
 		return this;
 	}
 

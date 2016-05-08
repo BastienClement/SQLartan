@@ -9,20 +9,23 @@ import sqlartan.core.ast.token.Tokenizable;
 import java.util.Optional;
 import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.*;
-import static sqlartan.util.Matching.match;
 
+/**
+ * https://www.sqlite.org/lang_expr.html
+ */
+@SuppressWarnings("WeakerAccess")
 public abstract class Expression implements Node {
 	public static Expression parse(ParserContext context) {
 		return parseOrStep.parse(context);
 	}
 
-	public static Expression parseTerminal(ParserContext context) {
-		return match(context.current(), Expression.class)
-			.when(Token.Literal.class, lit -> Constant.parse(context))
-			.when(Token.Identifier.class, id -> context.alternatives(
-				ColumnReference::parse
-			))
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+	private static Expression parseFinal(ParserContext context) {
+		return context.alternatives(
+			LiteralValue::parse,
+			Placeholder::parse,
+			ColumnReference::parse,
+			UnaryOperator::parse
+		);
 	}
 
 	@SafeVarargs
@@ -30,7 +33,7 @@ public abstract class Expression implements Node {
 		return context -> {
 			Expression lhs = parser.parse(context);
 			KeywordOrOperator op;
-			while ((op = consumeAny(context, tokens)) != null) {
+			while ((op = context.optParse(consumeAny(tokens)).orElse(null)) != null) {
 				Expression rhs = parser.parse(context);
 				lhs = new BinaryOperator(lhs, op, rhs);
 			}
@@ -38,17 +41,20 @@ public abstract class Expression implements Node {
 		};
 	}
 
-	private static KeywordOrOperator consumeAny(ParserContext context, Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>>[] tokens) {
-		for (Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>> token : tokens) {
-			Optional<? extends Token.Wrapper<? extends KeywordOrOperator>> consumed = context.optConsume(token);
-			if (consumed.isPresent()) {
-				return consumed.get().node();
+	@SafeVarargs
+	private static Parser<KeywordOrOperator> consumeAny(Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>>... tokens) {
+		return ctx -> {
+			for (Tokenizable<? extends Token.Wrapper<? extends KeywordOrOperator>> token : tokens) {
+				Optional<? extends Token.Wrapper<? extends KeywordOrOperator>> consumed = ctx.optConsume(token);
+				if (consumed.isPresent()) {
+					return consumed.get().node();
+				}
 			}
-		}
-		return null;
+			throw ParseException.UnexpectedCurrentToken((Tokenizable[]) tokens);
+		};
 	}
 
-	private static Parser<Expression> parseConcatStep = parseStep(Expression::parseTerminal, CONCAT);
+	private static Parser<Expression> parseConcatStep = parseStep(Expression::parseFinal, CONCAT);
 	private static Parser<Expression> parseMulStep = parseStep(parseConcatStep, MUL, DIV, MOD);
 	private static Parser<Expression> parseAddStep = parseStep(parseMulStep, PLUS, MINUS);
 	private static Parser<Expression> parseBitsStep = parseStep(parseAddStep, SHIFT_LEFT, SHIFT_RIGHT, BIT_AND, BIT_OR);
@@ -57,6 +63,34 @@ public abstract class Expression implements Node {
 	private static Parser<Expression> parseAndStep = parseStep(parseEqStep, AND);
 	private static Parser<Expression> parseOrStep = parseStep(parseAndStep, OR);
 
+	/**
+	 * (unary-operator) [expr]
+	 */
+	public static class UnaryOperator extends Expression {
+		public KeywordOrOperator op;
+		public Expression operand;
+
+		public UnaryOperator(KeywordOrOperator op, Expression operand) {
+			this.op = op;
+			this.operand = operand;
+		}
+
+		public static UnaryOperator parse(ParserContext context) {
+			return new UnaryOperator(
+				consumeAny(MINUS, PLUS, BIT_NOT, NOT).parse(context),
+				Expression.parse(context)
+			);
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.appendUnary(op).append(operand);
+		}
+	}
+
+	/**
+	 * [expr] (binary-operator) [expr]
+	 */
 	public static class BinaryOperator extends Expression {
 		public Expression lhs;
 		public KeywordOrOperator op;
@@ -74,78 +108,58 @@ public abstract class Expression implements Node {
 		}
 	}
 
-	public abstract static class Constant extends Expression {
-		public String value;
+	/**
+	 * [bind-parameter]
+	 */
+	public static class Placeholder extends Expression {
+		public Token.Placeholder placeholder;
 
-		public Constant() {}
-		public Constant(String value) {
-			this.value = value;
+		public Placeholder(Token.Placeholder placeholder) {
+			this.placeholder = placeholder;
 		}
 
-		public static Constant parse(ParserContext context) {
-			return match(context.consume(Token.Literal.class), Constant.class)
-				.when(Token.Literal.Text.class, text -> new TextConstant(text.value))
-				.when(Token.Literal.Numeric.class, num -> new NumericConstant(num.value))
-				.orElseThrow(ParseException.UnexpectedCurrentToken);
+		public static Placeholder parse(ParserContext context) {
+			return new Placeholder(context.consume(Token.Placeholder.class));
 		}
-	}
-
-	public static class TextConstant extends Constant {
-		public TextConstant() {}
-		public TextConstant(String value) { super(value); }
 
 		@Override
 		public void toSQL(Builder sql) {
-			sql.appendTextLiteral(value);
+			sql.appendRaw(placeholder.stringValue());
 		}
 	}
 
-	public static class NumericConstant extends Constant {
-		public NumericConstant() {}
-		public NumericConstant(String value) { super(value); }
-
-		@Override
-		public void toSQL(Builder sql) {
-			sql.appendRaw(value);
-		}
-	}
-
+	/**
+	 * { { schema . } table . } column
+	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static class ColumnReference extends Expression {
-		public String schema;
-		public String table;
+		public Optional<String> schema;
+		public Optional<String> table;
 		public String column;
 
-		public ColumnReference(String schema, String table, String column) {
-			this.schema = schema;
-			this.table = table;
-			this.column = column;
-		}
-
 		public static ColumnReference parse(ParserContext context) {
-			String table = null, schema = null;
+			Optional<String> table, schema = Optional.empty();
 
-			if (context.next(DOT)) {
-				table = context.consumeIdentifier();
-				context.consume(DOT);
-			}
-
-			if (context.next(DOT)) {
-				schema = table;
-				table = context.consumeIdentifier();
-				context.consume(DOT);
+			if ((table = context.optConsumeSchema()).isPresent()) {
+				if ((schema = context.optConsumeSchema()).isPresent()) {
+					Optional<String> t = schema;
+					schema = table;
+					table = t;
+				}
 			}
 
 			String column = context.consumeIdentifier();
-			return new ColumnReference(schema, table, column);
+
+			ColumnReference ref = new ColumnReference();
+			ref.schema = schema;
+			ref.table = table;
+			ref.column = column;
+			return ref;
 		}
 
 		@Override
 		public void toSQL(Builder sql) {
-			if (schema != null)
-				sql.appendIdentifier(schema).append(DOT);
-			if (table != null)
-				sql.appendIdentifier(table).append(DOT);
-			sql.appendIdentifier(column);
+			sql.appendSchema(schema).appendSchema(table).appendIdentifier(column);
 		}
 	}
 

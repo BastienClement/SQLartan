@@ -17,7 +17,7 @@ public enum Operator implements Node.KeywordOrOperator {
 	SHIFT_LEFT("<<"), SHIFT_RIGHT(">>"), BIT_AND("&"), BIT_OR("|"),
 	LT("<"), LTE("<="), GT(">"), GTE(">="),
 	EQ("="), NOT_EQ("<>"),
-	DOT("."), COMMA(","), SEMICOLON(";"), LEFT_PAREN("("), RIGHT_PAREN(")");
+	BIT_NOT("~"), DOT("."), COMMA(","), SEMICOLON(";"), LEFT_PAREN("("), RIGHT_PAREN(")");
 
 	/**
 	 * The operator symbol

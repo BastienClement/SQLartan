@@ -14,7 +14,7 @@ import static sqlartan.util.Matching.match;
  * https://www.sqlite.org/syntaxdiagrams.html#literal-value
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class LiteralValue implements Node {
+public abstract class LiteralValue extends Expression {
 	public static LiteralValue parse(ParserContext context) {
 		Optional<LiteralValue> literal = match(context.current(), LiteralValue.class)
 			.when(NULL, () -> Null.instance)

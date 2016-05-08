@@ -8,7 +8,7 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "SELECT * a FROM a, (b INNER JOIN c ON a = b) LEFT JOIN d USING (foo, bar)";
+		String source = "SELECT 1, NULL, 'foobar', ?, foo.bar.baz, NOT NULL";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens().forEach(System.out::println);

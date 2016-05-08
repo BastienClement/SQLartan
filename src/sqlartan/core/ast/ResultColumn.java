@@ -39,7 +39,7 @@ public abstract class ResultColumn implements Node {
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(expression);
-			alias.ifPresent(sql.append(AS)::appendIdentifier);
+			alias.ifPresent(a -> sql.append(AS).appendIdentifier(a));
 		}
 	}
 
