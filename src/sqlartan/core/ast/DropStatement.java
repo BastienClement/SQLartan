@@ -21,7 +21,7 @@ public abstract class DropStatement implements Statement {
 			.when(TABLE, () -> DropTableStatement.parse(context))
 			.when(TRIGGER, () -> DropTriggerStatement.parse(context))
 			.when(VIEW, () -> DropViewStatement.parse(context))
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+			.orElseThrow(ParseException.UnexpectedCurrentToken(INDEX, TABLE, TRIGGER, VIEW));
 	}
 
 	protected static <T extends DropStatement> T parseDrop(ParserContext context, Keyword type, Supplier<T> create, Consumer<T> decorator) {

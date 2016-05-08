@@ -1,221 +1,157 @@
 package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.ParserContext;
+import sqlartan.core.ast.token.Token;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import static sqlartan.core.ast.Keyword.*;
-import static sqlartan.core.ast.Operator.*;
 
 /**
  * https://www.sqlite.org/lang_select.html
+ * "OMG SELECT STATEMENTS ARE SO PAINFUL TO PARSE!"
  */
-public abstract class SelectStatement implements Statement {
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
+public interface SelectStatement extends Statement {
 	/**
 	 * General SELECT statement parser
 	 * Currently delegates to Simple parser.
 	 * TODO: handle compound selects here
 	 */
-	public static SelectStatement parse(ParserContext context) {
-		return Simple.parse(context);
+	static SelectStatement parse(ParserContext context) {
+		Compoundable lhs = Core.parse(context);
+
+		Compound.Operator op;
+		while ((op = context.optParse(Compound.Operator::parse).orElse(null)) != null) {
+			Core rhs = Core.parse(context);
+			Compound compound = new Compound();
+			compound.lhs = lhs;
+			compound.operator = op;
+			compound.rhs = rhs;
+			lhs = compound;
+		}
+
+		if (lhs instanceof SelectCoreStatement) {
+			SelectCoreStatement core = (SelectCoreStatement) lhs;
+			Simple simple = new Simple();
+
+			simple.distinct = core.distinct;
+			simple.columns = core.columns;
+			simple.from = core.from;
+			simple.where = core.where;
+			simple.groupBy = core.groupBy;
+			simple.having = core.having;
+
+			// ORDER BY
+			if (context.current(ORDER)) {
+				simple.orderBy = Optional.of(OrderByClause.parse(context));
+			}
+
+			// LIMIT .. OFFSET
+			if (context.current(LIMIT)) {
+				simple.limit = Optional.of(LimitClause.parse(context));
+			}
+
+			return simple;
+		} else if (lhs instanceof Compound) {
+			Compound compound = (Compound) lhs;
+
+			if (compound.rhs instanceof SelectCoreStatement) {
+				// ORDER BY
+				if (context.current(ORDER)) {
+					compound.orderBy = Optional.of(OrderByClause.parse(context));
+				}
+
+				// LIMIT .. OFFSET
+				if (context.current(LIMIT)) {
+					compound.limit = Optional.of(LimitClause.parse(context));
+				}
+			}
+		}
+
+		return lhs;
 	}
+
+	/**
+	 * Common super-type for compoundable statements
+	 * Used by Core and Compound, but not Simple
+	 */
+	interface Compoundable extends SelectStatement {}
 
 	/**
 	 * The core a SELECT statement
 	 */
-	public static class Core extends SelectStatement {
-		public boolean distinct;
-		public List<ResultColumn> columns;
-		public List<SelectSource> from;
-		public Expression where;
-		public List<Expression> groupBy;
-		public Expression having;
-
+	abstract class Core implements SelectStatement, Compoundable {
 		public static Core parse(ParserContext context) {
-			Core select = new Core();
-			parse(context, select);
-			return select;
-		}
-
-		static void parse(ParserContext context, Core select) {
-			context.consume(SELECT);
-
-			select.distinct = context.tryConsume(DISTINCT) && !context.tryConsume(ALL);
-			select.columns = context.parseList(COMMA, ResultColumn::parse);
-
-			if (context.tryConsume(FROM)) {
-				select.from = new ArrayList<>();
-				if (!context.parseList(select.from, COMMA, TableOrSubquerySource::parse)) {
-					select.from.add(JoinClause.parse(context));
-				}
-			}
-
-			if (context.tryConsume(WHERE)) {
-				select.where = Expression.parse(context);
-			}
-
-			if (context.tryConsume(GROUP)) {
-				context.consume(BY);
-				select.groupBy = context.parseList(COMMA, Expression::parse);
-
-				if (context.tryConsume(HAVING)) {
-					select.having = Expression.parse(context);
-				}
-			}
-		}
-
-		@Override
-		public void toSQL(Builder sql) {
-			sql.append(SELECT);
-			if (distinct)
-				sql.append(DISTINCT);
-			sql.append(columns);
-			if (from != null)
-				sql.append(FROM).append(from);
-			if (where != null)
-				sql.append(WHERE).append(where);
-			if (groupBy != null) {
-				sql.append(GROUP, BY).append(groupBy);
-				if (having != null)
-					sql.append(HAVING).append(having);
-			}
-		}
-	}
-
-	/**
-	 * A simple SELECT statement
-	 */
-	public static class Simple extends Core {
-		public List<OrderingTerm> orderBy;
-		public Expression limit;
-		public Expression offset;
-
-		public static Simple parse(ParserContext context) {
-			if (context.tryConsume(WITH)) {
-				// With clauses are unsupported
-				throw new UnsupportedOperationException();
-			}
-
-			// Parse the core
-			Simple select = new Simple();
-			Core.parse(context, select);
-
-			// ORDER BY
-			if (context.tryConsume(ORDER)) {
-				context.consume(BY);
-				select.orderBy = context.parseList(COMMA, OrderingTerm::parse);
-			}
-
-			// LIMIT .. OFFSET
-			if (context.tryConsume(LIMIT)) {
-				select.limit = Expression.parse(context);
-				if (context.tryConsume(OFFSET) || context.tryConsume(COMMA)) {
-					select.offset = Expression.parse(context);
-				}
-			}
-
-			return select;
-		}
-
-		@Override
-		public void toSQL(Builder sql) {
-			super.toSQL(sql);
-			if (orderBy != null)
-				sql.append(ORDER, BY).append(orderBy);
-			if (limit != null) {
-				sql.append(LIMIT).append(limit);
-				if (offset != null) {
-					sql.append(COMMA).append(offset);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Source of data for SELECT statements
-	 */
-	public abstract static class SelectSource implements Node {
-		public static SelectSource parse(ParserContext context) {
-			return context.alternatives(
-				TableOrSubquerySource::parse,
-				JoinClause::parse
-			);
-		}
-	}
-
-	/**
-	 * Either a table or a sub-query sources
-	 */
-	public static class TableOrSubquerySource extends SelectSource {
-		public String as;
-
-		public static TableOrSubquerySource parse(ParserContext context) {
-			if (context.current(LEFT_PAREN)) {
-				// Sub query
-				throw new UnsupportedOperationException();
+			if (context.current(VALUES)) {
+				return ValuesStatement.parse(context);
 			} else {
-				return TableSource.parse(context);
+				return SelectCoreStatement.parse(context);
 			}
 		}
 	}
 
 	/**
-	 * A table source
+	 * A simple select statement
 	 */
-	public static class TableSource extends TableOrSubquerySource {
-		public String schema;
-		public String table;
-		public String index;
-		public boolean notIndexed;
+	class Simple implements SelectStatement {
+		public boolean distinct;
+		public List<ResultColumn> columns = new ArrayList<>();
+		public Optional<SelectSource> from = Optional.empty();
+		public Optional<WhereClause> where = Optional.empty();
+		public List<Expression> groupBy = new ArrayList<>();
+		public Optional<Expression> having = Optional.empty();
 
-		public static TableSource parse(ParserContext context) {
-			TableSource source = new TableSource();
-
-			// Explicit schema name
-			if (context.next(DOT)) {
-				source.schema = context.consumeIdentifier();
-				context.consume(DOT);
-			}
-
-			// Table name
-			source.table = context.consumeIdentifier();
-
-			// Attempt to consume alias
-			context.tryConsume(AS);
-			source.as = context.optConsumeIdentifier().orElse(null);
-
-			if (context.tryConsume(INDEXED)) {
-				context.consume(BY);
-				source.index = context.consumeIdentifier();
-			} else if (context.tryConsume(NOT)) {
-				context.consume(INDEXED);
-				source.notIndexed = true;
-			}
-
-			return source;
-		}
-
-		@Override
-		public void toSQL(Builder sql) {
-			if (schema != null)
-				sql.appendIdentifier(schema).append(DOT);
-			sql.appendIdentifier(table);
-			if (as != null)
-				sql.append(AS).appendIdentifier(as);
-			if (notIndexed)
-				sql.append(NOT, INDEXED);
-			else if (index != null)
-				sql.append(INDEXED, BY).appendIdentifier(index);
-		}
+		public Optional<OrderByClause> orderBy = Optional.empty();
+		public Optional<LimitClause> limit = Optional.empty();
 	}
 
 	/**
-	 * A JOIN clause
+	 * A compound select statement
 	 */
-	public static class JoinClause extends SelectSource {
-		public static JoinClause parse(ParserContext context) {
-			throw new UnsupportedOperationException();
-		}
-	}
+	class Compound implements SelectStatement, Compoundable {
+		public enum Operator implements Node.Enumerated {
+			Union(UNION),
+			UnionAll(UNION, ALL),
+			Intersect(INTERSECT),
+			Except(EXCEPT);
 
+			private Keyword[] keywords;
+
+			Operator(Keyword... keywords) {
+				this.keywords  = keywords;
+			}
+
+			public static Operator parse(ParserContext context) {
+				switch (context.consume(Token.Keyword.class).node()) {
+					case UNION:
+						if (context.tryConsume(ALL)) {
+							return UnionAll;
+						} else {
+							return Union;
+						}
+					case INTERSECT:
+						return Intersect;
+					case EXCEPT:
+						return Except;
+					default:
+						throw ParseException.UnexpectedCurrentToken(UNION, INTERSECT, EXCEPT);
+				}
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				sql.append(keywords);
+			}
+		}
+
+		public Compoundable lhs;
+		public Operator operator;
+		public Compoundable rhs;
+
+		public Optional<OrderByClause> orderBy = Optional.empty();
+		public Optional<LimitClause> limit = Optional.empty();
+	}
 }

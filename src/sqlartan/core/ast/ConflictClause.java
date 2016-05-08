@@ -32,7 +32,7 @@ public enum ConflictClause implements Node.Enumerated {
 				case REPLACE:
 					return Replace;
 				default:
-					throw ParseException.UnexpectedCurrentToken;
+					throw ParseException.UnexpectedCurrentToken(ROLLBACK, ABORT, FAIL, IGNORE, REPLACE);
 			}
 		}
 		return None;

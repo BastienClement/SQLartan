@@ -15,7 +15,7 @@ public abstract class CreateStatement implements Statement {
 	public static CreateStatement parse(ParserContext context) {
 		context.consume(CREATE);
 		return doMatch(context.current(), context).orElse(
-			() -> doMatch(context.next(), context).orElseThrow(ParseException.UnexpectedCurrentToken)
+			() -> doMatch(context.next(), context).orElseThrow(ParseException.UnexpectedCurrentToken(INDEX, TABLE, TRIGGER, VIEW, VIRTUAL))
 		);
 	}
 

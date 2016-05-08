@@ -49,7 +49,7 @@ public class ForeignKeyClause implements Node {
 				}
 			} else if (context.tryConsume(MATCH)) {
 				// TODO: parse MATCH
-				throw ParseException.UnexpectedCurrentToken;
+				throw new UnsupportedOperationException();
 			} else {
 				break;
 			}

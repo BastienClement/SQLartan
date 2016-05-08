@@ -29,7 +29,7 @@ public class ColumnConstraint implements Node {
 			.when(DEFAULT, () -> Default.parse(context))
 			.when(COLLATE, () -> Collate.parse(context))
 			.when(REFERENCES, () -> ForeignKey.parse(context))
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+			.orElseThrow(ParseException.UnexpectedCurrentToken(PRIMARY, NOT, UNIQUE, CHECK, DEFAULT, COLLATE, REFERENCES));
 
 		constraint.name = name;
 		return constraint;

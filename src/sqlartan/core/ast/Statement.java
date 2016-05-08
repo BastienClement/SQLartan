@@ -30,12 +30,15 @@ public interface Statement extends Node {
 			.when(ROLLBACK, () -> RollbackStatement.parse(context))
 			.when(SAVEPOINT, () -> SavepointStatement.parse(context))
 			.when(SELECT, () -> SelectStatement.parse(context))
+			.when(VALUES, () -> SelectStatement.parse(context))
 			.when(UPDATE, () -> UpdateStatement.parse(context))
 			.when(VACUUM, () -> VacuumStatement.parse(context))
 			.when(WITH, () -> {
 				throw new UnsupportedOperationException();
 			})
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+			.orElseThrow(ParseException.UnexpectedCurrentToken(EXPLAIN, ALTER, ANALYZE, ATTACH, BEGIN, COMMIT, END,
+				CREATE, DELETE, DETACH, DROP, INSERT, REPLACE, PRAGMA, REINDEX, RELEASE, ROLLBACK, SAVEPOINT, SELECT,
+				VALUES, UPDATE, VACUUM));
 		// Note: This does not handle INSERT / UPDATE / DELETE / INSERT with WITH clauses
 	}
 }

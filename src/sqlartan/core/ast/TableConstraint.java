@@ -28,7 +28,7 @@ public abstract class TableConstraint implements Node {
 			.when(UNIQUE, () -> Index.parse(context))
 			.when(CHECK, () -> Check.parse(context))
 			.when(FOREIGN, () -> ForeignKey.parse(context))
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+			.orElseThrow(ParseException.UnexpectedCurrentToken(PRIMARY, UNIQUE, CHECK, FOREIGN));
 
 		constraint.name = Optional.ofNullable(name);
 		return constraint;

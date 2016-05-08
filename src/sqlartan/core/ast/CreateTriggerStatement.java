@@ -71,7 +71,7 @@ public class CreateTriggerStatement extends CreateStatement {
 				}
 				return Trigger.Update;
 			})
-			.orElseThrow(ParseException.UnexpectedCurrentToken);
+			.orElseThrow(ParseException.UnexpectedCurrentToken(DELETE, INSERT, UPDATE));
 
 		context.consume(ON);
 		trigger.table = context.consumeIdentifier();
@@ -88,7 +88,8 @@ public class CreateTriggerStatement extends CreateStatement {
 				.when(INSERT, () -> InsertStatement.parse(ctx))
 				.when(DELETE, () -> DeleteStatement.parse(ctx))
 				.when(SELECT, () -> SelectStatement.parse(ctx))
-				.orElseThrow(ParseException.UnexpectedCurrentToken)
+				.when(VALUES, () -> SelectStatement.parse(ctx))
+				.orElseThrow(ParseException.UnexpectedCurrentToken(UPDATE, INSERT, DELETE, SELECT, VALUES))
 		);
 		context.consume(SEMICOLON, END);
 

@@ -43,7 +43,7 @@ public class UpdateStatement implements Statement {
 					case IGNORE:
 						return OrIgnore;
 					default:
-						throw ParseException.UnexpectedCurrentToken;
+						throw ParseException.UnexpectedCurrentToken(ROLLBACK, ABORT, REPLACE, FAIL, IGNORE);
 				}
 			} else {
 				return Undefined;

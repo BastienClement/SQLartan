@@ -1,5 +1,8 @@
 package sqlartan.core.ast.parser;
 
+import sqlartan.core.ast.token.Token;
+import sqlartan.core.ast.token.Tokenizable;
+
 /**
  * A parsing exception
  */
@@ -30,6 +33,20 @@ public class ParseException extends Exception {
 	public static final FastParseException UnexpectedCurrentToken = new FastParseException() {
 		public ParseException materialize(ParserContext context) {
 			return new UnexpectedTokenException(context.current());
+		}
+	};
+
+	public static FastParseException UnexpectedCurrentToken(Tokenizable<?>... expected) {
+		return new FastParseException() {
+			public ParseException materialize(ParserContext context) {
+				return new UnexpectedTokenException(context.current(), expected);
+			}
+		};
+	}
+
+	public static final FastParseException InvalidValuesSet = new FastParseException() {
+		public ParseException materialize(ParserContext context) {
+			return new ParseException("Invalid VALUES set", context.current().source, context.current().offset);
 		}
 	};
 }

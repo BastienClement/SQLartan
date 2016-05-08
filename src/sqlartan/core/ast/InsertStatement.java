@@ -15,7 +15,7 @@ import static sqlartan.core.ast.Operator.RIGHT_PAREN;
  * https://www.sqlite.org/lang_insert.html
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
-public abstract class InsertStatement implements Statement {
+public class InsertStatement implements Statement {
 	public enum Type implements Node.Enumerated {
 		Insert(INSERT), Replace(REPLACE),
 		InsertOrReplace(INSERT, OR, REPLACE),
@@ -48,7 +48,7 @@ public abstract class InsertStatement implements Statement {
 						case IGNORE:
 							return InsertOrIgnore;
 						default:
-							throw ParseException.UnexpectedCurrentToken;
+							throw ParseException.UnexpectedCurrentToken(REPLACE, ROLLBACK, ABORT, FAIL, IGNORE);
 					}
 				}
 				return Insert;
@@ -78,9 +78,7 @@ public abstract class InsertStatement implements Statement {
 
 		InsertStatement insert;
 
-		if (context.current(VALUES)) {
-			insert = Values.parse(context);
-		} else if (context.current(DEFAULT)) {
+		if (context.current(DEFAULT)) {
 			insert = Default.parse(context);
 		} else {
 			insert = Select.parse(context);
@@ -104,33 +102,7 @@ public abstract class InsertStatement implements Statement {
 	}
 
 	/**
-	 * INSERT INTO ... VALUES ... ;
-	 */
-	public static class Values extends InsertStatement {
-		public List<List<Expression>> values;
-
-		public static Values parse(ParserContext context) {
-			Values values = new Values();
-			context.consume(VALUES);
-			values.values = context.parseList(ctx -> {
-				ctx.consume(LEFT_PAREN);
-				List<Expression> expressions = ctx.parseList(Expression::parse);
-				ctx.consume(RIGHT_PAREN);
-				return expressions;
-			});
-			return values;
-		}
-
-		@Override
-		public void toSQL(Builder sql) {
-			super.toSQL(sql);
-			sql.append(VALUES)
-			   .append(values, expressions -> ctx -> ctx.append(LEFT_PAREN).append(expressions).append(RIGHT_PAREN));
-		}
-	}
-
-	/**
-	 * INSERT INTO ... SELECT ... ;
+	 * INSERT INTO ... [SELECT | VALUES] ... ;
 	 */
 	public static class Select extends InsertStatement {
 		public SelectStatement select;
@@ -146,7 +118,6 @@ public abstract class InsertStatement implements Statement {
 			super.toSQL(sql);
 			sql.append(select);
 		}
-
 	}
 
 	/**

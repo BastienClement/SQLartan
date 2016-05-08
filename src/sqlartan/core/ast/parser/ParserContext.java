@@ -171,7 +171,7 @@ public class ParserContext {
 	 * @return the consumed token
 	 */
 	public <T extends Token, S extends Tokenizable<T>> T consume(S token) {
-		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken);
+		return optConsume(token).orElseThrow(ParseException.UnexpectedCurrentToken(token));
 	}
 
 	/**
