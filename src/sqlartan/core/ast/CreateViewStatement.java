@@ -16,7 +16,7 @@ import static sqlartan.core.ast.Operator.RIGHT_PAREN;
 public class CreateViewStatement extends CreateStatement {
 	public boolean temporary;
 	public boolean ifNotExists;
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	public String name;
 	public List<String> columns = new ArrayList<>();
 	public SelectStatement as;
@@ -44,10 +44,8 @@ public class CreateViewStatement extends CreateStatement {
 		if (temporary) sql.append(TEMPORARY);
 		sql.append(VIEW);
 		if (ifNotExists) sql.append(IF, NOT, EXISTS);
-		schema.ifPresent(sql::appendSchema);
-		if (!columns.isEmpty()) {
-			sql.append(LEFT_PAREN).appendIdentifiers(columns).append(RIGHT_PAREN);
-		}
+		sql.appendSchema(schema).appendIdentifier(name);
+		if (!columns.isEmpty()) sql.append(LEFT_PAREN).appendIdentifiers(columns).append(RIGHT_PAREN);
 		sql.append(AS).append(as);
 	}
 }

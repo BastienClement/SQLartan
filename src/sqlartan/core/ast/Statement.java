@@ -5,6 +5,9 @@ import sqlartan.core.ast.parser.ParserContext;
 import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.util.Matching.match;
 
+/**
+ * https://www.sqlite.org/syntaxdiagrams.html#sql-stmt
+ */
 public interface Statement extends Node {
 	static Statement parse(ParserContext context) {
 		return match(context.current(), Statement.class)

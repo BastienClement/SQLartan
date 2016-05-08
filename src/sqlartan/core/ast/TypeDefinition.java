@@ -6,6 +6,9 @@ import sqlartan.core.ast.token.Token;
 import java.util.Optional;
 import static sqlartan.core.ast.Operator.*;
 
+/**
+ * https://www.sqlite.org/syntaxdiagrams.html#type-name
+ */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public class TypeDefinition implements Node {
 	public String name;
@@ -19,7 +22,7 @@ public class TypeDefinition implements Node {
 		// SQLite accepts multiple type parts but only stores the first one ?!
 		// TODO: check what the fuck ?!
 		//noinspection StatementWithEmptyBody
-		while (context.tryConsume(Token.Identifier.class));
+		while (context.tryConsume(Token.Identifier.class)) ;
 
 		if (context.tryConsume(LEFT_PAREN)) {
 			type.length = Optional.of(LiteralValue.Numeric.parse(context));

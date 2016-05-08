@@ -15,7 +15,7 @@ import static sqlartan.core.ast.Operator.*;
 public abstract class CreateTableStatement extends CreateStatement {
 	public boolean temporary;
 	public boolean ifNotExists;
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	public String name;
 
 	public static CreateTableStatement parse(ParserContext context) {
@@ -49,8 +49,7 @@ public abstract class CreateTableStatement extends CreateStatement {
 		if (temporary) sql.append(TEMPORARY);
 		sql.append(TABLE);
 		if (ifNotExists) sql.append(IF, NOT, EXISTS);
-		schema.ifPresent(sql::appendSchema);
-		sql.appendIdentifier(name);
+		sql.appendSchema(schema).appendIdentifier(name);
 	}
 
 	/**
@@ -58,14 +57,14 @@ public abstract class CreateTableStatement extends CreateStatement {
 	 */
 	public static class Def extends CreateTableStatement {
 		public List<ColumnDefinition> columns;
-		public List<TableConstraint> contraints = new ArrayList<>();
+		public List<TableConstraint> constraints = new ArrayList<>();
 		public boolean withoutRowid;
 
 		public static Def parse(ParserContext context) {
 			Def create = new Def();
 			context.consume(LEFT_PAREN);
 			create.columns = context.parseList(ColumnDefinition::parse);
-			context.parseList(create.contraints, TableConstraint::parse);
+			context.parseList(create.constraints, TableConstraint::parse);
 			context.consume(RIGHT_PAREN);
 			create.withoutRowid = context.tryConsume(WITHOUT, ROWID);
 			return create;
@@ -75,13 +74,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
 			sql.append(LEFT_PAREN).append(columns);
-			if (!contraints.isEmpty()) {
-				sql.append(COMMA).append(contraints);
-			}
+			if (!constraints.isEmpty()) sql.append(COMMA).append(constraints);
 			sql.append(RIGHT_PAREN);
-			if (withoutRowid) {
-				sql.append(WITHOUT, ROWID);
-			}
+			if (withoutRowid) sql.append(WITHOUT, ROWID);
 		}
 	}
 

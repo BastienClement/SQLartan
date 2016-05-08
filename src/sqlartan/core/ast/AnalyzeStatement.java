@@ -2,8 +2,8 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.Keyword.*;
-import static sqlartan.core.ast.Operator.*;
+import static sqlartan.core.ast.Keyword.ANALYZE;
+import static sqlartan.core.ast.Operator.DOT;
 
 /**
  * https://www.sqlite.org/lang_analyze.html

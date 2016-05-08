@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Operator.LEFT_PAREN;
 import static sqlartan.core.ast.Operator.RIGHT_PAREN;
 import static sqlartan.util.Matching.match;
 
+/**
+ * https://www.sqlite.org/syntaxdiagrams.html#table-constraint
+ */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class TableConstraint implements Node {
 	public Optional<String> name = Optional.empty();

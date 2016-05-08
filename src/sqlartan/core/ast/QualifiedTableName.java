@@ -10,7 +10,7 @@ import static sqlartan.core.ast.Keyword.*;
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public class QualifiedTableName implements Node {
-	public enum Indexed { Undefined, Indexed, NotIndexed }
+	public enum Indexed {Undefined, Indexed, NotIndexed}
 
 	public Optional<String> schema = Optional.empty();
 	public String name;

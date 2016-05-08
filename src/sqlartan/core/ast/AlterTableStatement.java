@@ -34,9 +34,9 @@ public abstract class AlterTableStatement implements Statement {
 
 	@Override
 	public void toSQL(Builder sql) {
-		sql.append(ALTER, TABLE);
-		schema.ifPresent(sql::appendSchema);
-		sql.appendIdentifier(table);
+		sql.append(ALTER, TABLE)
+		   .appendSchema(schema)
+		   .appendIdentifier(table);
 	}
 
 	/**
@@ -55,7 +55,8 @@ public abstract class AlterTableStatement implements Statement {
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
-			sql.append(RENAME, TO).appendIdentifier(name);
+			sql.append(RENAME, TO)
+			   .appendIdentifier(name);
 		}
 	}
 
@@ -75,7 +76,8 @@ public abstract class AlterTableStatement implements Statement {
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
-			sql.append(ADD, COLUMN).append(column);
+			sql.append(ADD, COLUMN)
+			   .append(column);
 		}
 	}
 }

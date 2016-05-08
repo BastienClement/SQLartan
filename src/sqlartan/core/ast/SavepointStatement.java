@@ -7,6 +7,7 @@ import static sqlartan.core.ast.Keyword.SAVEPOINT;
 /**
  * https://www.sqlite.org/lang_savepoint.html
  */
+@SuppressWarnings("WeakerAccess")
 public class SavepointStatement implements Statement {
 	public String savepoint;
 

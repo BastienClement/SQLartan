@@ -17,9 +17,7 @@ import static sqlartan.core.ast.Operator.RIGHT_PAREN;
 @SuppressWarnings("WeakerAccess")
 public class ForeignKeyClause implements Node {
 	public enum Action {Undefined, NoAction, SetNull, SetDefault, Cascade, Restrict}
-
 	public enum Deferrable {Undefined, Deferrable, NotDeferrable}
-
 	public enum Initially {Undefined, Deferred, Immediate}
 
 	public String table;
@@ -117,11 +115,21 @@ public class ForeignKeyClause implements Node {
 			if (action == Action.Undefined) return;
 			sql.append(ON, prefix);
 			switch (action) {
-				case SetNull: sql.append(SET, NULL); break;
-				case SetDefault: sql.append(SET, DEFAULT); break;
-				case Cascade: sql.append(CASCADE); break;
-				case Restrict: sql.append(RESTRICT); break;
-				case NoAction: sql.append(NO, ACTION); break;
+				case SetNull:
+					sql.append(SET, NULL);
+					break;
+				case SetDefault:
+					sql.append(SET, DEFAULT);
+					break;
+				case Cascade:
+					sql.append(CASCADE);
+					break;
+				case Restrict:
+					sql.append(RESTRICT);
+					break;
+				case NoAction:
+					sql.append(NO, ACTION);
+					break;
 			}
 		};
 	}

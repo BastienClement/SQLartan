@@ -88,7 +88,9 @@ public class CreateTriggerStatement extends CreateStatement {
 				.when(INSERT, () -> InsertStatement.parse(ctx))
 				.when(DELETE, () -> DeleteStatement.parse(ctx))
 				.when(SELECT, () -> SelectStatement.parse(ctx))
-				.when(END, () -> { throw ParseException.UnexpectedCurrentToken; })
+				.when(END, () -> {
+					throw ParseException.UnexpectedCurrentToken;
+				})
 				.orElse(() -> ctx.alternatives(
 					UpdateStatement::parse,
 					InsertStatement::parse,
@@ -104,15 +106,10 @@ public class CreateTriggerStatement extends CreateStatement {
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(CREATE);
-		if (temporary) {
-			sql.append(TEMPORARY);
-		}
+		if (temporary) sql.append(TEMPORARY);
 		sql.append(TRIGGER);
-		if (ifNotExists) {
-			sql.append(IF, NOT, EXISTS);
-		}
-		schema.ifPresent(sql::appendSchema);
-		sql.appendIdentifier(name);
+		if (ifNotExists) sql.append(IF, NOT, EXISTS);
+		sql.appendSchema(schema).appendIdentifier(name);
 		switch (timing) {
 			case Before:
 				sql.append(BEFORE);
@@ -133,15 +130,11 @@ public class CreateTriggerStatement extends CreateStatement {
 				break;
 			case Update:
 				sql.append(UPDATE);
-				if (!columns.isEmpty()) {
-					sql.append(OF).appendIdentifiers(columns);
-				}
+				if (!columns.isEmpty()) sql.append(OF).appendIdentifiers(columns);
 				break;
 		}
 		sql.append(ON).appendIdentifier(table);
-		if (forEachRow) {
-			sql.append(FOR, EACH, ROW);
-		}
+		if (forEachRow) sql.append(FOR, EACH, ROW);
 		when.ifPresent(w -> sql.append(WHEN).append(w));
 		sql.append(BEGIN).append(body, SEMICOLON).append(SEMICOLON, END);
 	}

@@ -7,6 +7,9 @@ import static sqlartan.core.ast.Keyword.AS;
 import static sqlartan.core.ast.Operator.DOT;
 import static sqlartan.core.ast.Operator.MUL;
 
+/**
+ * https://www.sqlite.org/syntaxdiagrams.html#result-column
+ */
 @SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public abstract class ResultColumn implements Node {
 	public static ResultColumn parse(ParserContext context) {

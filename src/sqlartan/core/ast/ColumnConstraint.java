@@ -131,7 +131,7 @@ public class ColumnConstraint implements Node {
 	 */
 	public static abstract class Default extends ColumnConstraint {
 		public static Default parse(ParserContext context) {
-			return context.alternatives(Expr::parse, Value::parse);
+			return context.alternatives(Value::parse, Expr::parse);
 		}
 
 		public static class Value extends Default {
@@ -139,8 +139,14 @@ public class ColumnConstraint implements Node {
 
 			public static Value parse(ParserContext context) {
 				Value value = new Value();
+				context.consume(DEFAULT);
 				value.value = LiteralValue.parse(context);
 				return value;
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				sql.append(DEFAULT).append(value);
 			}
 		}
 
@@ -148,11 +154,18 @@ public class ColumnConstraint implements Node {
 			Expression expression;
 
 			public static Expr parse(ParserContext context) {
-				context.consume(LEFT_PAREN);
+				context.consume(DEFAULT, LEFT_PAREN);
 				Expr expr = new Expr();
 				expr.expression = Expression.parse(context);
 				context.consume(RIGHT_PAREN);
 				return expr;
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				sql.append(DEFAULT, LEFT_PAREN)
+				   .append(expression)
+				   .append(RIGHT_PAREN);
 			}
 		}
 	}

@@ -2,7 +2,7 @@ package sqlartan.core.ast;
 
 import sqlartan.core.ast.gen.Builder;
 import sqlartan.core.ast.parser.ParserContext;
-import static sqlartan.core.ast.Keyword.INDEX;
+import static sqlartan.core.ast.Keyword.VIEW;
 
 /**
  * https://www.sqlite.org/lang_dropview.html
@@ -11,7 +11,7 @@ public class DropViewStatement extends DropStatement {
 	public String view;
 
 	public static DropViewStatement parse(ParserContext context) {
-		return parseDrop(context, INDEX, DropViewStatement::new, drop -> drop.view = context.consumeIdentifier());
+		return parseDrop(context, VIEW, DropViewStatement::new, drop -> drop.view = context.consumeIdentifier());
 	}
 
 	@Override

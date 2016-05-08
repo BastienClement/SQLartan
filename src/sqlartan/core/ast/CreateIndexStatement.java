@@ -19,7 +19,7 @@ public class CreateIndexStatement extends CreateStatement {
 	public String name;
 	public String table;
 	public List<IndexedColumn> columns;
-	public Optional<Expression> where = Optional.empty();
+	public Optional<WhereClause> where = Optional.empty();
 
 	public static CreateIndexStatement parse(ParserContext context) {
 		CreateIndexStatement create = new CreateIndexStatement();
@@ -49,8 +49,8 @@ public class CreateIndexStatement extends CreateStatement {
 		create.columns = context.parseList(COMMA, IndexedColumn::parse);
 		context.consume(RIGHT_PAREN);
 
-		if (context.tryConsume(WHERE)) {
-			create.where = Optional.of(Expression.parse(context));
+		if (context.current(WHERE)) {
+			create.where = Optional.of(WhereClause.parse(context));
 		}
 
 		return create;
@@ -62,13 +62,9 @@ public class CreateIndexStatement extends CreateStatement {
 		if (unique) sql.append(UNIQUE);
 		sql.append(INDEX);
 		if (ifNotExists) sql.append(IF, NOT, EXISTS);
-		schema.ifPresent(sql::appendSchema);
-		sql.appendIdentifier(name)
-		   .append(ON)
-		   .appendIdentifier(table)
-		   .append(LEFT_PAREN)
-		   .append(columns)
-		   .append(RIGHT_PAREN);
-		where.ifPresent(w -> sql.append(WHERE).append(w));
+		sql.appendSchema(schema).appendIdentifier(name)
+		   .append(ON).appendIdentifier(table)
+		   .append(LEFT_PAREN).append(columns).append(RIGHT_PAREN)
+		   .append(where);
 	}
 }

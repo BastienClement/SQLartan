@@ -3,6 +3,7 @@ package sqlartan.core.ast.gen;
 import sqlartan.core.ast.Keyword;
 import sqlartan.core.ast.Operator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.dispatch;
@@ -65,13 +66,6 @@ public class Builder {
 		return this;
 	}
 
-	public Builder appendUnary(Operator operator) {
-		if (last == Spacing.Space) builder.append(" ");
-		builder.append(operator.symbol);
-		last = Spacing.NoSpace;
-		return this;
-	}
-
 	/**
 	 * Appends a Node to the output.
 	 * The toSQL method on the given node will be called with this builder as parameter.
@@ -120,12 +114,18 @@ public class Builder {
 		return append(nodes, Function.identity(), COMMA);
 	}
 
-	public Builder appendIdentifiers(List<String> identifiers, Buildable separator) {
-		return append(identifiers, id -> sql -> sql.appendIdentifier(id), separator);
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	@SafeVarargs
+	public final Builder append(Optional<? extends Buildable>... optionals) {
+		for (Optional<? extends Buildable> optional : optionals) optional.ifPresent(this::append);
+		return this;
 	}
 
-	public Builder appendIdentifiers(List<String> identifiers) {
-		return appendIdentifiers(identifiers, COMMA);
+	public Builder appendUnary(Operator operator) {
+		if (last == Spacing.Space) builder.append(" ");
+		builder.append(operator.symbol);
+		last = Spacing.NoSpace;
+		return this;
 	}
 
 	/**
@@ -139,6 +139,14 @@ public class Builder {
 		builder.append("[").append(identifier).append("]");
 		last = Spacing.Space;
 		return this;
+	}
+
+	public Builder appendIdentifiers(List<String> identifiers, Buildable separator) {
+		return append(identifiers, id -> sql -> sql.appendIdentifier(id), separator);
+	}
+
+	public Builder appendIdentifiers(List<String> identifiers) {
+		return appendIdentifiers(identifiers, COMMA);
 	}
 
 	public Builder appendRaw(String fragment) {
@@ -168,6 +176,12 @@ public class Builder {
 	 */
 	public Builder appendSchema(String schema) {
 		appendIdentifier(schema).append(DOT);
+		return this;
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public Builder appendSchema(Optional<String> schema) {
+		schema.ifPresent(this::appendSchema);
 		return this;
 	}
 

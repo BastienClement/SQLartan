@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Operator.MINUS;
 import static sqlartan.core.ast.Operator.PLUS;
 import static sqlartan.util.Matching.match;
 
+/**
+ * https://www.sqlite.org/syntaxdiagrams.html#literal-value
+ */
 @SuppressWarnings("WeakerAccess")
 public abstract class LiteralValue implements Node {
 	public static LiteralValue parse(ParserContext context) {

@@ -12,7 +12,7 @@ import static sqlartan.util.Matching.match;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class DropStatement implements Statement {
 	public boolean ifExists;
-	public Optional<String> schema;
+	public Optional<String> schema = Optional.empty();
 	protected Keyword type;
 
 	public static DropStatement parse(ParserContext context) {
@@ -38,6 +38,6 @@ public abstract class DropStatement implements Statement {
 	public void toSQL(Builder sql) {
 		sql.append(DROP, type);
 		if (ifExists) sql.append(IF, EXISTS);
-		schema.ifPresent(sql::appendSchema);
+		sql.appendSchema(schema);
 	}
 }
