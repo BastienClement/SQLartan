@@ -9,10 +9,10 @@ import static sqlartan.core.ast.Operator.COMMA;
  * https://www.sqlite.org/syntaxdiagrams.html#select-core
  */
 @SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
-public class SelectCoreStatement extends SelectStatement.CoreProperties implements SelectStatement.Core {
-	public static SelectCoreStatement parse(ParserContext context) {
+public class CoreSelectStatement extends SelectStatement.CoreProperties implements SelectStatement.Core {
+	public static CoreSelectStatement parse(ParserContext context) {
 		context.consume(SELECT);
-		SelectCoreStatement select = new SelectCoreStatement();
+		CoreSelectStatement select = new CoreSelectStatement();
 
 		select.distinct = context.tryConsume(DISTINCT);
 		if (!select.distinct) context.tryConsume(ALL);

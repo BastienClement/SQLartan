@@ -77,7 +77,7 @@ public class Tokenizer {
 						} else if (Character.isDigit(c) || (c == '.' && Character.isDigit(input[i + 1]))) {
 							state = NUMERIC;
 							--i;
-						} else if (Character.isLetter(c)) {
+						} else if (c == '_' || Character.isLetter(c)) {
 							state = ALPHA_FRAGMENT;
 						} else {
 							state = SYM_FRAGMENT;
@@ -101,7 +101,7 @@ public class Tokenizer {
 					break;
 
 				case ALPHA_PLACEHOLDER:
-					if (!Character.isLetter(c)) {
+					if (!Character.isLetter(c) && c != '_') {
 						if (i - token_start == 1) {
 							// Empty named placeholder
 							throw new TokenizeException("Empty named placeholder", sql, token_start);

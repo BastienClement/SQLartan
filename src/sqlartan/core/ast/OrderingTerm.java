@@ -12,7 +12,7 @@ import static sqlartan.core.ast.Keyword.COLLATE;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public class OrderingTerm implements Node {
 	public Expression expression;
-	public Optional<String> collation;
+	public Optional<String> collation = Optional.empty();
 	public Ordering ordering = Ordering.None;
 
 	static OrderingTerm parse(ParserContext context) {
