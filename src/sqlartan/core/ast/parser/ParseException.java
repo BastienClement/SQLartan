@@ -1,6 +1,5 @@
 package sqlartan.core.ast.parser;
 
-import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.Tokenizable;
 
 /**
@@ -40,6 +39,20 @@ public class ParseException extends Exception {
 		return new FastParseException() {
 			public ParseException materialize(ParserContext context) {
 				return new UnexpectedTokenException(context.current(), expected);
+			}
+		};
+	}
+
+	public static final FastParseException UnexpectedNextToken = new FastParseException() {
+		public ParseException materialize(ParserContext context) {
+			return new UnexpectedTokenException(context.next());
+		}
+	};
+
+	public static FastParseException UnexpectedNextToken(Tokenizable<?>... expected) {
+		return new FastParseException() {
+			public ParseException materialize(ParserContext context) {
+				return new UnexpectedTokenException(context.next(), expected);
 			}
 		};
 	}

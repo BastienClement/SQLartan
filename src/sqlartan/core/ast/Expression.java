@@ -6,6 +6,8 @@ import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.ast.parser.ParserContext;
 import sqlartan.core.ast.token.Token;
 import sqlartan.core.ast.token.Tokenizable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.*;
@@ -23,8 +25,9 @@ public abstract class Expression implements Node {
 		return context.alternatives(
 			LiteralValue::parse,
 			Placeholder::parse,
-			ColumnReference::parse,
-			UnaryOperator::parse
+			UnaryOperator::parse,
+			Function::parse,
+			ColumnReference::parse
 		);
 	}
 
@@ -129,7 +132,83 @@ public abstract class Expression implements Node {
 	}
 
 	/**
-	 * { { schema . } table . } column
+	 * (function) "(" ... ")"
+	 */
+	public static class Function extends Expression {
+		public String name;
+		public Arguments arguments;
+
+		public static Function parse(ParserContext context) {
+			if (!context.next(LEFT_PAREN)) {
+				throw ParseException.UnexpectedNextToken(LEFT_PAREN);
+			}
+
+			String name = context.consumeIdentifier();
+			context.consume(LEFT_PAREN);
+			Arguments args = Arguments.parse(context);
+			context.consume(RIGHT_PAREN);
+
+			Function function = new Function();
+			function.name = name;
+			function.arguments = args;
+			return function;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.appendIdentifier(name).append(LEFT_PAREN).append(arguments).append(RIGHT_PAREN);
+		}
+
+		public static abstract class Arguments implements Node {
+			public static Arguments parse(ParserContext context) {
+				return context.alternatives(Wildcard::parse, ArgsList::parse);
+			}
+		}
+
+		/**
+		 * [DISTINCT] (expr) , ...
+		 */
+		public static class ArgsList extends Arguments {
+			public boolean distinct;
+			public List<Expression> args = new ArrayList<>();
+
+			public static ArgsList parse(ParserContext context) {
+				ArgsList args = new ArgsList();
+				args.distinct = context.tryConsume(DISTINCT);
+				if (!context.parseList(args.args, Expression::parse) && args.distinct) {
+					throw ParseException.UnexpectedCurrentToken();
+				}
+				return args;
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				if (distinct) sql.append(DISTINCT);
+				sql.append(args);
+			}
+		}
+
+		/**
+		 * (*)
+		 */
+		public static class Wildcard extends Arguments {
+			public static final Wildcard instance = new Wildcard();
+			private Wildcard() {}
+
+			public static Wildcard parse(ParserContext context) {
+				context.consume(MUL);
+				return instance;
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				sql.append(MUL);
+			}
+		}
+	}
+
+	/**
+	 * { { (schema) . } (table) . } (column)
 	 */
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static class ColumnReference extends Expression {
