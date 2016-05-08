@@ -8,7 +8,7 @@ import static sqlartan.core.ast.Keyword.VALUES;
 import static sqlartan.core.ast.Operator.LEFT_PAREN;
 import static sqlartan.core.ast.Operator.RIGHT_PAREN;
 
-public class ValuesStatement extends SelectStatement.Core {
+public class ValuesStatement implements SelectStatement.Core {
 	public List<List<Expression>> values;
 
 	public static ValuesStatement parse(ParserContext context) {

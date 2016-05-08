@@ -8,7 +8,7 @@ import sqlartan.core.ast.parser.Parser;
 public class TokenizerTests {
 	@Test
 	public void tokenizerTests() throws ParseException {
-		String source = "CREATE TEMPORARY TRIGGER IF NOT EXISTS foo.bar INSTEAD OF UPDATE OF a, b, c ON baz FOR EACH ROW WHEN a < 2 BEGIN SELECT * FROM foo; DELETE FROM baz; END";
+		String source = "SELECT * FROM a, (b INNER JOIN c ON a = b) LEFT JOIN d USING (foo, bar)";
 
 		TokenSource ts = TokenSource.from(source);
 		ts.tokens().forEach(System.out::println);

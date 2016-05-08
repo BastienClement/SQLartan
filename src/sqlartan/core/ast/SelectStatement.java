@@ -83,8 +83,8 @@ public interface SelectStatement extends Statement {
 	/**
 	 * The core a SELECT statement
 	 */
-	abstract class Core implements SelectStatement, Compoundable {
-		public static Core parse(ParserContext context) {
+	interface Core extends SelectStatement, Compoundable {
+		static Core parse(ParserContext context) {
 			if (context.current(VALUES)) {
 				return ValuesStatement.parse(context);
 			} else {
@@ -93,10 +93,7 @@ public interface SelectStatement extends Statement {
 		}
 	}
 
-	/**
-	 * A simple select statement
-	 */
-	class Simple implements SelectStatement {
+	abstract class CoreProperties implements Node {
 		public boolean distinct;
 		public List<ResultColumn> columns = new ArrayList<>();
 		public Optional<SelectSource> from = Optional.empty();
@@ -104,8 +101,32 @@ public interface SelectStatement extends Statement {
 		public List<Expression> groupBy = new ArrayList<>();
 		public Optional<Expression> having = Optional.empty();
 
+		@Override
+		public void toSQL(Builder sql) {
+			sql.append(SELECT);
+			if (distinct) sql.append(DISTINCT);
+			sql.append(columns);
+			from.ifPresent(f -> sql.append(FROM).append(f));
+			sql.append(where);
+			if (!groupBy.isEmpty()) {
+				sql.append(GROUP, BY).append(groupBy);
+				having.ifPresent(h -> sql.append(HAVING).append(h));
+			}
+		}
+	}
+
+	/**
+	 * A simple select statement
+	 */
+	class Simple extends CoreProperties implements SelectStatement {
 		public Optional<OrderByClause> orderBy = Optional.empty();
 		public Optional<LimitClause> limit = Optional.empty();
+
+		@Override
+		public void toSQL(Builder sql) {
+			super.toSQL(sql);
+			sql.append(orderBy, limit);
+		}
 	}
 
 	/**
