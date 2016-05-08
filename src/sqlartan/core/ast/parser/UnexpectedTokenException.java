@@ -18,7 +18,7 @@ public class UnexpectedTokenException extends ParseException {
 	public final Tokenizable<?>[] expected;
 
 	public UnexpectedTokenException(Token token) {
-		this(token, (Token) null);
+		this(token, (Tokenizable[]) null);
 	}
 
 	public UnexpectedTokenException(Token token, Tokenizable<?>... expected) {
@@ -29,7 +29,7 @@ public class UnexpectedTokenException extends ParseException {
 
 	private static String message(Token token, Tokenizable<?>... expected) {
 		String msg = "Unexpected token " + token.toString() + " at offset " + token.offset;
-		if (expected.length != 0) {
+		if (expected != null) {
 			List<String> expct = Arrays.stream(expected).map(tk -> tk.token().toString()).collect(Collectors.toList());
 			msg += " (expected " + String.join(", ", expct) + ")";
 		}
