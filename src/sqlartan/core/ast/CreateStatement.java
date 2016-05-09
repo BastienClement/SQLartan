@@ -13,9 +13,14 @@ import static sqlartan.util.Matching.match;
  */
 public abstract class CreateStatement implements Statement {
 	public static CreateStatement parse(ParserContext context) {
+		context.begin();
 		context.consume(CREATE);
-		return doMatch(context.current(), context).orElse(
-			() -> doMatch(context.next(), context).orElseThrow(ParseException.UnexpectedCurrentToken(INDEX, TABLE, TRIGGER, VIEW, VIRTUAL))
+		Token current = context.current();
+		Token next = context.next();
+		context.rollback();;
+
+		return doMatch(current, context).orElse(
+			() -> doMatch(next, context).orElseThrow(ParseException.UnexpectedCurrentToken(INDEX, TABLE, TRIGGER, VIEW, VIRTUAL))
 		);
 	}
 

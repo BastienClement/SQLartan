@@ -32,6 +32,7 @@ public class CreateTriggerStatement extends CreateStatement {
 	public List<Statement> body;
 
 	public static CreateTriggerStatement parse(ParserContext context) {
+		context.consume(CREATE);
 		CreateTriggerStatement trigger = new CreateTriggerStatement();
 
 		trigger.temporary = context.tryConsume(TEMP) || context.tryConsume(TEMPORARY);

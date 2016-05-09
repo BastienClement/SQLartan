@@ -22,6 +22,7 @@ public class CreateViewStatement extends CreateStatement {
 	public SelectStatement as;
 
 	public static CreateViewStatement parse(ParserContext context) {
+		context.consume(CREATE);
 		CreateViewStatement create = new CreateViewStatement();
 		context.consume(CREATE);
 		create.temporary = context.tryConsume(TEMP) || context.tryConsume(TEMPORARY);
