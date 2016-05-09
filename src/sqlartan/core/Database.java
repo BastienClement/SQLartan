@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import static sqlartan.util.Matching.match;
 
 public class Database implements AutoCloseable {
 	/**
@@ -422,41 +423,56 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public String export() throws SQLException{
-		String sql = "";
+		String sql = "PRAGMA foreign_keys=OFF;\n" +
+			         "BEGIN TRANSACTION;\n";
 
 		// Get every tables
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
 				.execute()
 				.map(Row::getString)
-				.collect(Collectors.joining("\n"));
-		sql += "\n";
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
 
 		// Get every values from tables
 		for(Table table : tables()){
-			if(assemble("SELECT * FROM ", table.name()).execute().count() > 0) {
+			if(assemble("SELECT COUNT(*) FROM ", table.name()).execute().mapFirst(Row::getInt) > 0) {
 				String insertSQL = "INSERT INTO " + table.name() + " VALUES ";
 				insertSQL += assemble("SELECT * FROM ", table.name())
 						.execute()
-						.map(Row::getString)
+						.map(row -> {
+							String s = "(";
+							for (int i = 1; i <= row.size(); i++) {
+								if(i != 1) s += ", ";
+								s += match(row.getObject(i))
+									.when(String.class, str -> "'" + str.replace("'", "''") + "'")
+									.when(Number.class, n -> n.toString())
+									.orElse(() -> {
+										return "NULL";
+									});
+								// TODO Manage byte array
+							}
+							return s + ")";
+						})
 						.collect(Collectors.joining(", "));
 
-				sql += insertSQL + "\n";
+				sql += insertSQL + ";\n";
 			}
 		};
 
+		// Get every triggers
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
 				.execute()
 				.map(Row::getString)
-				.collect(Collectors.joining("\n"));
-		sql += "\n";
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
 
 		// Get every views
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
 				.execute()
 				.map(Row::getString)
-				.collect(Collectors.joining("\n"));
-		sql += "\n";
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
 
-		return sql;
+		return sql + "COMMIT;";
 	}
 }
