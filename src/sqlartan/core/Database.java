@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Database implements AutoCloseable {
 	/**
@@ -397,7 +398,7 @@ public class Database implements AutoCloseable {
 	 * @return
 	 * @throws SQLException
 	 */
-	private Result importFromString(String sql) throws SQLException{
+	public Result importFromString(String sql) throws SQLException{
 		return execute(sql);
 	}
 
@@ -409,7 +410,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	private Result importfromFile(File file) throws SQLException, IOException{
+	public Result importfromFile(File file) throws SQLException, IOException{
 		return execute(new String(Files.readAllBytes(file.toPath())));
 	}
 
@@ -420,9 +421,29 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	private String export() throws SQLException{
-		// TODO
-		execute(".dump");
-		return "";
+	public String export() throws SQLException{
+		String sql = "";
+		for(Table table : tables()){
+			sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?")
+					.execute(table.name())
+					.mapFirst(Row::getString);
+		}
+		// Get the SQL command to create the table
+		sql = assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?")
+								 .execute("a")
+								 .mapFirst(Row::getString);
+		// Get every values from every tables
+
+		// Get every triggers
+		for(Table table : tables()){
+			for(Trigger trigger : table.triggers().values()){
+				table.triggers().forEach();
+				sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger' AND name = ?")
+						.execute(table.name())
+						.mapFirst(Row::getString);
+			}
+		}
+
+		return sql;
 	}
 }

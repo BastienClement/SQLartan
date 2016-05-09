@@ -134,4 +134,43 @@ public class DatabaseTests {
 			assertFalse(va.isPresent());
 		}
 	}
+
+	@Test
+	public void exportShouldOutputSQLString() throws SQLException{
+		try (Database db = Database.createEphemeral()) {
+			db.execute("create table foo (\n" +
+					"    id INTEGER NOT NULL PRIMARY KEY\n" +
+					"  );");
+			db.execute("CREATE TABLE bar (" +
+					"    id INTEGER NOT NULL PRIMARY KEY,\n" +
+					"    foo_id INTEGER NOT NULL\n" +
+					"           CONSTRAINT fk_foo_id REFERENCES foo(id) ON DELETE CASCADE\n" +
+					"  );");
+
+			db.execute("CREATE TRIGGER fki_bar_foo_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;");
+			db.execute("CREATE TRIGGER fki_bar_foo2_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;");
+			db.execute("  CREATE VIEW foo_bar AS\n" +
+					"  SELECT foo.id AS fooid, bar.id AS barid\n" +
+					"  FROM foo, bar\n" +
+					"  WHERE 0=0;");
+			db.execute("INSERT INTO foo VALUES (1)");
+
+			System.out.println(db.export());
+		}
+	}
+
+	@Test
+	public void importShouldExecuteSQLOnDatabase() throws SQLException{
+
+	}
 }
