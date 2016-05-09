@@ -15,7 +15,7 @@ import static sqlartan.core.ast.Operator.*;
 /**
  * https://www.sqlite.org/lang_expr.html
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class Expression implements Node {
 	public static Expression parse(ParserContext context) {
 		return parseOrStep.parse(context);
@@ -24,6 +24,7 @@ public abstract class Expression implements Node {
 	private static Expression parseFinal(ParserContext context) {
 		return context.alternatives(
 			Group::parse,
+			RaiseFunction::parse,
 			Function::parse,
 			LiteralValue::parse,
 			Placeholder::parse,
@@ -265,9 +266,66 @@ public abstract class Expression implements Node {
 		}
 	}
 
-	public abstract static class RaiseFunction extends Expression {
+	/**
+	 * RAISE ( ... )
+	 */
+	public static class RaiseFunction extends Expression {
+		public enum Type implements Node.Enumerated {
+			Ignore(IGNORE),
+			Rollback(ROLLBACK),
+			Abort(ABORT),
+			Fail(FAIL);
+
+			Keyword keyword;
+
+			Type(Keyword keyword) {
+				this.keyword = keyword;
+			}
+
+			public static Type parse(ParserContext context) {
+				switch (context.consume(Token.Keyword.class).node()) {
+					case IGNORE:
+						return Ignore;
+					case ROLLBACK:
+						return Rollback;
+					case ABORT:
+						return Abort;
+					case FAIL:
+						return Fail;
+					default:
+						throw ParseException.UnexpectedCurrentToken(IGNORE, ROLLBACK, ABORT, FAIL);
+				}
+			}
+
+			@Override
+			public void toSQL(Builder sql) {
+				sql.append(keyword);
+			}
+		}
+
+		public Type type;
+		public Optional<String> message = Optional.empty();
+
 		public static RaiseFunction parse(ParserContext context) {
-			throw new UnsupportedOperationException();
+			context.consume(RAISE, LEFT_PAREN);
+			RaiseFunction raise = new RaiseFunction();
+			raise.type = Type.parse(context);
+			if (raise.type != Type.Ignore) {
+				context.consume(COMMA);
+				raise.message = Optional.of(context.consumeTextLiteral());
+			}
+			context.consume(RIGHT_PAREN);
+			return raise;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.append(RAISE, LEFT_PAREN).append(type);
+			if (type != Type.Ignore) {
+				sql.append(COMMA);
+				message.ifPresent(sql::appendTextLiteral);
+			}
+			sql.append(RIGHT_PAREN);
 		}
 	}
 }
