@@ -423,26 +423,39 @@ public class Database implements AutoCloseable {
 	 */
 	public String export() throws SQLException{
 		String sql = "";
-		for(Table table : tables()){
-			sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?")
-					.execute(table.name())
-					.mapFirst(Row::getString);
-		}
-		// Get the SQL command to create the table
-		sql = assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table' AND name = ?")
-								 .execute("a")
-								 .mapFirst(Row::getString);
-		// Get every values from every tables
 
-		// Get every triggers
+		// Get every tables
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining("\n"));
+		sql += "\n";
+
+		// Get every values from tables
 		for(Table table : tables()){
-			for(Trigger trigger : table.triggers().values()){
-				table.triggers().forEach();
-				sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger' AND name = ?")
-						.execute(table.name())
-						.mapFirst(Row::getString);
+			if(assemble("SELECT * FROM ", table.name()).execute().count() > 0) {
+				String insertSQL = "INSERT INTO " + table.name() + " VALUES ";
+				insertSQL += assemble("SELECT * FROM ", table.name())
+						.execute()
+						.map(Row::getString)
+						.collect(Collectors.joining(", "));
+
+				sql += insertSQL + "\n";
 			}
-		}
+		};
+
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining("\n"));
+		sql += "\n";
+
+		// Get every views
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining("\n"));
+		sql += "\n";
 
 		return sql;
 	}
