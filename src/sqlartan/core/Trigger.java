@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
 
 public class Trigger
@@ -36,7 +36,7 @@ public class Trigger
 		try {
 			database.assemble("DROP TRIGGER ", database.name(), ".", name).execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
