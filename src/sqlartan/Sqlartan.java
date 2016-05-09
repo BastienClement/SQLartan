@@ -4,11 +4,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import sqlartan.core.Database;
 import sqlartan.view.SqlartanController;
 
 public class Sqlartan extends Application{

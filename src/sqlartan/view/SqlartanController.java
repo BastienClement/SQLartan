@@ -38,7 +38,6 @@ public class SqlartanController {
 
 	@FXML
 	private void initialize() throws SQLException {
-
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue != null && newValue.getValue().getType() == Type.DATABASE)
 			{

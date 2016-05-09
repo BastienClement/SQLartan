@@ -3,9 +3,7 @@ package sqlartan.core;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
 
@@ -321,6 +319,29 @@ public class Database implements AutoCloseable {
 			pq.set(i + 1, parameters[i]);
 		}
 		return pq.execute();
+	}
+
+	/**
+	 * Executes a transaction on the database.
+	 *
+	 * @param queries
+	 * @throws SQLException
+	 */
+	public void executeTransaction(String[] queries) throws SQLException {
+		try {
+			connection.setAutoCommit(false);
+			for(String query : queries) {
+				execute(query).close();
+			}
+			connection.commit();
+		}
+		catch (SQLException e){
+			connection.rollback();
+			throw e;
+		}
+		finally {
+			connection.setAutoCommit(true);
+		}
 	}
 
 	/**

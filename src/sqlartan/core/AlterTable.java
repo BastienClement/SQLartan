@@ -33,40 +33,46 @@ public class AlterTable
 					throw new RuntimeSQLException(e);
 				}
 			}
+			actions.remove(key);
 		}
+	}
+
+	public LinkedList<AlterAction> actions(String columnName){
+		return actions.get(columnName);
 	}
 
 	public void addColumn(String columnName, String typeName){
 		if(!((!table.column(columnName).isPresent() && findLastAddAction(columnName) == null) || findLastDropAction(columnName) != null))
 			throw new UnsupportedOperationException("Column does already exist!");
 		add(columnName, new AlterAction(new TableColumn(table, new TableColumn.Properties() {
-				@Override
-				public boolean unique() {
-					return false;
-				}
-				@Override
-				public String check() {
-					return null;
-				}
-				@Override
-				public String name() {
-					return columnName;
-				}
-				@Override
-				public String type() {
-					return typeName;
-				}
-				@Override
-				public boolean nullable() {
-					return false;
-				}
-			}), ActionType.ADD)
+					@Override
+					public boolean unique() {
+						return false;
+					}
+					@Override
+					public String check() {
+						return null;
+					}
+					@Override
+					public String name() {
+						return columnName;
+					}
+					@Override
+					public String type() {
+						return typeName;
+					}
+					@Override
+					public boolean nullable() {
+						return true;
+					}
+				}), ActionType.ADD)
 		);
 	}
 
 	public void dropColumn(String columnName){
-		if(findLastAddAction(columnName) != null)
+		if(findLastAddAction(columnName) != null) {
 			add(columnName, new AlterAction(findLastAddAction(columnName).column(), ActionType.DROP));
+		}
 		else if(table.column(columnName).isPresent())
 			add(columnName, new AlterAction(table.column(columnName).get(), ActionType.DROP));
 		else
@@ -97,7 +103,7 @@ public class AlterTable
 							return nullable;
 						}
 					}), findLastAddAction(columnName) != null ? findLastAddAction(columnName).column() : table.column(columnName).get(),
-					ActionType.MODIFY)
+							ActionType.MODIFY)
 			);
 		}
 	}
@@ -116,11 +122,18 @@ public class AlterTable
 		}
 	}
 
+	public void setPrimaryKey(String[] columnsNames){
+		for(String columnName : columnsNames){
+			if(findLastDropAction(columnName) != null || (findLastAddAction(columnName) == null && !table.column(columnName).isPresent()))
+				throw new UnsupportedOperationException("Column does not exist!");
+		}
+	}
+
 	// Add action to the stack
 	private void add(String columnName, AlterAction action){
 		if(!actions.containsKey(columnName))
 			actions.put(columnName, new LinkedList<AlterAction>());
-		actions.get(columnName).add(action);
+		actions.get(columnName).push(action);
 		check(columnName);
 	}
 
@@ -193,43 +206,50 @@ public class AlterTable
 		public void execute() throws SQLException {
 			// execute, depending of action type, to improve
 			if(type == ActionType.DROP){
-				table.database.assemble(
-						"CREATE TABLE ", table.database.name(), ".", table.name() + "_backup", "(" +
+				String[] queries = new String[6];
+				queries[0] = "CREATE TEMPORARY TABLE " + table.name() + "_backup" + "(" +
 						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
 						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
-						"))"
-				).execute();
+						"))";
+				queries[1] = "INSERT INTO " + table.name() + "_backup SELECT " +
+						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
+						" FROM " + table.fullName();
+				queries[2] = "DROP TABLE " + table.fullName();
+				queries[3] = "CREATE TABLE " + table.fullName() + "(" +
+						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
+						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
+						"))";
+				queries[4] = "INSERT INTO " + table.fullName() + " SELECT " +
+						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
+						" FROM " + table.name() + "_backup";
+				queries[5] = "DROP TABLE " + table.name() + "_backup";
 
-				table.database.assemble(
-						"INSERT INTO ", table.database.name(), ".", table.name() + "_backup", "SELECT " +
-								table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-								" FROM " + table.fullName()
-				).execute();
-				table.drop();
-				table.database.table(table.name() + "_backup").get().rename(table.name());
+				table.database.executeTransaction(queries);
 			}
 			else if(type == ActionType.ADD){
 				String query = "ALTER TABLE " + column.parentTable().fullName() + "  ADD COLUMN " + column.name() + " " + column.type();
 				table.database.execute(query);
 			}
 			else{
-				table.database.assemble(
-						"CREATE TABLE ", table.database.name(), ".", table.name() + "_backup", "(" +
-								table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
-								", " + column.name() + " " + column.type()  + (column.unique() ? " UNIQUE" : "") + (column.nullable() ? "" : " NOT NULL") +
-								", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
-								"))"
-				).execute();
+				String[] queries = new String[6];
+				queries[0] = "CREATE TEMPORARY TABLE " + table.name() + "_backup" + "(" +
+						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
+						", " + column.name() + " " + column.type()  + (column.unique() ? " UNIQUE" : "") + (column.nullable() ? "" : " NOT NULL") +
+						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
+						"))";
+				queries[1] ="INSERT INTO " + table.name() + "_backup SELECT " +
+						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
+						", " + originalColumn.name() +
+						" FROM " + table.fullName();
+				queries[2] = "DROP TABLE " + table.fullName();
+				queries[3] = queries[0].replace("TEMPORARY", "").replace(table.name() + "_backup", table.name());
+				queries[4] = "INSERT INTO " + table.fullName() + " SELECT " +
+						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
+						", " + column.name() +
+						" FROM " + table.name() + "_backup";
+				queries[5] = "DROP TABLE " + table.name() + "_backup";
 
-				table.database.assemble(
-						"INSERT INTO ", table.database.name(), ".", table.name() + "_backup", "SELECT " +
-								table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-								", " + originalColumn.name() +
-								" FROM " + table.fullName()
-				).execute();
-
-				table.drop();
-				table.database.table(table.name() + "_backup").get().rename(table.name());
+				table.database.executeTransaction(queries);
 			}
 		}
 
