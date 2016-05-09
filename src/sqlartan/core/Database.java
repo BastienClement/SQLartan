@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -150,7 +150,7 @@ public class Database implements AutoCloseable {
 					.map(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -169,7 +169,7 @@ public class Database implements AutoCloseable {
 					.mapFirstOptional(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -214,7 +214,7 @@ public class Database implements AutoCloseable {
 		try {
 			execute("VACUUM");
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 

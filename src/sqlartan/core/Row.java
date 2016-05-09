@@ -3,7 +3,7 @@ package sqlartan.core;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.DataConverter;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -205,7 +205,7 @@ public class Row implements QueryStructure<GeneratedColumn> {
 					valuesIndex.put(col.name(), value);
 					currentColumn++;
 				} catch (SQLException e) {
-					throw new RuntimeSQLException(e);
+					throw new UncheckedSQLException(e);
 				}
 			}
 		}

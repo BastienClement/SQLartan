@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,7 +66,7 @@ public class Table extends PersistentStructure<TableColumn> {
 			database.execute(query);
 			name = newName;
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -96,7 +96,7 @@ public class Table extends PersistentStructure<TableColumn> {
 			//noinspection OptionalGetWithoutIsPresent
 			return database.table(newName).get();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -109,7 +109,7 @@ public class Table extends PersistentStructure<TableColumn> {
 			String query = "DROP TABLE " + fullName();
 			database.execute(query);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -143,7 +143,7 @@ public class Table extends PersistentStructure<TableColumn> {
 		try {
 			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -228,7 +228,7 @@ public class Table extends PersistentStructure<TableColumn> {
 			String query = "DELETE FROM " + fullName();
 			database.execute(query);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 

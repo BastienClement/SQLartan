@@ -4,7 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -86,7 +86,7 @@ public class DatabaseTests {
 			attached.close();
 			assertEquals(0, main.attached().size());
 
-			exception.expect(RuntimeSQLException.class);
+			exception.expect(UncheckedSQLException.class);
 			attached.tables();
 		}
 	}

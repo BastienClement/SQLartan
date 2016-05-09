@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
 
 /**
@@ -63,7 +63,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 		try {
 			return database.assemble("SELECT * FROM ", fullName()).execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 }
