@@ -18,12 +18,16 @@ import static sqlartan.core.ast.Operator.*;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public abstract class Expression implements Node {
 	public static Expression parse(ParserContext context) {
-		return parseOrStep.parse(context);
+		Expression expr = parseOrStep.parse(context);
+
+		return expr;
 	}
 
 	private static Expression parseFinal(ParserContext context) {
 		return context.alternatives(
 			Group::parse,
+			Cast::parse,
+			Case::parse,
 			RaiseFunction::parse,
 			Function::parse,
 			LiteralValue::parse,
@@ -263,6 +267,72 @@ public abstract class Expression implements Node {
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(LEFT_PAREN).append(expression).append(RIGHT_PAREN);
+		}
+	}
+
+	/**
+	 * CAST ( [expr] AS [type] )
+	 */
+	public static class Cast extends Expression {
+		public Expression expression;
+		public String type;
+
+		public static Cast parse(ParserContext context) {
+			context.consume(CAST, LEFT_PAREN);
+			Cast cast = new Cast();
+			cast.expression = Expression.parse(context);
+			context.consume(AS);
+			cast.type = context.consumeIdentifier();
+			context.consume(RIGHT_PAREN);
+			return cast;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.append(CAST, LEFT_PAREN).append(expression)
+			   .append(AS).appendIdentifier(type).append(RIGHT_PAREN);
+		}
+	}
+
+	/**
+	 * [expr] COLLATE [collation]
+	 */
+	public static class Collate extends Expression {
+		public Expression expression;
+		public String collation;
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.append(expression).append(COLLATE).appendIdentifier(collation);
+		}
+	}
+
+	/**
+	 * CASE [expr] { WHEN [expr] THEN [expr] } ( ELSE [expr] ) END
+	 */
+	public static class Case extends Expression {
+		public Optional<Expression> expression = Optional.empty();
+		public List<WhenClause> cases = new ArrayList<>();
+		public Optional<Expression> otherwise = Optional.empty();
+
+		public static Case parse(ParserContext context) {
+			context.consume(CASE);
+			Case clause = new Case();
+			clause.expression = context.optParse(Expression::parse);
+			clause.cases = context.parseList(VOID, WhenClause::parse);
+			if (context.tryConsume(ELSE)) {
+				clause.otherwise = Optional.of(Expression.parse(context));
+			}
+			context.consume(END);
+			return clause;
+		}
+
+		@Override
+		public void toSQL(Builder sql) {
+			sql.append(CASE).append(expression)
+			   .append(cases, VOID);
+			otherwise.ifPresent(o -> sql.append(ELSE).append(o));
+			sql.append(END);
 		}
 	}
 
