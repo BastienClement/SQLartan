@@ -12,6 +12,8 @@ import static sqlartan.util.Matching.match;
  * Créé le 03.05.2016.
  *
  * @author Adriano Ruberto
+ *
+ * Represente the structure tab for a database.
  */
 public class DatabaseStructure {
 	private StringProperty name;

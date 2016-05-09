@@ -17,13 +17,14 @@ import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
 import sqlartan.view.treeitem.*;
-import sqlartan.view.treeitem.Type;
+import sqlartan.view.util.Popup;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -62,9 +63,9 @@ public class SqlartanController {
 	 * First methode call when loaded
 	 */
 	@FXML
-	private void initialize() throws SQLException {
+	private void initialize() {
 
-		treeView.setCellFactory(param ->new TreeCellImpl());
+		treeView.setCellFactory(param -> new CustomTreeCell(this));
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			stackPane.getChildren().clear();
@@ -138,10 +139,8 @@ public class SqlartanController {
 
 	/**
 	 * To call to refresh the view of the tree
-	 *
-	 * @throws SQLException
 	 */
-	void refreshView() throws SQLException {
+	void refreshView() {
 		if (db != null) {
 			mainTreeItem.getChildren().clear();
 			tree(db);
@@ -153,23 +152,22 @@ public class SqlartanController {
 	 * Create the tree for a specific database
 	 *
 	 * @param database the database
-	 * @throws SQLException
 	 */
-	void tree(Database database) throws SQLException {
+	void tree(Database database) {
 
 		// Main
-		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DbTreeItem(database.name(), Type.DATABASE));
+		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
 
 		trees.getChildren().addAll(database.tables()
 		                                   .map(Table::name) // .map(table -> table.name())
-		                                   .map(name -> (CustomTreeItem)new TableTreeItem(name, Type.TABLE)) // flux de dbtreeitme
+		                                   .map(name -> (CustomTreeItem) new TableTreeItem(name, this)) // flux de dbtreeitme
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
 
 		trees.getChildren().addAll(database.views()
 		                                   .map(View::name)
-		                                   .map(name -> (CustomTreeItem) new TableTreeItem(name, Type.VIEW))
+		                                   .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -177,22 +175,21 @@ public class SqlartanController {
 
 		// Attached database
 		database.attached().values().forEach(adb -> {
-			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new DbTreeItem(adb.name(), Type.DATABASE));
+			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
 			tItems.getChildren().addAll(adb.tables()
 			                               .map(Table::name)
-			                               .map(name ->(CustomTreeItem) new TableTreeItem(name, Type.TABLE))
+			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, this))
 			                               .map(TreeItem::new)
 			                               .toList());
 
 			tItems.getChildren().addAll(adb.views()
 			                               .map(View::name)
-			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, Type.VIEW))
+			                               .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
 			                               .map(TreeItem::new)
 			                               .toList());
 
 			mainTreeItem.getChildren().add(tItems);
 		});
-
 	}
 
 
@@ -200,10 +197,8 @@ public class SqlartanController {
 	 * Open the main database
 	 */
 	@FXML
-	private void openDB()
-	{
-		if (db != null && (!db.isClosed()) )
-		{
+	private void openDB() {
+		if (db != null && (!db.isClosed())) {
 			db.close();
 		}
 
@@ -219,24 +214,16 @@ public class SqlartanController {
 				break;
 			} catch (SQLException e) {
 
-				Alert alert = new Alert(Alert.AlertType.NONE);
-				alert.setTitle("Problem while opening database");
-				alert.setContentText("Error: " + e.getMessage());
-
 				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choos new");
-
-				alert.getButtonTypes().setAll(buttonNewFile, buttonRetry, buttonCancel);
-
-				Optional<ButtonType> result = alert.showAndWait();
-
-				if (result.isPresent()) {
-					if (result.get() == buttonNewFile) {
+				ButtonType buttonNewFile = new ButtonType("Choose new");
+				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
+						buttonCancel, buttonRetry, buttonNewFile);
+				if (res.isPresent()) {
+					if (res.get() == buttonNewFile)
 						file = openSQLLiteDB();
-					} else if (result.get() == buttonCancel) {
+					else if (res.get() == buttonCancel)
 						break;
-					}
 				}
 			}
 		}
@@ -249,7 +236,7 @@ public class SqlartanController {
 	 * Attach a database to the main database
 	 */
 	@FXML
-	private void attachButton() throws SQLException {
+	private void attachButton() {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
@@ -286,13 +273,10 @@ public class SqlartanController {
 
 			MenuItem newMenuItem = new MenuItem(dbName);
 			newMenuItem.setOnAction(event -> {
-				try {
-					db.detach(newMenuItem.getText());
-					detatchMenu.getItems().removeAll(newMenuItem);
-					refreshView();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				db.detach(newMenuItem.getText());
+				detatchMenu.getItems().removeAll(newMenuItem);
+				refreshView();
+
 			});
 
 			detatchMenu.getItems().add(newMenuItem);
@@ -314,7 +298,8 @@ public class SqlartanController {
 
 
 	/**
-	 * Open a dialog for the file choos db
+	 * Open a dialog for the file to choose db
+	 *
 	 * @return the opend database
 	 */
 	@FXML
@@ -333,7 +318,7 @@ public class SqlartanController {
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDB() throws SQLException {
+	private void closeDB() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		db.close();
@@ -354,9 +339,8 @@ public class SqlartanController {
 	 * Truncate a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	private void truncateTable(Table table) throws SQLException {
+	public void truncateTable(Table table) {
 		table.truncate();
 		refreshView();
 	}
@@ -366,9 +350,8 @@ public class SqlartanController {
 	 * Drop a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	private void dropTable(Table table) throws SQLException {
+	public void dropTable(Table table) {
 		table.drop();
 		refreshView();
 	}
@@ -378,9 +361,8 @@ public class SqlartanController {
 	 * Duplicate a table
 	 *
 	 * @param table
-	 * @throws SQLException
 	 */
-	private void duplicateTable(Table table, String name) throws SQLException {
+	public void duplicateTable(Table table, String name) {
 		table.duplicate(name);
 		refreshView();
 	}
@@ -391,9 +373,8 @@ public class SqlartanController {
 	 *
 	 * @param table
 	 * @param name
-	 * @throws SQLException
 	 */
-	private void renameTable(Table table, String name) throws SQLException {
+	public void renameTable(Table table, String name) {
 		table.rename(name);
 		refreshView();
 	}
@@ -401,10 +382,8 @@ public class SqlartanController {
 
 	/**
 	 * Vacuum a database
-	 *
-	 * @throws SQLException
 	 */
-	private void vacuumDatabase() throws SQLException {
+	public void vacuumDatabase(Database db) {
 		db.vacuum();
 		refreshView();
 	}
@@ -416,9 +395,8 @@ public class SqlartanController {
 	 * @param table
 	 * @param name
 	 * @param type
-	 * @throws SQLException
 	 */
-	private void addColumn(Table table, String name, String type) throws SQLException {
+	public void addColumn(Table table, String name, String type) {
 		Affinity affinity = Affinity.forType(type);
 		table.addColumn(name, affinity);
 		refreshView();
@@ -430,9 +408,8 @@ public class SqlartanController {
 	 *
 	 * @param table
 	 * @param name
-	 * @throws SQLException
 	 */
-	private void dropColumn(Table table, String name) throws SQLException {
+	public void dropColumn(Table table, String name) {
 		if (table.column(name).isPresent()) {
 			table.column(name).get().drop();
 		}
@@ -446,27 +423,22 @@ public class SqlartanController {
 	 * @param table
 	 * @param name
 	 * @param newName
-	 * @throws SQLException
 	 */
-	private void renameColumn(Table table, String name, String newName) throws SQLException {
+	public void renameColumn(Table table, String name, String newName) {
 		if (table.column(name).isPresent()) {
 			table.column(name).get().rename(newName);
 		}
 		refreshView();
 	}
 
-
-
-
-
 	/**
 	 * Detach a database from the main database
 	 *
 	 * @param database
-	 * @throws SQLException
 	 */
-	private void detachDatabase(Database database) throws SQLException {
+	public void detachDatabase(Database database) {
 		db.detach(database.name());
 		refreshView();
 	}
+
 }

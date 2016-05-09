@@ -10,24 +10,27 @@ import sqlartan.core.Column;
 import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Result;
+import sqlartan.view.util.Popup;
 import java.sql.SQLException;
 
 /**
  * Created by julien on 29.04.16.
  */
 public class DataTableView {
-	private ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
-
-	private TableView<ObservableList<String>> tableView = new TableView<>();
 
 	private Database db = SqlartanController.getDB();
 
-	private void dataView(Result res) {
-		tableView.getColumns().clear();
+	/**
+	 * Return a table view for any result
+	 * @param result the result
+	 * @return the table view
+	 */
+	public TableView getTableView(Result result) {
+		TableView<ObservableList<String>> tableView = new TableView<>();
 
 		// Create columns
 		int i = 0;
-		for (Column c : res.columns()) {
+		for (Column c : result.columns()) {
 			final int j = i++;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
@@ -35,63 +38,28 @@ public class DataTableView {
 		}
 
 		// Add datas
-		rows.clear();
-		res.forEach(row -> rows.add(FXCollections.observableArrayList(
-				res.columns().map(c -> row.getString()))
+		ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
+		result.forEach(row -> rows.add(FXCollections.observableArrayList(
+				result.columns().map(c -> row.getString()))
 		));
 		tableView.setItems(rows);
 
-	}
-
-
-	private void dataView(PersistentStructure<?> structure) throws SQLException {
-
-		//sqlartan.getMainLayout().setCenter(tableView);
-		dataView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
-
-	}
-
-	private void dataView(String str, Database db) throws SQLException {
-
-		//sqlartan.getMainLayout().setCenter(tableView);
-		dataView(db.execute(str));
-	}
-
-
-	public TableView getTableView(PersistentStructure<?> structure) {
-		try {
-			dataView(structure);
-		} catch (SQLException e) {
-			showAlert(e);
-		}
-
 		return tableView;
 	}
 
 	/**
-	 *
-	 * @param str
+	 * Return a table view for any type of structure
+	 * @param structure the structure
 	 * @return the table view
 	 */
-	public TableView getTableView(String str) {
+	public TableView getTableView(PersistentStructure<?> structure) {
 		try {
-			dataView(str, db);
+			return getTableView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
 		} catch (SQLException e) {
-			showAlert(e);
+			Popup.error("Bad Request", e.getMessage());
+			return new TableView();
 		}
-		return tableView;
-	}
 
-	/**
-	 * Show an alert
-	 * @param e
-	 */
-	private void showAlert(SQLException e) {
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setTitle("Bad Request");
-		alert.setContentText(e.getMessage());
-
-		alert.showAndWait();
 	}
 }
 

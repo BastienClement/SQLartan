@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import sqlartan.view.SqlartanController;
+import sqlartan.view.util.Popup;
 import java.io.File;
 
 /**
@@ -66,11 +67,7 @@ public class AttachedChooserController {
 		}
 		else
 		{
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Invalide Entry");
-			alert.setContentText("The informations for the path and/or the db name are empty");
-			alert.setHeaderText(null);
-			alert.show();
+			Popup.error("Invalid Entry","The informations for the path and/or the db name are empty");
 		}
 
 	}

@@ -1,5 +1,8 @@
 package sqlartan.core;
 
+import sqlartan.core.util.RuntimeSQLException;
+import java.sql.SQLException;
+
 /**
  * TODO
  * @param <T>
@@ -52,4 +55,15 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	 * TODO
 	 */
 	public abstract void drop();
+
+	/**
+	 * Returns a result set over all entries in the table
+	 */
+	public Result selectAll() {
+		try {
+			return database.assemble("SELECT * FROM ", fullName()).execute();
+		} catch (SQLException e) {
+			throw new RuntimeSQLException(e);
+		}
+	}
 }
