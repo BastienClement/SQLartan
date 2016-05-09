@@ -89,7 +89,7 @@ public class CreateTriggerStatement extends CreateStatement {
 				.when(DELETE, () -> DeleteStatement.parse(ctx))
 				.when(SELECT, () -> SelectStatement.parse(ctx))
 				.when(VALUES, () -> SelectStatement.parse(ctx))
-				.orElseThrow(ParseException.UnexpectedCurrentToken(UPDATE, INSERT, DELETE, SELECT, VALUES))
+				.orElse(() -> { throw ParseException.UnexpectedCurrentToken(UPDATE, INSERT, DELETE, SELECT, VALUES); })
 		);
 		context.consume(SEMICOLON, END);
 
