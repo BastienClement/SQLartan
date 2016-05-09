@@ -19,6 +19,7 @@ public abstract class CreateTableStatement extends CreateStatement {
 	public String name;
 
 	public static CreateTableStatement parse(ParserContext context) {
+		context.consume(CREATE);
 		boolean temporary = context.tryConsume(TEMP) || context.tryConsume(TEMPORARY);
 
 		context.consume(TABLE);

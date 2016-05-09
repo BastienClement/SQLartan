@@ -22,6 +22,7 @@ public class CreateIndexStatement extends CreateStatement {
 	public Optional<WhereClause> where = Optional.empty();
 
 	public static CreateIndexStatement parse(ParserContext context) {
+		context.consume(CREATE);
 		CreateIndexStatement create = new CreateIndexStatement();
 
 		if (context.tryConsume(UNIQUE)) {
