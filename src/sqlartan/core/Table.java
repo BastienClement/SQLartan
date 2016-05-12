@@ -3,7 +3,6 @@ package sqlartan.core;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
-import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
@@ -126,52 +125,21 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param row
 	 * @return
 	 */
-	private TableColumn columnBuilder(Row row) {
+	protected TableColumn columnBuilder(Row row) {
 		return new TableColumn(this, new TableColumn.Properties() {
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
 			public boolean unique() {
-				Iterator<String> keySetIterator = indices.keySet().iterator();
-				while(keySetIterator.hasNext()){
-					String key = keySetIterator.next();
-					if(indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique())
+				for (String key : indices.keySet()) {
+					if (indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique()) {
 						return true;
+					}
 				}
 				return false;
 			}
 			public String check() { throw new UnsupportedOperationException("Not implemented"); }
 			public boolean nullable() { return row.getInt("notnull") == 0; }
 		});
-	}
-
-	/**
-	 * Returns the table_info() pragma result for this table.
-	 */
-	private Result tableInfo() {
-		try {
-			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
-		} catch (SQLException e) {
-			throw new UncheckedSQLException(e);
-		}
-	}
-
-	@Override
-	public IterableStream<TableColumn> columns() {
-		return tableInfo().map(this::columnBuilder);
-	}
-
-	@Override
-	public Optional<TableColumn> column(String name) {
-		try (Result res = tableInfo()) {
-			return res.find(row -> row.getString("name").equals(name)).map(this::columnBuilder);
-		}
-	}
-
-	@Override
-	public Optional<TableColumn> column(int idx) {
-		try (Result res = tableInfo()) {
-			return res.skip(idx).mapFirstOptional(this::columnBuilder);
-		}
 	}
 
 	/**
