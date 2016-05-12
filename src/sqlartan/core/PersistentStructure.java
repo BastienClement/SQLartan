@@ -66,7 +66,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	/**
 	 * Returns the table_info() pragma result for this structure.
 	 */
-	protected Result structureInfo() {
+	private Result structureInfo() {
 		try {
 			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
 		} catch (SQLException e) {
