@@ -1,7 +1,11 @@
 package sqlartan.core;
 
+import sqlartan.core.ast.CreateTableStatement;
+import sqlartan.core.ast.parser.ParseException;
+import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,19 +88,23 @@ public class Table extends PersistentStructure<TableColumn> {
 			                                 .execute(name)
 			                                 .mapFirst(Row::getString);
 
-			// Replace the name in the table
-			createStatement = createStatement.replaceFirst(" " + name + " ", " " + newName + " ");
+			// Update the create statement of the original table
+			CreateTableStatement create = Parser.parse(createStatement, CreateTableStatement::parse);
+			create.name = newName;
+			create.schema = Optional.of(database.name());
 
-			// Create the new table
-			database.execute(createStatement);
+			// Create the duplicated table
+			database.execute(create.toSQL());
 
 			// Insert the data in the table
-			database.assemble("INSERT INTO ", newName, "SELECT * FROM ", name).execute();
+			database.assemble("INSERT INTO ", database.name(), ".", newName, " SELECT * FROM ", fullName()).execute();
 
 			//noinspection OptionalGetWithoutIsPresent
 			return database.table(newName).get();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
+		} catch (ParseException e) {
+			throw new UncheckedException(e);
 		}
 	}
 
