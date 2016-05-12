@@ -3,7 +3,6 @@ package sqlartan.core;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
-import java.util.Optional;
 
 public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
 	protected View(Database database, String name) {
@@ -71,18 +70,13 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	@Override
-	public IterableStream<GeneratedColumn> columns() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-
-	@Override
-	public Optional<GeneratedColumn> column(String name) {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-
-	@Override
-	public Optional<GeneratedColumn> column(int idx) {
-		throw new UnsupportedOperationException("Not implemented");
+	protected GeneratedColumn columnBuilder(Row row) {
+		return new GeneratedColumn(new GeneratedColumn.Properties() {
+			public String sourceTable() { throw new UnsupportedOperationException(); }
+			public String sourceExpr() { throw new UnsupportedOperationException(); }
+			public String name() { return row.getString("name"); }
+			public String type() { return row.getString("type"); }
+			public boolean nullable() { return row.getInt("notnull") == 0; }
+		});
 	}
 }
