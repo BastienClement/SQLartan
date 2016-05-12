@@ -1,8 +1,13 @@
 package sqlartan.core;
 
+import sqlartan.core.ast.CreateViewStatement;
+import sqlartan.core.ast.parser.ParseException;
+import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
 	protected View(Database database, String name) {
@@ -17,19 +22,22 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 			                     .execute(name)
 			                     .mapFirst(Row::getString);
 
-			// Replace the name in the view creation sql
-			sql.replaceAll(name, newName);
+			// Modify the create statement
+			CreateViewStatement create = Parser.parse(sql, CreateViewStatement::parse);
+			create.name = newName;
+			create.schema = Optional.of(database.name());
 
 			// Execute the new sql, add the new view
-			database.execute(sql);
-
-			// Gets the new view, without inspection
-			return database.view(newName).get();
+			database.execute(create.toSQL());
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new UncheckedSQLException(e);
+		} catch (ParseException e) {
+			throw new UncheckedException(e);
 		}
 
-		throw new UnsupportedOperationException("Not implemented");
+		// Gets the new view, without inspection
+		// noinspection OptionalGetWithoutIsPresent
+		return database.view(newName).get();
 	}
 
 	@Override
@@ -46,6 +54,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
+	@Override
 	protected GeneratedColumn columnBuilder(Row row) {
 		return new GeneratedColumn(new GeneratedColumn.Properties() {
 			public String sourceTable() { throw new UnsupportedOperationException(); }
