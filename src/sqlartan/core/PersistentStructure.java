@@ -45,7 +45,11 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	 *
 	 * @param newName
 	 */
-	public abstract void rename(String newName);
+	public void rename(String newName) {
+		duplicate(newName);
+		drop();
+		name = newName;
+	}
 
 	/**
 	 * TODO
