@@ -400,7 +400,10 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public void importFromString(String sql) throws SQLException{
+		// Split the string by semicolons but those escape inside quote, double quotes and comments
 		String[] queries = sql.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+
+		// Execute the queries
 		for(String query : queries){
 			execute(query);
 		}
@@ -426,6 +429,7 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public String export() throws SQLException{
+		// Disable foreign_keys check and begin transaction
 		String sql = "PRAGMA foreign_keys=OFF;\n" +
 			         "BEGIN TRANSACTION;\n";
 
@@ -475,7 +479,7 @@ public class Database implements AutoCloseable {
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));
 		sql += ";\n";
-
+		
 		return sql + "COMMIT;";
 	}
 }
