@@ -306,6 +306,69 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 *
+	 * @param query
+	 * @return
+	 * @throws SQLException
+	 */
+	public IterableStream<Result> executeMulti(String query) throws SQLException {
+		final char[] input = query.toCharArray();
+		return IterableStream.from(() -> {
+			return new Iterator<Result>() {
+				private int i = 0;
+				private int len = query.length();
+				private int begin = 0;
+				private String statement;
+
+				// Initialization
+				{ findStatement(); }
+
+				private void findStatement() {
+					if (i >= len) return;
+
+					char delimiter = 0;
+					for (begin = i; i < len; i++) {
+						char current = input[i];
+						if (delimiter != 0) {
+							if (current == delimiter) {
+								if ((i + 1) < len && input[i+1] == delimiter) {
+									i++;
+								} else {
+									delimiter = 0;
+								}
+							}
+						} else if (current == '\'' || current == '"' || current == '`') {
+							delimiter = current;
+						} else if (current == ';') {
+							statement = String.valueOf(input, begin, i - begin + 1);
+							break;
+						}
+					}
+
+					statement = String.valueOf(input, begin, i - begin + 1);
+					if (statement.trim().isEmpty()) findStatement();
+				}
+
+				@Override
+				public boolean hasNext() {
+					return statement != null;
+				}
+
+				@Override
+				public Result next() {
+					try {
+						return execute(statement);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					} finally {
+						findStatement();
+					}
+				}
+			};
+		});
+	}
+
+	/**
 	 * Executes a query with placeholders.
 	 *
 	 * @param query
