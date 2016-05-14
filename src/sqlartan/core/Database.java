@@ -340,12 +340,12 @@ public class Database implements AutoCloseable {
 						} else if (current == '\'' || current == '"' || current == '`') {
 							delimiter = current;
 						} else if (current == ';') {
-							statement = String.valueOf(input, begin, i - begin + 1);
+							i++;
 							break;
 						}
 					}
 
-					statement = String.valueOf(input, begin, i - begin + 1);
+					statement = String.valueOf(input, begin, i - begin);
 					if (statement.trim().isEmpty()) findStatement();
 				}
 
