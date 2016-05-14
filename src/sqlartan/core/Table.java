@@ -65,8 +65,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	@Override
 	public void rename(String newName) {
 		try {
-			String query = "ALTER TABLE " + fullName() + " RENAME TO " + newName;
-			database.execute(query);
+			database.assemble("ALTER TABLE ", fullName(), " RENAME TO ", newName).execute();
 			name = newName;
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
@@ -97,14 +96,14 @@ public class Table extends PersistentStructure<TableColumn> {
 
 			// Insert the data in the table
 			database.assemble("INSERT INTO ", database.name(), ".", newName, " SELECT * FROM ", fullName()).execute();
-
-			//noinspection OptionalGetWithoutIsPresent
-			return database.table(newName).get();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		} catch (ParseException e) {
 			throw new UncheckedException(e);
 		}
+
+		// noinspection OptionalGetWithoutIsPresent
+		return database.table(newName).get();
 	}
 
 	/**
@@ -113,8 +112,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	@Override
 	public void drop() {
 		try {
-			String query = "DROP TABLE " + fullName();
-			database.execute(query);
+			database.assemble("DROP TABLE ", fullName()).execute();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
