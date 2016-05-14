@@ -441,4 +441,23 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Executes the SQL contained in a string into the database
+	 *
+	 * @param database
+	 * @param sql
+	 */
+	public void importFromString(Database database, String sql) throws SQLException {
+		database.importFromString(sql);
+	}
+
+	/**
+	 * Export a database
+	 *
+	 * @param database
+	 */
+	public String export(Database database) throws SQLException {
+		return database.export();
+	}
+
 }
