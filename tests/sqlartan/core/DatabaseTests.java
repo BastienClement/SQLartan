@@ -147,8 +147,15 @@ public class DatabaseTests {
 				"SELECT bar FROM foo WHERE bar = 'b';" +
 				"SELECT bar FROM foo WHERE bar = 'c';";
 
-			ImmutableList<String> data = db.executeMulti(query).map(res -> res.mapFirst(Row::getString)).toList();
+			List<Result> results = new ArrayList<>();
+
+			ImmutableList<String> data = db.executeMulti(query)
+			                               .peek(results::add)
+			                               .map(res -> res.mapFirst(Row::getString))
+			                               .toList();
+
 			assertEquals(Arrays.asList("a", "b", "c"), data);
+			assertEquals(true, results.stream().map(Result::isClosed).allMatch(closed -> closed));
 		}
 	}
 }

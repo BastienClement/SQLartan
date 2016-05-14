@@ -324,7 +324,10 @@ public class Database implements AutoCloseable {
 				{ findStatement(); }
 
 				private void findStatement() {
-					if (i >= len) return;
+					if (i >= len) {
+						statement = null;
+						return;
+					}
 
 					char delimiter = 0;
 					for (begin = i; i < len; i++) {
