@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -155,7 +155,7 @@ public class Database implements AutoCloseable {
 					.map(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -174,7 +174,7 @@ public class Database implements AutoCloseable {
 					.mapFirstOptional(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class Database implements AutoCloseable {
 		try {
 			execute("VACUUM");
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -308,6 +308,72 @@ public class Database implements AutoCloseable {
 	 */
 	public Result execute(String query) throws SQLException {
 		return Result.fromQuery(connection, query);
+	}
+
+	/**
+	 *
+	 * @param query
+	 * @return
+	 * @throws SQLException
+	 */
+	public IterableStream<Result> executeMulti(String query) throws SQLException {
+		final char[] input = query.toCharArray();
+		return IterableStream.from(() -> {
+			return new Iterator<Result>() {
+				private int i = 0;
+				private int len = query.length();
+				private int begin = 0;
+				private String statement;
+
+				// Initialization
+				{ findStatement(); }
+
+				private void findStatement() {
+					if (i >= len) {
+						statement = null;
+						return;
+					}
+
+					char delimiter = 0;
+					for (begin = i; i < len; i++) {
+						char current = input[i];
+						if (delimiter != 0) {
+							if (current == delimiter) {
+								if ((i + 1) < len && input[i+1] == delimiter) {
+									i++;
+								} else {
+									delimiter = 0;
+								}
+							}
+						} else if (current == '\'' || current == '"' || current == '`') {
+							delimiter = current;
+						} else if (current == ';') {
+							i++;
+							break;
+						}
+					}
+
+					statement = String.valueOf(input, begin, i - begin);
+					if (statement.trim().isEmpty()) findStatement();
+				}
+
+				@Override
+				public boolean hasNext() {
+					return statement != null;
+				}
+
+				@Override
+				public Result next() {
+					try {
+						return execute(statement);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					} finally {
+						findStatement();
+					}
+				}
+			};
+		});
 	}
 
 	/**
@@ -400,13 +466,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public void importFromString(String sql) throws SQLException{
-		// Split the string by semicolons but those escape inside quote, double quotes and comments
-		String[] queries = sql.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-
-		// Execute the queries
-		for(String query : queries){
-			execute(query);
-		}
+		executeMulti(sql);
 	}
 
 	/**
@@ -418,7 +478,7 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public void importfromFile(File file) throws SQLException, IOException{
-		importFromString(new String(Files.readAllBytes(file.toPath())));
+		executeMulti(new String(Files.readAllBytes(file.toPath())));
 	}
 
 	/**

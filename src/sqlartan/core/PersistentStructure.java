@@ -1,10 +1,13 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.stream.IterableStream;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
+import java.util.Optional;
 
 /**
  * TODO
+ *
  * @param <T>
  */
 public abstract class PersistentStructure<T extends Column> implements Structure<T> {
@@ -57,13 +60,52 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	public abstract void drop();
 
 	/**
+	 * Returns the table_info() pragma result for this structure.
+	 */
+	protected Result structureInfo() {
+		try {
+			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	/**
+	 * Override in subclasses to build the correct column instance from
+	 * a row of the result set of the table_info() pragma.
+	 *
+	 * @param row
+	 * @return
+	 */
+	protected abstract T columnBuilder(Row row);
+
+	@Override
+	public IterableStream<T> columns() {
+		return structureInfo().map(this::columnBuilder);
+	}
+
+	@Override
+	public Optional<T> column(String name) {
+		try (Result res = structureInfo()) {
+			return res.find(row -> row.getString("name").equals(name)).map(this::columnBuilder);
+		}
+	}
+
+	@Override
+	public Optional<T> column(int idx) {
+		try (Result res = structureInfo()) {
+			return res.skip(idx).mapFirstOptional(this::columnBuilder);
+		}
+	}
+
+	/**
 	 * Returns a result set over all entries in the table
 	 */
 	public Result selectAll() {
 		try {
 			return database.assemble("SELECT * FROM ", fullName()).execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 }
