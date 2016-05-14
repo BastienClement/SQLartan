@@ -201,6 +201,13 @@ public class DatabaseTests {
 
 	@Test
 	public void importShouldExecuteSQLOnDatabase() throws SQLException{
+		try (Database db = Database.createEphemeral()) {
+			db.importFromString("CREATE TABLE foo (\n" +
+				"    id INTEGER NOT NULL PRIMARY KEY\n" +
+				"  );\n" +
+				"  INSERT INTO foo VALUES (1), (2), (3)");
 
+			assertEquals(3, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
+		}
 	}
 }

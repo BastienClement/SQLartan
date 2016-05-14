@@ -399,8 +399,11 @@ public class Database implements AutoCloseable {
 	 * @return
 	 * @throws SQLException
 	 */
-	public Result importFromString(String sql) throws SQLException{
-		return execute(sql);
+	public void importFromString(String sql) throws SQLException{
+		String[] queries = sql.split(";(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+		for(String query : queries){
+			execute(query);
+		}
 	}
 
 	/**
@@ -411,8 +414,8 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public Result importfromFile(File file) throws SQLException, IOException{
-		return execute(new String(Files.readAllBytes(file.toPath())));
+	public void importfromFile(File file) throws SQLException, IOException{
+		importFromString(new String(Files.readAllBytes(file.toPath())));
 	}
 
 	/**
