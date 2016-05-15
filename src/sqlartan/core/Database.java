@@ -466,7 +466,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public void importFromString(String sql) throws SQLException{
-		executeMulti(sql);
+		executeMulti(sql).forEach(Result::close);
 	}
 
 	/**
@@ -478,7 +478,7 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public void importfromFile(File file) throws SQLException, IOException{
-		executeMulti(new String(Files.readAllBytes(file.toPath())));
+		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
 	}
 
 	/**
