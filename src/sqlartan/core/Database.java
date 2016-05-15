@@ -502,9 +502,9 @@ public class Database implements AutoCloseable {
 
 		// Get every values from tables
 		for(Table table : tables()){
-			if(assemble("SELECT COUNT(*) FROM ", table.name()).execute().mapFirst(Row::getInt) > 0) {
-				String insertSQL = "INSERT INTO " + table.name() + " VALUES ";
-				insertSQL += assemble("SELECT * FROM ", table.name())
+			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
+				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
+				insertSQL += assemble("SELECT * FROM ", table.fullName())
 						.execute()
 						.map(row -> {
 							String s = "(";
