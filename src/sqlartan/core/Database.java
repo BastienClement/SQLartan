@@ -3,11 +3,16 @@ package sqlartan.core;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import static sqlartan.util.Matching.match;
 
 public class Database implements AutoCloseable {
 	/**
@@ -451,5 +456,90 @@ public class Database implements AutoCloseable {
 				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
 		db.detach();
 		attached.remove(name);
+	}
+
+	/**
+	 * Import SQL from a string
+	 *
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
+	public void importFromString(String sql) throws SQLException{
+		executeMulti(sql).forEach(Result::close);
+	}
+
+	/**
+	 * Import SQL from a file
+	 *
+	 * @param file
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public void importfromFile(File file) throws SQLException, IOException{
+		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
+	}
+
+	/**
+	 * Export SQL to a String
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String export() throws SQLException{
+		// Disable foreign_keys check and begin transaction
+		String sql = "PRAGMA foreign_keys=OFF;\n" +
+			         "BEGIN TRANSACTION;\n";
+
+		// Get every tables
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every values from tables
+		for(Table table : tables()){
+			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
+				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
+				insertSQL += assemble("SELECT * FROM ", table.fullName())
+						.execute()
+						.map(row -> {
+							String s = "(";
+							for (int i = 1; i <= row.size(); i++) {
+								if(i != 1) s += ", ";
+								s += match(row.getObject(i))
+									.when(String.class, str -> "'" + str.replace("'", "''") + "'")
+									.when(Number.class, n -> n.toString())
+									.orElse(() -> {
+										return "NULL";
+									});
+								// TODO Manage byte array
+							}
+							return s + ")";
+						})
+						.collect(Collectors.joining(", "));
+
+				sql += insertSQL + ";\n";
+			}
+		};
+
+		// Get every triggers
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every views
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+		
+		return sql + "COMMIT;";
 	}
 }
