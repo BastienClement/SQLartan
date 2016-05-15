@@ -478,7 +478,8 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public void importfromFile(File file) throws SQLException, IOException{
-		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
+		String s = new String(Files.readAllBytes(file.toPath()));
+		executeMulti(s).forEach(Result::close);
 	}
 
 	/**
@@ -539,7 +540,7 @@ public class Database implements AutoCloseable {
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));
 		sql += ";\n";
-		
-		return sql + "COMMIT;";
+
+		return sql + "COMMIT;\nPRAGMA foreign_keys=ON;";
 	}
 }

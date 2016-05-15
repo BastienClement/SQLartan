@@ -195,7 +195,8 @@ public class DatabaseTests {
 				"  SELECT foo.id AS fooid, bar.id AS barid\n" +
 				"  FROM foo, bar\n" +
 				"  WHERE 0=0;\n" +
-				"COMMIT;");
+				"COMMIT;\n" +
+				"PRAGMA foreign_keys=ON;");
 		}
 	}
 
