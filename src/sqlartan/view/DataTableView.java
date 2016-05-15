@@ -21,6 +21,7 @@ public class DataTableView {
 
 	/**
 	 * Return a table view for any result
+	 *
 	 * @param result the result
 	 * @return the table view
 	 */
@@ -33,14 +34,19 @@ public class DataTableView {
 			final int j = i++;
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
+			col.setCellFactory(param -> new EditCell());
+			col.setOnEditCommit(event ->
+				event.getTableView().getItems().get(event.getTablePosition().getRow()).set(j, event.getNewValue())
+			);
 			tableView.getColumns().add(col);
 		}
 
 		// Add datas
 		ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 		result.forEach(row -> rows.add(FXCollections.observableArrayList(
-				result.columns().map(c -> row.getString()))
+			result.columns().map(c -> row.getString()))
 		));
+		tableView.setEditable(true);
 		tableView.setItems(rows);
 
 		return tableView;
@@ -48,6 +54,7 @@ public class DataTableView {
 
 	/**
 	 * Return a table view for any type of structure
+	 *
 	 * @param structure the structure
 	 * @return the table view
 	 */
