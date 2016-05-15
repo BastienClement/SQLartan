@@ -167,8 +167,7 @@ public class DatabaseTests {
 			db.execute("INSERT INTO foo VALUES (1), (2), (3), (4)");
 			db.execute("INSERT INTO bar VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak')");
 
-			assertEquals(db.export(),
-				"PRAGMA foreign_keys=OFF;\n" +
+			assertEquals(db.export(), "PRAGMA foreign_keys=OFF;\n" +
 				"BEGIN TRANSACTION;\n" +
 				"CREATE TABLE foo (\n" +
 				"    id INTEGER NOT NULL PRIMARY KEY\n" +
@@ -178,8 +177,8 @@ public class DatabaseTests {
 				"           CONSTRAINT fk_foo_id REFERENCES foo(id) ON DELETE CASCADE,\n" +
 				"    foo_str TEXT\n" +
 				"  );\n" +
-				"INSERT INTO bar VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak');\n" +
-				"INSERT INTO foo VALUES (1), (2), (3), (4);\n" +
+				"INSERT INTO [main].[bar] VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak');\n" +
+				"INSERT INTO [main].[foo] VALUES (1), (2), (3), (4);\n" +
 				"CREATE TRIGGER fki_bar_foo_id\n" +
 				"  BEFORE INSERT ON bar\n" +
 				"  FOR EACH ROW BEGIN\n" +
@@ -203,10 +202,8 @@ public class DatabaseTests {
 	@Test
 	public void importShouldExecuteSQLOnDatabase() throws SQLException {
 		try (Database db = Database.createEphemeral()) {
-			db.importFromString("CREATE TABLE foo (\n" +
-				"    id INTEGER NOT NULL PRIMARY KEY\n" +
-				"  );\n" +
-				"  INSERT INTO foo VALUES (1), (2), (3)");
+			db.importFromString("CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY);" +
+								"INSERT INTO foo VALUES (1), (2), (3);");
 
 			assertEquals(3, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
 		}
