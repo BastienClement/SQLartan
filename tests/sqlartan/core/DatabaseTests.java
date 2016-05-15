@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.io.FileWriter;
@@ -132,6 +133,29 @@ public class DatabaseTests {
 
 			assertTrue(vx.isPresent());
 			assertFalse(va.isPresent());
+		}
+	}
+
+	@Test
+	public void executeMultiTest() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			db.execute("CREATE TABLE foo (bar TEXT)");
+			db.execute("INSERT INTO foo VALUES ('a'), ('b'), ('c')");
+
+			String query =
+				"SELECT bar FROM foo WHERE bar = 'a';" +
+				"SELECT bar FROM foo WHERE bar = 'b';" +
+				"SELECT bar FROM foo WHERE bar = 'c';";
+
+			List<Result> results = new ArrayList<>();
+
+			ImmutableList<String> data = db.executeMulti(query)
+			                               .peek(results::add)
+			                               .map(res -> res.mapFirst(Row::getString))
+			                               .toList();
+
+			assertEquals(Arrays.asList("a", "b", "c"), data);
+			assertEquals(true, results.stream().map(Result::isClosed).allMatch(closed -> closed));
 		}
 	}
 }
