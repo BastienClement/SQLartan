@@ -24,17 +24,12 @@ public class EditCell extends TableCell {
 	@Override
 	public void cancelEdit() {
 		super.cancelEdit();
-
-		try {
-			setText(getItem().toString());
-		} catch (Exception e) {
-		}
+		setText(getItem().toString());
 		setGraphic(null);
 	}
 
 	@Override
 	public void updateItem(Object item, boolean empty) {
-		System.out.println("find value of update: " + empty + " " + item);
 		super.updateItem(item, empty);
 		if (empty) {
 			setText(null);
@@ -42,6 +37,7 @@ public class EditCell extends TableCell {
 		} else {
 			if (isEditing()) {
 				if (textField != null) {
+					// TODO execute SQL request to change the data
 					textField.setText(getString());
 				}
 				setText(null);

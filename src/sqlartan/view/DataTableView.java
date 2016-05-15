@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.core.Column;
-import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Result;
 import sqlartan.view.util.Popup;
@@ -16,8 +15,6 @@ import java.sql.SQLException;
  * Created by julien on 29.04.16.
  */
 public class DataTableView {
-
-	private Database db = SqlartanController.getDB();
 
 	/**
 	 * Return a table view for any result
@@ -35,9 +32,8 @@ public class DataTableView {
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
 			col.setCellFactory(param -> new EditCell());
-			col.setOnEditCommit(event ->
-				event.getTableView().getItems().get(event.getTablePosition().getRow()).set(j, event.getNewValue())
-			);
+			col.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow())
+			                                  .set(j, event.getNewValue()));
 			tableView.getColumns().add(col);
 		}
 
