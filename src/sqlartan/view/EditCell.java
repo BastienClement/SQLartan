@@ -5,7 +5,12 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 
-// EditCell - for editing capability in a TableCell
+/**
+ * Created the 15 May 2016
+ *
+ * @author Adriano Ruberto
+ * @version 1.0
+ */
 public class EditCell extends TableCell {
 	private TextField textField;
 
@@ -31,22 +36,17 @@ public class EditCell extends TableCell {
 	@Override
 	public void updateItem(Object item, boolean empty) {
 		super.updateItem(item, empty);
-		if (empty) {
-			setText(null);
-			setGraphic(null);
-		} else {
-			if (isEditing()) {
-				if (textField != null) {
-					// TODO execute SQL request to change the data
-					textField.setText(getString());
-				}
-				setText(null);
-				setGraphic(textField);
-			} else {
-				setText(getString());
-				setGraphic(null);
+		setText(null);
+		setGraphic(null);
+		if (isEditing()) {
+			if (textField != null) {
+				textField.setText(getString());
 			}
+			setGraphic(textField);
+		} else {
+			setText(getString());
 		}
+
 	}
 
 	private void createTextField() {

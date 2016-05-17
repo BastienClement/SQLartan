@@ -32,8 +32,12 @@ public class DataTableView {
 			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
 			col.setCellFactory(param -> new EditCell());
-			col.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow())
-			                                  .set(j, event.getNewValue()));
+			col.setOnEditCommit(event -> {
+				event.getTableView().getItems().get(event.getTablePosition().getRow())
+				     .set(j, event.getNewValue());
+				// TODO execute SQL request to change the data
+
+			});
 			tableView.getColumns().add(col);
 		}
 
