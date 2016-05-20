@@ -135,10 +135,25 @@ public class SqlartanController {
 	 */
 	void refreshView() {
 		if (db != null) {
+
+			int i = getTreeDatabaseIndex();
 			mainTreeItem.getChildren().clear();
 			tree(db);
-			mainTreeItem.setExpanded(true);
+			if (i >= 0)
+				mainTreeItem.getChildren().get(i).setExpanded(true);
 		}
+	}
+
+	private int getTreeDatabaseIndex() {
+		int i = treeView.getSelectionModel().getSelectedIndex();
+		int size = 0;
+		for (int j = 0; j < mainTreeItem.getChildren().size(); ++j) {
+			size += mainTreeItem.getChildren().get(j).getChildren().size();
+			if (i < size)
+				return j;
+		}
+
+		return -1;
 	}
 
 
