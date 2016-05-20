@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import sqlartan.core.Database;
 import sqlartan.view.SqlartanController;
+import sqlartan.view.util.Popup;
 
 public class Sqlartan extends Application{
 
@@ -35,6 +36,11 @@ public class Sqlartan extends Application{
 	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+
+		Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+			Popup.error("Something got wrong", throwable.getMessage());
+		});
+
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("SQLartan");
 		FXMLLoader loader = new FXMLLoader();
