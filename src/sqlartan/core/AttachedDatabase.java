@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.sql.SQLException;
 
@@ -20,7 +20,7 @@ public class AttachedDatabase extends Database {
 		try {
 			assemble("DETACH DATABASE ", name()).execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 

@@ -4,7 +4,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.stream.ImmutableList;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class DatabaseTests {
 			attached.close();
 			assertEquals(0, main.attached().size());
 
-			exception.expect(RuntimeSQLException.class);
+			exception.expect(UncheckedSQLException.class);
 			attached.tables();
 		}
 	}
@@ -132,6 +133,102 @@ public class DatabaseTests {
 
 			assertTrue(vx.isPresent());
 			assertFalse(va.isPresent());
+		}
+	}
+
+	@Test
+	public void exportCanBeImported() throws SQLException{
+		try (Database db = Database.createEphemeral()) {
+			db.execute("CREATE TABLE foo (\n" +
+					"    id INTEGER NOT NULL PRIMARY KEY\n" +
+					"  );");
+			db.execute("CREATE TABLE bar (" +
+					"    id INTEGER NOT NULL PRIMARY KEY,\n" +
+					"    foo_id INTEGER NOT NULL\n" +
+					"           CONSTRAINT fk_foo_id REFERENCES foo(id) ON DELETE CASCADE,\n" +
+					"    foo_str TEXT\n" +
+				"  );");
+			db.execute("CREATE TRIGGER fki_bar_foo_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;");
+			db.execute("CREATE TRIGGER fki_bar_foo2_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;");
+			db.execute("CREATE VIEW foo_bar AS\n" +
+					"  SELECT foo.id AS fooid, bar.id AS barid\n" +
+					"  FROM foo, bar\n" +
+					"  WHERE 0=0;");
+			db.execute("INSERT INTO foo VALUES (1), (2), (3), (4)");
+			db.execute("INSERT INTO bar VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak')");
+
+			assertEquals(db.export(), "PRAGMA foreign_keys=OFF;\n" +
+				"BEGIN TRANSACTION;\n" +
+				"CREATE TABLE foo (\n" +
+				"    id INTEGER NOT NULL PRIMARY KEY\n" +
+				"  );\n" +
+				"CREATE TABLE bar (    id INTEGER NOT NULL PRIMARY KEY,\n" +
+				"    foo_id INTEGER NOT NULL\n" +
+				"           CONSTRAINT fk_foo_id REFERENCES foo(id) ON DELETE CASCADE,\n" +
+				"    foo_str TEXT\n" +
+				"  );\n" +
+				"INSERT INTO [main].[bar] VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak');\n" +
+				"INSERT INTO [main].[foo] VALUES (1), (2), (3), (4);\n" +
+				"CREATE TRIGGER fki_bar_foo_id\n" +
+				"  BEFORE INSERT ON bar\n" +
+				"  FOR EACH ROW BEGIN\n" +
+				"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+				"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+				"  END;\n" +
+				"CREATE TRIGGER fki_bar_foo2_id\n" +
+				"  BEFORE INSERT ON bar\n" +
+				"  FOR EACH ROW BEGIN\n" +
+				"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+				"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+				"  END;\n" +
+				"CREATE VIEW foo_bar AS\n" +
+				"  SELECT foo.id AS fooid, bar.id AS barid\n" +
+				"  FROM foo, bar\n" +
+				"  WHERE 0=0;\n" +
+				"COMMIT;");
+		}
+	}
+
+	@Test
+	public void importShouldExecuteSQLOnDatabase() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			db.importFromString("CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY);" +
+								"INSERT INTO foo VALUES (1), (2), (3);");
+
+			assertEquals(3, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
+		}
+	}
+
+	@Test
+	public void executeMultiTest() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			db.execute("CREATE TABLE foo (bar TEXT)");
+			db.execute("INSERT INTO foo VALUES ('a'), ('b'), ('c')");
+
+			String query =
+				"SELECT bar FROM foo WHERE bar = 'a';" +
+				"SELECT bar FROM foo WHERE bar = 'b';" +
+				"SELECT bar FROM foo WHERE bar = 'c';";
+
+			List<Result> results = new ArrayList<>();
+
+			ImmutableList<String> data = db.executeMulti(query)
+			                               .peek(results::add)
+			                               .map(res -> res.mapFirst(Row::getString))
+			                               .toList();
+
+			assertEquals(Arrays.asList("a", "b", "c"), data);
+			assertEquals(true, results.stream().map(Result::isClosed).allMatch(closed -> closed));
 		}
 	}
 }
