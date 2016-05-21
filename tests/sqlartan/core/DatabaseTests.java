@@ -203,10 +203,38 @@ public class DatabaseTests {
 	@Test
 	public void importShouldExecuteSQLOnDatabase() throws SQLException {
 		try (Database db = Database.createEphemeral()) {
-			db.importFromString("CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY);" +
-								"INSERT INTO foo VALUES (1), (2), (3);");
+			db.importFromString("PRAGMA foreign_keys=OFF;\n" +
+					"BEGIN TRANSACTION;\n" +
+					"CREATE TABLE foo (\n" +
+					"    id INTEGER NOT NULL PRIMARY KEY\n" +
+					"  );\n" +
+					"CREATE TABLE bar (    id INTEGER NOT NULL PRIMARY KEY,\n" +
+					"    foo_id INTEGER NOT NULL\n" +
+					"           CONSTRAINT fk_foo_id REFERENCES foo(id) ON DELETE CASCADE,\n" +
+					"    foo_str TEXT\n" +
+					"  );\n" +
+					"CREATE TRIGGER fki_bar_foo_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;\n" +
+					"CREATE TRIGGER fki_bar_foo2_id\n" +
+					"  BEFORE INSERT ON bar\n" +
+					"  FOR EACH ROW BEGIN\n" +
+					"      SELECT RAISE(ROLLBACK, 'insert on table \"bar\" violates foreign key constraint \"fk_foo_id\"')\n" +
+					"      WHERE  (SELECT id FROM foo WHERE id = NEW.foo_id) IS NULL;\n" +
+					"  END;\n" +
+					"CREATE VIEW foo_bar AS\n" +
+					"  SELECT foo.id AS fooid, bar.id AS barid\n" +
+					"  FROM foo, bar\n" +
+					"  WHERE 0=0;\n" +
+					"INSERT INTO [main].[bar] VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak');\n" +
+					"INSERT INTO [main].[foo] VALUES (1), (2), (3), (4);\n" +
+					"COMMIT;\n" +
+					"PRAGMA foreign_keys=ON;");
 
-			assertEquals(3, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
+			assertEquals(4, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
 		}
 	}
 
