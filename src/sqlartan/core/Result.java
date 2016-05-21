@@ -283,32 +283,6 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 
 			super.close();
 		}
-
-		/**
-		 * Returns the first element from the Stream, if it is not empty.
-		 * In addition to its defined behavior, this method also closes
-		 * the Result object, freeing underlying JDBC resources.
-		 */
-		@Override
-		public Optional<Row> findFirst() {
-			Optional<Row> first = IterableAdapter.super.findFirst();
-			try {
-				close();
-			} catch (Exception ignored) {}
-			return first;
-		}
-
-		/**
-		 * Returns any element from the Stream, if it is not empty.
-		 * Since Result object are purely sequential, this method is identical
-		 * to Result.findFirst().
-		 *
-		 * @deprecated Use findFirst() instead
-		 */
-		@Override
-		public Optional<Row> findAny() {
-			return findFirst();
-		}
 	}
 
 	/**
