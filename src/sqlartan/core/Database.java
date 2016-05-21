@@ -367,22 +367,27 @@ public class Database implements AutoCloseable {
 					}
 
 					int block_level = 0;
-					for (Token current = tokens.current(); block_level > 0 || !current.equals(SEMICOLON); tokens.consume(), current = tokens.current()) {
+					for (Token current = tokens.current(); ; tokens.consume(), current = tokens.current()) {
 						if ((current.equals(BEGIN) && !tokens.next().equals(TRANSACTION)) || current.equals(MATCH)) {
 							block_level++;
 						} else if (current.equals(END)) {
 							block_level--;
 						} else if (current instanceof Token.EndOfStream) {
-							statement = query.substring(begin);
+							statement = query.substring(begin).trim();
 							begin = len;
-							return;
+							break;
+						} else if (block_level == 0 && current.equals(SEMICOLON)) {
+							int offset = current.offset + 1;
+							statement = query.substring(begin, offset).trim();
+							begin = offset;
+							tokens.consume();
+							break;
 						}
 					}
 
-					int offset = tokens.current().offset + 1;
-					statement = query.substring(begin, offset);
-					tokens.consume();
-					begin = offset;
+					if (statement.isEmpty()) {
+						findStatement();
+					}
 				}
 
 				@Override
