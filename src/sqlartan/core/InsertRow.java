@@ -13,16 +13,16 @@ public class InsertRow {
 		this.table = table;
 	}
 
-	public InsertRow add(Object label) {
-		data.add(label);
+	public InsertRow add(Object value) {
+		data.add(value);
 		return this;
 	}
 
-	public InsertRow add(int index, Object label) {
+	public InsertRow add(int index, Object value) {
 		while (data.size() <= index) {
 			data.add(null);
 		}
-		data.add(index, label);
+		data.add(index, value);
 		return this;
 	}
 
