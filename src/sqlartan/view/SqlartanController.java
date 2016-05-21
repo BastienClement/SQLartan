@@ -453,7 +453,7 @@ public class SqlartanController {
 	}
 
 	@FXML
-	public void importFX() {
+	public void importFX() throws TokenizeException {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Import SQLite database");
 		try {
