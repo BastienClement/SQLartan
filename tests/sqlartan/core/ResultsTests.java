@@ -43,6 +43,11 @@ public class ResultsTests {
 			// Manual close
 			r3.close();
 			assertTrue(r3.isClosed());
+
+			// Mapping the first row
+			Result r4 = db.execute("SELECT * FROM foo");
+			r4.mapFirst(row -> row);
+			assertTrue(r4.isClosed());
 		}
 	}
 
