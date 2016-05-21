@@ -15,9 +15,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import static sqlartan.core.ast.Keyword.BEGIN;
-import static sqlartan.core.ast.Keyword.END;
-import static sqlartan.core.ast.Keyword.MATCH;
+import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.SEMICOLON;
 import static sqlartan.util.Matching.match;
 
@@ -370,7 +368,7 @@ public class Database implements AutoCloseable {
 
 					int block_level = 0;
 					for (Token current = tokens.current(); block_level > 0 || !current.equals(SEMICOLON); tokens.consume(), current = tokens.current()) {
-						if (current.equals(BEGIN) || current.equals(MATCH)) {
+						if ((current.equals(BEGIN) && !tokens.next().equals(TRANSACTION)) || current.equals(MATCH)) {
 							block_level++;
 						} else if (current.equals(END)) {
 							block_level--;
