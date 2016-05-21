@@ -34,11 +34,11 @@ public class TableTabsController extends TabsController {
 	private TableColumn<TableStructure, String> colActions;
 
 	@FXML
-	private TableColumn<InsertRawStructure, String> insertColName;
+	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
-	private  TableColumn<InsertRawStructure, String> insertColType;
+	private  TableColumn<InsertRowStructure, String> insertColType;
 	@FXML
-	private TableColumn<InsertRawStructure, String> insertColValue;
+	private TableColumn<InsertRowStructure, String> insertColValue;
 
 
 	private PersistentStructure<?> structure;
@@ -61,7 +61,7 @@ public class TableTabsController extends TabsController {
 	private Pane sqlTab;
 
 	@FXML
-	private TableView<InsertRawStructure> insertTable;
+	private TableView<InsertRowStructure> insertTable;
 
 	@FXML
 	private TableView<TableStructure> structureTable;
@@ -114,12 +114,12 @@ public class TableTabsController extends TabsController {
 	}
 
 	private void displayInsertTab(){
-		ObservableList<InsertRawStructure> insertRaws = FXCollections.observableArrayList();
+		ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
 
-		insertRaws.addAll(structure.columns().map(InsertRawStructure::new).toList());
+		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
 
 
-		insertTable.setItems(insertRaws);
+		insertTable.setItems(insertRows);
 
 
 	}
@@ -127,7 +127,7 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private void submitNewData()
 	{
-		ObservableList<InsertRawStructure> insertRaws = insertTable.getItems();
+		ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
 		//TODO call the insert methode on the core
 	}
 

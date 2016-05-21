@@ -7,13 +7,13 @@ import sqlartan.core.Column;
 /**
  * Created by julien on 21.05.16.
  */
-public class InsertRawStructure {
+public class InsertRowStructure {
 	StringProperty name;
 	StringProperty type;
 	StringProperty value;
 
 
-	public InsertRawStructure(Column column){
+	public InsertRowStructure(Column column){
 		this.name = new SimpleStringProperty(column.name());
 		this.type = new SimpleStringProperty(column.type());
 		this.value = new SimpleStringProperty();
