@@ -13,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.TableColumn;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
@@ -445,7 +446,7 @@ public class SqlartanController {
 	 * @param database
 	 * @param sql
 	 */
-	public void importFromString(Database database, String sql) throws SQLException {
+	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
 	}
 

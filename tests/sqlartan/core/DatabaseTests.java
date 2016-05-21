@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
@@ -200,7 +201,7 @@ public class DatabaseTests {
 	}
 
 	@Test
-	public void importShouldExecuteSQLOnDatabase() throws SQLException {
+	public void importShouldExecuteSQLOnDatabase() throws SQLException, TokenizeException {
 		try (Database db = Database.createEphemeral()) {
 			db.importFromString("CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY);" +
 								"INSERT INTO foo VALUES (1), (2), (3);");
@@ -210,7 +211,7 @@ public class DatabaseTests {
 	}
 
 	@Test
-	public void executeMultiTest() throws SQLException {
+	public void executeMultiTest() throws SQLException, TokenizeException {
 		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE foo (bar TEXT)");
 			db.execute("INSERT INTO foo VALUES ('a'), ('b'), ('c')");
