@@ -458,7 +458,7 @@ public class SqlartanController {
 		fileChooser.setTitle("Import SQLite database");
 		try {
 			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
-		} catch (SQLException | IOException e) {
+		} catch (SQLException | IOException | TokenizeException e) {
 			Popup.error(":(", e.getMessage());
 		}
 	}

@@ -560,18 +560,18 @@ public class Database implements AutoCloseable {
 			}
 		};
 
-		// Get every triggers
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
-
 		// Get every views
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
 				.execute()
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every triggers
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n"));
 		sql += ";\n";
 
 		return sql + "COMMIT;";
