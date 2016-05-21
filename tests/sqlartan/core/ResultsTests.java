@@ -38,11 +38,16 @@ public class ResultsTests {
 			// Limit the stream
 			Result r3 = db.execute("SELECT * FROM foo");
 			r3.limit(1).forEach(row -> {});
-			assertFalse(r3.isClosed());
+			/*assertFalse(r3.isClosed());
 
 			// Manual close
-			r3.close();
+			r3.close();*/
 			assertTrue(r3.isClosed());
+
+			// Mapping the first row
+			Result r4 = db.execute("SELECT * FROM foo");
+			r4.mapFirst(row -> row);
+			assertTrue(r4.isClosed());
 		}
 	}
 
