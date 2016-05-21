@@ -9,26 +9,22 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.Result;
 import java.sql.SQLException;
 
 public class AllRequestController {
 
-	private DataTableView dataTableView = new DataTableView();
-
 	@FXML
 	Button execute;
-
 	@FXML
 	TextArea SQLTextQuery;
-
 	@FXML
 	StackPane userQueryView;
-
+	private DataTableView dataTableView = new DataTableView();
 	private Database db = SqlartanController.getDB();
 
 	@FXML
@@ -43,8 +39,12 @@ public class AllRequestController {
 		userQueryView.getChildren().clear();
 		try {
 			Result result = db.execute(SQLTextQuery.getText());
-			userQueryView.getChildren().add(result.isQueryResult() ? dataTableView.getTableView(result)
-					: new Text(Long.toString(result.updateCount()) + " rows updated"));
+			if (result.isQueryResult()) {
+				userQueryView.getChildren().add(dataTableView.getTableView(result));
+			} else {
+				userQueryView.getChildren().add(new Text(Long.toString(result.updateCount()) + " row(s) updated"));
+				Sqlartan.getInstance().getController().refreshView();
+			}
 		} catch (SQLException e) {
 			userQueryView.getChildren().add(new Text(e.getMessage()));
 		}

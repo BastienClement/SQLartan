@@ -4,20 +4,27 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import sqlartan.core.Database;
 import sqlartan.view.SqlartanController;
 
-public class Sqlartan extends Application{
+public class Sqlartan extends Application {
 
+	private static Sqlartan instance;
 	private Stage primaryStage;
 	private BorderPane mainLayout;
+	private SqlartanController controller;
 
-	SqlartanController controller;
-
+	public static Sqlartan getInstance() {
+		if (instance == null) instance = new Sqlartan();
+		return instance;
+	}
+	public static void main(String[] args) {
+		launch(args);
+	}
+	public SqlartanController getController() {
+		return controller;
+	}
 	/**
 	 * The main entry point for all JavaFX applications.
 	 * The start method is called after the init method has returned,
@@ -47,17 +54,11 @@ public class Sqlartan extends Application{
 
 		controller = loader.getController();
 		controller.setApp(this);
+		instance = this;
 
 	}
-
 	public BorderPane getMainLayout() { return mainLayout; }
-
-	public Stage getPrimaryStage()
-	{
+	public Stage getPrimaryStage() {
 		return primaryStage;
-	}
-
-	public static void main(String[] args) {
-		launch(args);
 	}
 }
