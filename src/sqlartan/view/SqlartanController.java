@@ -470,14 +470,15 @@ public class SqlartanController {
 		AttachedChooserController attachedChooserController = null;
 
 		try{
-		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
 
-		stage.setTitle("SQLartan - About");
-		pane = loader.load();
-		stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setTitle("SQLartan - About");
+			pane = loader.load();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setResizable(false);
 
-		stage.setScene(new Scene(pane));
-		stage.showAndWait();
+			stage.setScene(new Scene(pane));
+			stage.showAndWait();
 
 	} catch (IOException e) {
 		e.printStackTrace();
