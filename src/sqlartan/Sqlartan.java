@@ -38,7 +38,7 @@ public class Sqlartan extends Application{
 	public void start(Stage primaryStage) throws Exception {
 
 		Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-			Popup.error("Something got wrong", throwable.getMessage());
+			Popup.error("Something went wrong", throwable.getMessage());
 		});
 
 		this.primaryStage = primaryStage;
