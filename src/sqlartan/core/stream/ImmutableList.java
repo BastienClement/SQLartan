@@ -147,4 +147,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	default <R> ImmutableList<R> mapOptional(Function<? super T, Optional<R>> mapper) {
 		return ImmutableList.from(stream().map(mapper).filter(Optional::isPresent).map(Optional::get));
 	}
+
+	@Override
+	default void close() {}
 }

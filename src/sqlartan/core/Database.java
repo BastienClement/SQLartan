@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import static sqlartan.core.ast.Keyword.BEGIN;
@@ -72,6 +73,11 @@ public class Database implements AutoCloseable {
 	 * The underlying JDBC connection
 	 */
 	protected Connection connection;
+
+	/**
+	 * The set of registered execute listeners
+	 */
+	private Set<Consumer<ReadOnlyResult>> executeListeners = new HashSet<>();
 
 	/**
 	 * @throws SQLException
@@ -145,6 +151,22 @@ public class Database implements AutoCloseable {
 	 */
 	public File path() {
 		return path;
+	}
+
+	/**
+	 * TODO
+	 * @param listener
+	 */
+	public void registerListener(Consumer<ReadOnlyResult> listener) {
+		executeListeners.add(listener);
+	}
+
+	/**
+	 * TODO
+	 * @param listener
+	 */
+	public void removeListener(Consumer<ReadOnlyResult> listener) {
+		executeListeners.remove(listener);
 	}
 
 	/**
@@ -313,7 +335,13 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		return Result.fromQuery(connection, query);
+		Result res = Result.fromQuery(connection, query);
+		for (Consumer<ReadOnlyResult> listener : executeListeners) {
+			try {
+				listener.accept(res);
+			} catch (Throwable ignored) {}
+		}
+		return res;
 	}
 
 	/**

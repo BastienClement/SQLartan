@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.ast.token.TokenizeException;
+import sqlartan.core.TableColumn;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -32,9 +33,7 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private static Database db = null;
-
-	TreeItem<CustomTreeItem> mainTreeItem;
-
+	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
@@ -46,19 +45,14 @@ public class SqlartanController {
 	private Menu detatchMenu;
 	@FXML
 	private Menu databaseMenu;
-
 	private List<String> atachedDBs = new LinkedList<>();
-
 
 	/***********
 	 * METHODES*
 	 ***********/
-
-
 	static public Database getDB() {
 		return db;
 	}
-
 	/**
 	 * First methode call when loaded
 	 */
@@ -142,8 +136,17 @@ public class SqlartanController {
 	 */
 	void refreshView() {
 		if (db != null) {
+			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+			for (int i = 0; i < exp.length; ++i) {
+				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+			}
+
 			mainTreeItem.getChildren().clear();
 			tree(db);
+
+			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+			}
 		}
 	}
 
@@ -218,7 +221,7 @@ public class SqlartanController {
 				ButtonType buttonRetry = new ButtonType("Retry");
 				ButtonType buttonNewFile = new ButtonType("Choose new");
 				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
-						buttonCancel, buttonRetry, buttonNewFile);
+					buttonCancel, buttonRetry, buttonNewFile);
 				if (res.isPresent()) {
 					if (res.get() == buttonNewFile)
 						file = openSQLLiteDB();
@@ -410,9 +413,7 @@ public class SqlartanController {
 	 * @param name
 	 */
 	public void dropColumn(Table table, String name) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().drop();
-		}
+		table.column(name).ifPresent(TableColumn::drop);
 		refreshView();
 	}
 
@@ -425,9 +426,7 @@ public class SqlartanController {
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().rename(newName);
-		}
+		table.column(name).ifPresent(t -> t.rename(newName));
 		refreshView();
 	}
 
