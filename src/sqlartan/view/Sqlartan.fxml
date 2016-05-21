@@ -44,10 +44,10 @@
    <center>
       <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #dddddd;" BorderPane.alignment="CENTER">
          <BorderPane.margin>
-            <Insets />
+            <Insets right="15.0" />
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <TextArea fx:id="request" disable="true" editable="false" prefHeight="55.0" prefWidth="904.0" BorderPane.alignment="CENTER" />
+      <TextArea fx:id="request" disable="true" editable="false" prefHeight="55.0" prefWidth="904.0" style="-fx-background-color: blue;" BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>
