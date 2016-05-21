@@ -45,7 +45,11 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	 *
 	 * @param newName
 	 */
-	public abstract void rename(String newName);
+	public void rename(String newName) {
+		duplicate(newName);
+		drop();
+		name = newName;
+	}
 
 	/**
 	 * TODO
@@ -62,7 +66,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	/**
 	 * Returns the table_info() pragma result for this structure.
 	 */
-	protected Result structureInfo() {
+	private Result structureInfo() {
 		try {
 			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")").execute();
 		} catch (SQLException e) {
