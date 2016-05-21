@@ -39,7 +39,7 @@ public class InsertRow {
 		                                    .prepare();
 
 		for (int i = 0; i < cardinality; i++) {
-			query.set(i, data.get(i));
+			query.set(i + 1, data.get(i));
 		}
 
 		data.clear();
