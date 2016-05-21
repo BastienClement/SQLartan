@@ -5,6 +5,7 @@ import sqlartan.core.stream.IterableStream;
 import java.util.Optional;
 
 public interface ReadOnlyResult extends QueryStructure<GeneratedColumn> {
+	String query();
 	boolean isQueryResult();
 	boolean isUpdateResult();
 	int updateCount();

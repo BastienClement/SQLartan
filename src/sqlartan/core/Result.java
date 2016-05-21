@@ -22,7 +22,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 */
 	public static Result fromQuery(Connection connection, String query) throws SQLException {
 		Statement statement = connection.createStatement();
-		return from(statement, statement.execute(query));
+		return from(statement, statement.execute(query), query);
 	}
 
 	/**
@@ -31,9 +31,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param preparedStatement the prepared statement to execute
 	 * @throws SQLException
 	 */
-	public static Result fromPreparedStatement(PreparedStatement preparedStatement)
+	public static Result fromPreparedStatement(PreparedStatement preparedStatement, String sql)
 			throws SQLException {
-		return from(preparedStatement, preparedStatement.execute());
+		return from(preparedStatement, preparedStatement.execute(), sql);
 	}
 
 	/**
@@ -43,15 +43,26 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query     a flag indicating if the request was a SELECT or UPDATE statement
 	 * @throws SQLException
 	 */
-	private static Result from(Statement statement, boolean query) throws SQLException {
-		return query ? new QueryResult(statement) : new UpdateResult(statement);
+	private static Result from(Statement statement, boolean query, String sql) throws SQLException {
+		return query ? new QueryResult(statement, sql) : new UpdateResult(statement, sql);
 	}
 
 	/** The underlying statement object */
 	private Statement statement;
 
-	private Result(Statement statement) {
+	/** The source SQL query */
+	private String sql;
+
+	private Result(Statement statement, String sql) {
 		this.statement = statement;
+		this.sql = sql;
+	}
+
+	/**
+	 * Returns the SQL query that generated this Result
+	 */
+	public String query() {
+		return sql;
 	}
 
 	/**
@@ -147,8 +158,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		 * @param statement
 		 * @throws SQLException
 		 */
-		private QueryResult(Statement statement) throws SQLException {
-			super(statement);
+		private QueryResult(Statement statement, String sql) throws SQLException {
+			super(statement, sql);
 			resultSet = statement.getResultSet();
 
 			// Read metadata
@@ -318,8 +329,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	private static class UpdateResult extends Result implements IterableAdapter<Row> {
 		private int updateCount = 0;
 
-		private UpdateResult(Statement statement) throws SQLException {
-			super(statement);
+		private UpdateResult(Statement statement, String sql) throws SQLException {
+			super(statement, sql);
 			updateCount = statement.getUpdateCount();
 			close();
 		}
