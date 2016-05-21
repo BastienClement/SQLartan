@@ -26,6 +26,7 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 		for (T e : this) {
 			result = accumulator.apply(result, e);
 		}
+		this.close();
 		return result;
 	}
 
@@ -47,12 +48,14 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 
 	@Override
 	default Optional<T> find(Predicate<? super T> predicate) {
-		for (T e : this) {
-			if (predicate.test(e)) {
-				return Optional.of(e);
+		try (IterableStream<T> self = this) {
+			for (T e : self) {
+				if (predicate.test(e)) {
+					return Optional.of(e);
+				}
 			}
+			return Optional.empty();
 		}
-		return Optional.empty();
 	}
 
 	//
@@ -61,27 +64,37 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 
 	@Override
 	default boolean allMatch(Predicate<? super T> predicate) {
-		return stream().allMatch(predicate);
+		try (Stream<T> stream = stream()) {
+			return stream.allMatch(predicate);
+		}
 	}
 
 	@Override
 	default boolean anyMatch(Predicate<? super T> predicate) {
-		return stream().anyMatch(predicate);
+		try (Stream<T> stream = stream()) {
+			return stream.anyMatch(predicate);
+		}
 	}
 
 	@Override
 	default <R, A> R collect(Collector<? super T, A, R> collector) {
-		return stream().collect(collector);
+		try (Stream<T> stream = stream()) {
+			return stream.collect(collector);
+		}
 	}
 
 	@Override
 	default <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
-		return stream().collect(supplier, accumulator, combiner);
+		try (Stream<T> stream = stream()) {
+			return stream.collect(supplier, accumulator, combiner);
+		}
 	}
 
 	@Override
 	default long count() {
-		return stream().count();
+		try (Stream<T> stream = stream()) {
+			return stream.count();
+		}
 	}
 
 	@Override
@@ -96,12 +109,16 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 
 	@Override
 	default Optional<T> findAny() {
-		return stream().findAny();
+		try (Stream<T> stream = stream()) {
+			return stream.findAny();
+		}
 	}
 
 	@Override
 	default Optional<T> findFirst() {
-		return stream().findFirst();
+		try (Stream<T> stream = stream()) {
+			return stream.findFirst();
+		}
 	}
 
 	@Override
@@ -110,28 +127,35 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 	}
 
 	@Override
+	@Deprecated
 	default DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
 		return stream().flatMapToDouble(mapper);
 	}
 
 	@Override
+	@Deprecated
 	default IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
 		return stream().flatMapToInt(mapper);
 	}
 
 	@Override
+	@Deprecated
 	default LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
 		return stream().flatMapToLong(mapper);
 	}
 
 	@Override
 	default void forEach(Consumer<? super T> action) {
-		stream().forEach(action);
+		try (Stream<T> stream = stream()) {
+			stream.forEach(action);
+		}
 	}
 
 	@Override
 	default void forEachOrdered(Consumer<? super T> action) {
-		stream().forEachOrdered(action);
+		try (Stream<T> stream = stream()) {
+			stream.forEachOrdered(action);
+		}
 	}
 
 	@Override
@@ -145,33 +169,42 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 	}
 
 	@Override
+	@Deprecated
 	default DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper) {
 		return stream().mapToDouble(mapper);
 	}
 
 	@Override
+	@Deprecated
 	default IntStream mapToInt(ToIntFunction<? super T> mapper) {
 		return stream().mapToInt(mapper);
 	}
 
 	@Override
+	@Deprecated
 	default LongStream mapToLong(ToLongFunction<? super T> mapper) {
 		return stream().mapToLong(mapper);
 	}
 
 	@Override
 	default Optional<T> max(Comparator<? super T> comparator) {
-		return stream().max(comparator);
+		try (Stream<T> stream = stream()) {
+			return stream.max(comparator);
+		}
 	}
 
 	@Override
 	default Optional<T> min(Comparator<? super T> comparator) {
-		return stream().min(comparator);
+		try (Stream<T> stream = stream()) {
+			return stream.min(comparator);
+		}
 	}
 
 	@Override
 	default boolean noneMatch(Predicate<? super T> predicate) {
-		return stream().noneMatch(predicate);
+		try (Stream<T> stream = stream()) {
+			return stream.noneMatch(predicate);
+		}
 	}
 
 	@Override
@@ -181,17 +214,23 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 
 	@Override
 	default Optional<T> reduce(BinaryOperator<T> accumulator) {
-		return stream().reduce(accumulator);
+		try (Stream<T> stream = stream()) {
+			return stream.reduce(accumulator);
+		}
 	}
 
 	@Override
 	default T reduce(T identity, BinaryOperator<T> accumulator) {
-		return stream().reduce(identity, accumulator);
+		try (Stream<T> stream = stream()) {
+			return stream.reduce(identity, accumulator);
+		}
 	}
 
 	@Override
 	default <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-		return stream().reduce(identity, accumulator, combiner);
+		try (Stream<T> stream = stream()) {
+			return stream.reduce(identity, accumulator, combiner);
+		}
 	}
 
 	@Override
@@ -211,12 +250,16 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 
 	@Override
 	default Object[] toArray() {
-		return stream().toArray();
+		try (Stream<T> stream = stream()) {
+			return stream.toArray();
+		}
 	}
 
 	@Override
 	default <A> A[] toArray(IntFunction<A[]> generator) {
-		return stream().toArray(generator);
+		try (Stream<T> stream = stream()) {
+			return stream.toArray(generator);
+		}
 	}
 
 	//

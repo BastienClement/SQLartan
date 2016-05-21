@@ -27,7 +27,7 @@ public interface IterableAdapter<T> extends StreamableAdapter<T> {
 
 	@Override
 	default Stream<T> stream() {
-		return StreamSupport.stream(spliterator(), false);
+		return StreamSupport.stream(spliterator(), false).onClose(this::close);
 	}
 
 	@Override
@@ -47,4 +47,7 @@ public interface IterableAdapter<T> extends StreamableAdapter<T> {
 	//
 	@Override
 	Iterator<T> iterator();
+
+	@Override
+	default void close() {}
 }

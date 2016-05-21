@@ -13,18 +13,20 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.core.ast.token.TokenizeException;
+import sqlartan.core.TableColumn;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.util.Popup;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -32,9 +34,7 @@ import static sqlartan.util.Matching.match;
 public class SqlartanController {
 
 	private static Database db = null;
-
-	TreeItem<CustomTreeItem> mainTreeItem;
-
+	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
@@ -46,19 +46,14 @@ public class SqlartanController {
 	private Menu detatchMenu;
 	@FXML
 	private Menu databaseMenu;
-
 	private List<String> atachedDBs = new LinkedList<>();
-
 
 	/***********
 	 * METHODES*
 	 ***********/
-
-
 	static public Database getDB() {
 		return db;
 	}
-
 	/**
 	 * First methode call when loaded
 	 */
@@ -142,8 +137,17 @@ public class SqlartanController {
 	 */
 	void refreshView() {
 		if (db != null) {
+			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+			for (int i = 0; i < exp.length; ++i) {
+				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+			}
+
 			mainTreeItem.getChildren().clear();
 			tree(db);
+
+			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+			}
 		}
 	}
 
@@ -218,7 +222,7 @@ public class SqlartanController {
 				ButtonType buttonRetry = new ButtonType("Retry");
 				ButtonType buttonNewFile = new ButtonType("Choose new");
 				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
-						buttonCancel, buttonRetry, buttonNewFile);
+					buttonCancel, buttonRetry, buttonNewFile);
 				if (res.isPresent()) {
 					if (res.get() == buttonNewFile)
 						file = openSQLLiteDB();
@@ -307,6 +311,7 @@ public class SqlartanController {
 		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
+
 		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 		Database tmpDB = null;
 
@@ -410,9 +415,7 @@ public class SqlartanController {
 	 * @param name
 	 */
 	public void dropColumn(Table table, String name) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().drop();
-		}
+		table.column(name).ifPresent(TableColumn::drop);
 		refreshView();
 	}
 
@@ -425,9 +428,7 @@ public class SqlartanController {
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().rename(newName);
-		}
+		table.column(name).ifPresent(t -> t.rename(newName));
 		refreshView();
 	}
 
@@ -447,17 +448,44 @@ public class SqlartanController {
 	 * @param database
 	 * @param sql
 	 */
-	public void importFromString(Database database, String sql) throws SQLException {
+	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
 	}
 
+	@FXML
+	public void importFX() throws TokenizeException {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Import SQLite database");
+		try {
+			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
+		} catch (SQLException | IOException | TokenizeException e) {
+			Popup.error(":(", e.getMessage());
+		}
+	}
+
 	/**
-	 * Export a database
+	 * Export the database
 	 *
-	 * @param database
+	 * @throws SQLException
 	 */
-	public String export(Database database) throws SQLException {
-		return database.export();
+	@FXML
+	public void export() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		//Show save file dialog
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+
+		try {
+			FileWriter fileWriter = new FileWriter(file);
+			fileWriter.write(db.export());
+			fileWriter.close();
+		} catch (IOException ignored) {
+
+		}
 	}
 
 }
