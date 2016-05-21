@@ -12,7 +12,7 @@ import java.util.*;
  *
  * TODO: write more
  */
-public abstract class Result implements QueryStructure<GeneratedColumn>, AutoCloseable, IterableStream<Row> {
+public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableStream<Row> {
 	/**
 	 * Constructs a Result by executing the given query on the connection.
 	 *
