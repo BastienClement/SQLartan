@@ -47,4 +47,7 @@ public interface IterableAdapter<T> extends StreamableAdapter<T> {
 	//
 	@Override
 	Iterator<T> iterator();
+
+	@Override
+	default void close() {}
 }
