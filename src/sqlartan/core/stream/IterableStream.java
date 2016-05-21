@@ -65,6 +65,19 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	}
 
 	/**
+	 * Concatenates two IterableStream.
+	 * The resulting stream will contain every elements from the first stream followed
+	 * by elements from the second.
+	 *
+	 * @param a   the first stream to concatenate
+	 * @param b   the second stream to concatenate
+	 * @param <U> the super-type of both stream
+	 */
+	static <U> IterableStream<U> concat(IterableStream<? extends U> a, IterableStream<? extends U> b) {
+		return IterableStream.from(Stream.concat(a, b));
+	}
+
+	/**
 	 * Returns true if this IterableStream can be iterated or consumed multiple times.
 	 */
 	boolean isReiterable();
