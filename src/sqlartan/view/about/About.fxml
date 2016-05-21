@@ -9,10 +9,9 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="461.0" style="-fx-background-color: #fff;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="461.0" style="-fx-background-color: #fff;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.about.About">
    <children>
-      <ImageView fitHeight="181.0" fitWidth="222.0" layoutX="120.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" AnchorPane.topAnchor="14.0">
+      <ImageView fitHeight="181.0" fitWidth="222.0" layoutX="120.0" layoutY="14.0" mouseTransparent="true" preserveRatio="true" AnchorPane.topAnchor="14.0">
          <image>
             <Image url="@../../sclartan.png" />
          </image>
@@ -39,9 +38,9 @@
             <Label text="  Serneels Guillaume" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="Contributors:" underline="true" />
             <Label text="Logo:" underline="true" GridPane.rowIndex="4" />
-            <Label text="Ruberto GF" GridPane.rowIndex="5" />
+            <Label text="Jauner Valentine" GridPane.rowIndex="5" />
          </children>
       </GridPane>
-      <TextArea editable="false" layoutX="120.0" layoutY="199.0" mouseTransparent="true" pickOnBounds="false" prefHeight="63.0" prefWidth="222.0" text="SQLartan is a SQL administration&#10;tool, made by HEIG-VD students&#10;for a semester group project." />
+      <TextArea fx:id="description" editable="false" layoutX="120.0" layoutY="199.0" mouseTransparent="true" prefHeight="63.0" prefWidth="222.0" style="bo: #fff;" text="SQLartan is a SQL administration&#10;tool, made by HEIG-VD students&#10;for a semester group project." />
    </children>
 </AnchorPane>
