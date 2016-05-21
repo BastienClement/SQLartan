@@ -6,9 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class PreparedQuery {
+	private String sql;
 	private PreparedStatement stmt;
 
 	PreparedQuery(Connection connection, String sql) throws SQLException {
+		this.sql = sql;
 		stmt = connection.prepareStatement(sql);
 	}
 
@@ -58,6 +60,6 @@ public class PreparedQuery {
 	}
 
 	public Result execute() throws SQLException {
-		return Result.fromPreparedStatement(stmt);
+		return Result.fromPreparedStatement(stmt, sql);
 	}
 }
