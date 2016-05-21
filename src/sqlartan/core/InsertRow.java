@@ -13,16 +13,21 @@ public class InsertRow {
 		this.table = table;
 	}
 
-	public InsertRow add(Object value) {
+	public InsertRow set(Object value) {
 		data.add(value);
 		return this;
 	}
 
-	public InsertRow add(int index, Object value) {
+	public InsertRow set(int index, Object value) {
 		while (data.size() <= index) {
 			data.add(null);
 		}
 		data.add(index, value);
+		return this;
+	}
+
+	public InsertRow set(Object... values) {
+		for (Object value : values) set(value);
 		return this;
 	}
 
