@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
@@ -195,13 +196,12 @@ public class DatabaseTests {
 				"  SELECT foo.id AS fooid, bar.id AS barid\n" +
 				"  FROM foo, bar\n" +
 				"  WHERE 0=0;\n" +
-				"COMMIT;\n" +
-				"PRAGMA foreign_keys=ON;");
+				"COMMIT;\n");
 		}
 	}
 
 	@Test
-	public void importShouldExecuteSQLOnDatabase() throws SQLException {
+	public void importShouldExecuteSQLOnDatabase() throws SQLException, TokenizeException {
 		try (Database db = Database.createEphemeral()) {
 			db.importFromString("PRAGMA foreign_keys=OFF;\n" +
 					"BEGIN TRANSACTION;\n" +
@@ -231,15 +231,14 @@ public class DatabaseTests {
 					"  WHERE 0=0;\n" +
 					"INSERT INTO [main].[bar] VALUES (1, 1, 'abc'), (2, 1, 'ub'), (3, 2, NULL), (4, 3, 'Madafak');\n" +
 					"INSERT INTO [main].[foo] VALUES (1), (2), (3), (4);\n" +
-					"COMMIT;\n" +
-					"PRAGMA foreign_keys=ON;");
+					"COMMIT;\n");
 
 			assertEquals(4, db.assemble("SELECT COUNT(*) FROM foo").execute().mapFirst(Row::getInt).intValue());
 		}
 	}
 
 	@Test
-	public void executeMultiTest() throws SQLException {
+	public void executeMultiTest() throws SQLException, TokenizeException {
 		try (Database db = Database.createEphemeral()) {
 			db.execute("CREATE TABLE foo (bar TEXT)");
 			db.execute("INSERT INTO foo VALUES ('a'), ('b'), ('c')");
