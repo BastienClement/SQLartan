@@ -13,8 +13,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
-import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.TableColumn;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -201,38 +201,24 @@ public class SqlartanController {
 	 * Open the main database
 	 */
 	@FXML
-	private void openDB() {
-		if (db != null && (!db.isClosed())) {
+	private void openDatabase() {
+		if (db != null && (!db.isClosed()))
 			db.close();
-		}
 
-		while (true) {
-			File file = openSQLLiteDB();
-
-			if (file == null)
-				break;
-
-			try {
-				db = Database.open(file.getPath());
+		try {
+			File f = openSQLiteDatabase();
+			if(f != null) {
+				db = Database.open(f);
+				databaseMenu.setDisable(false);
 				refreshView();
-				break;
-			} catch (SQLException e) {
-
-				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choose new");
-				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
-					buttonCancel, buttonRetry, buttonNewFile);
-				if (res.isPresent()) {
-					if (res.get() == buttonNewFile)
-						file = openSQLLiteDB();
-					else if (res.get() == buttonCancel)
-						break;
-				}
 			}
+		} catch (SQLException e) {
+			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			ButtonType buttonRetry = new ButtonType("Retry");
+			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
+			     .filter(b -> buttonRetry == b)
+			     .ifPresent(b -> openDatabase());
 		}
-
-		databaseMenu.setDisable(false);
 	}
 
 
@@ -307,15 +293,12 @@ public class SqlartanController {
 	 * @return the opend database
 	 */
 	@FXML
-	private File openSQLLiteDB() {
+	private File openSQLiteDatabase() {
 		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
 
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-		Database tmpDB = null;
-
-		return file;
+		return fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 	}
 
 
@@ -492,12 +475,12 @@ public class SqlartanController {
 	 * Display About
 	 */
 	@FXML
-	private void displayAbout(){
+	private void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
 		AttachedChooserController attachedChooserController = null;
 
-		try{
+		try {
 			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
 
 			stage.setTitle("SQLartan - About");
@@ -508,9 +491,9 @@ public class SqlartanController {
 			stage.setScene(new Scene(pane));
 			stage.showAndWait();
 
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
