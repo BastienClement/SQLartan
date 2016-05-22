@@ -50,9 +50,10 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 
 	@Override
 	protected GeneratedColumn columnBuilder(Row row) {
+		// TODO: implements sources
 		return new GeneratedColumn(new GeneratedColumn.Properties() {
-			public Optional<Table> sourceTable() { throw new UnsupportedOperationException(); }
-			public Optional<TableColumn> sourceColumn() { throw new UnsupportedOperationException(); }
+			public Optional<Table> sourceTable() { return Optional.empty(); }
+			public Optional<TableColumn> sourceColumn() { return Optional.empty(); }
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
 			public boolean nullable() { return row.getInt("notnull") == 0; }
