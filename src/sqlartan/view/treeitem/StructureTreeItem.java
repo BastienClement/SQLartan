@@ -46,12 +46,12 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 			});
 		}));
 
-		copie.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
+		addTable.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
 			// TODO
-			controller.
+			//controller.
 		}));
 
-		return new ContextMenu(drop, rename, copie);
+		return new ContextMenu(drop, rename, copie, addTable);
 	}
 
 }
