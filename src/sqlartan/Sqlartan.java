@@ -44,9 +44,9 @@ public class Sqlartan extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
-		Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+		/*Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
 			Popup.error("Something went wrong", throwable.getMessage());
-		});
+		});*/
 
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("SQLartan");
