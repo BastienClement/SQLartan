@@ -333,7 +333,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		Result res = Result.fromQuery(connection, query);
+		Result res = Result.fromQuery(this, connection, query);
 		for (Consumer<ReadOnlyResult> listener : executeListeners) {
 			try {
 				listener.accept(res);

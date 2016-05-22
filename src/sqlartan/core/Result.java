@@ -20,20 +20,19 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query      the SQL query
 	 * @throws SQLException
 	 */
-	public static Result fromQuery(Connection connection, String query) throws SQLException {
+	static Result fromQuery(Database database, Connection connection, String query) throws SQLException {
 		Statement statement = connection.createStatement();
-		return from(statement, statement.execute(query), query);
+		return from(database, statement, statement.execute(query), query);
 	}
 
 	/**
 	 * Constructs a Result by executing the given prepared statement.
 	 *
-	 * @param preparedStatement the prepared statement to execute
+	 * @param statement the prepared statement to execute
 	 * @throws SQLException
 	 */
-	public static Result fromPreparedStatement(PreparedStatement preparedStatement, String sql)
-			throws SQLException {
-		return from(preparedStatement, preparedStatement.execute(), sql);
+	static Result fromPreparedStatement(Database database, PreparedStatement statement, String sql) throws SQLException {
+		return from(database, statement, statement.execute(), sql);
 	}
 
 	/**
@@ -43,9 +42,12 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query     a flag indicating if the request was a SELECT or UPDATE statement
 	 * @throws SQLException
 	 */
-	private static Result from(Statement statement, boolean query, String sql) throws SQLException {
-		return query ? new QueryResult(statement, sql) : new UpdateResult(statement, sql);
+	private static Result from(Database database, Statement statement, boolean query, String sql) throws SQLException {
+		return query ? new QueryResult(database, statement, sql) : new UpdateResult(database, statement, sql);
 	}
+
+	/** The source database */
+	private Database database;
 
 	/** The underlying statement object */
 	private Statement statement;
@@ -53,7 +55,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	/** The source SQL query */
 	private String sql;
 
-	private Result(Statement statement, String sql) {
+	private Result(Database database, Statement statement, String sql) {
+		this.database = database;
 		this.statement = statement;
 		this.sql = sql;
 	}
@@ -158,8 +161,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		 * @param statement
 		 * @throws SQLException
 		 */
-		private QueryResult(Statement statement, String sql) throws SQLException {
-			super(statement, sql);
+		private QueryResult(Database database, Statement statement, String sql) throws SQLException {
+			super(database, statement, sql);
 			resultSet = statement.getResultSet();
 
 			// Read metadata
@@ -303,8 +306,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	private static class UpdateResult extends Result implements IterableAdapter<Row> {
 		private int updateCount = 0;
 
-		private UpdateResult(Statement statement, String sql) throws SQLException {
-			super(statement, sql);
+		private UpdateResult(Database database, Statement statement, String sql) throws SQLException {
+			super(database, statement, sql);
 			updateCount = statement.getUpdateCount();
 			close();
 		}
