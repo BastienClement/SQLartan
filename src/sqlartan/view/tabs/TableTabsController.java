@@ -67,6 +67,7 @@ public class TableTabsController extends TabsController {
 	private TableView<TableStructure> structureTable;
 
 
+
 	@FXML
 	private void initialize() {
 
@@ -120,7 +121,6 @@ public class TableTabsController extends TabsController {
 
 
 		insertTable.setItems(insertRows);
-
 
 	}
 

@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -43,6 +44,12 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+
+	/**
+	 * TextArea for the request history
+	 */
+	@FXML private TextArea request;
+
 	@FXML
 	private Menu databaseMenu;
 	private List<String> atachedDBs = new LinkedList<>();
@@ -118,6 +125,7 @@ public class SqlartanController {
 		mainTreeItem.setExpanded(true);
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
+
 	}
 
 
@@ -232,6 +240,15 @@ public class SqlartanController {
 		}
 
 		databaseMenu.setDisable(false);
+
+		db.registerListener(new Consumer<ReadOnlyResult>() {
+			@Override
+			public void accept(ReadOnlyResult readOnlyResult) {
+				String tmp = request.getText();
+				tmp = readOnlyResult.query() + "\n" + tmp;
+				request.setText(tmp);
+			}
+		});
 	}
 
 

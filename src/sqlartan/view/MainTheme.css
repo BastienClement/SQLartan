@@ -22,6 +22,19 @@
     -fx-background-color: transparent, white, transparent, white;
 }
 
+.text-area-request {
+     -fx-background-insets: 0;
+     -fx-background-color: #7ecfff;
+ }
+
+.text-area-request .scroll-pane {
+    -fx-background-color: #7ecfff;
+}
+
+.text-area-request .scroll-pane .content{
+    -fx-background-color: #7ecfff;
+}
+
 .text-area .content {
     -fx-background-color: transparent, white, transparent, white;
 }

@@ -48,6 +48,6 @@
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <TextArea fx:id="request" disable="true" editable="false" prefHeight="55.0" prefWidth="904.0" style="-fx-background-color: blue;" BorderPane.alignment="CENTER" />
+      <TextArea fx:id="request" editable="false" prefHeight="82.0" prefWidth="1135.0" styleClass="text-area-request" stylesheets="@MainTheme.css" BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>
