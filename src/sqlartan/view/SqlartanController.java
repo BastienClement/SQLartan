@@ -48,6 +48,8 @@ public class SqlartanController {
 	@FXML
 	private Menu detatchMenu;
 
+	private DatabaseTabsController databaseTabsController;
+
 
 	/**
 	 * TextArea for the request history
@@ -86,8 +88,8 @@ public class SqlartanController {
 							e.printStackTrace();
 						}
 
-						DatabaseTabsController tabsController = loader.getController();
-						tabsController.setDatabase(db);
+						databaseTabsController = loader.getController();
+						databaseTabsController.setDatabase(db);
 					}
 
 					break;
@@ -256,22 +258,8 @@ public class SqlartanController {
 			MenuItem execute = new MenuItem();
 			execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
 			execute.setOnAction(event -> {
-				FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
-				TabPane tabPane = null;
-				stackPane.getChildren().clear();
-				try {
-					tabPane = loader.load();
-					stackPane.getChildren().add(tabPane);
-					DatabaseTabsController tabsController = loader.getController();
-					tabsController.setDatabase(db);
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
-
+				treeView.getSelectionModel().select(0);
+				databaseTabsController.selectSqlTab(1);
 			});
 
 			menu.getItems().add(execute);

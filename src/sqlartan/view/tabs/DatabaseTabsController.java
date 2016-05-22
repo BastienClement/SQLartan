@@ -12,12 +12,14 @@ import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.stream.IterableStream;
+import sqlartan.view.AllRequestController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
+import java.io.IOException;
 
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController extends TabsController {
+public class DatabaseTabsController{
 
 	@FXML
 	private TableColumn<DatabaseStructure, String> colName;
@@ -34,6 +36,11 @@ public class DatabaseTabsController extends TabsController {
 	private Tab structureTab;
 
 	@FXML
+	private Tab sqlTab;
+
+	private AllRequestController allRequestControler;
+
+	@FXML
 	private TableView<DatabaseStructure> structureTable;
 
 	private Database database;
@@ -41,11 +48,24 @@ public class DatabaseTabsController extends TabsController {
 	private ObservableList<DatabaseStructure> dbStructs = FXCollections.observableArrayList();
 
 	@FXML
-	private Pane sqlTab;
+	private Pane sqlPane;
 
 	@FXML
 	private void initialize() {
-		addPane(new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml")), sqlTab);
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
+
+		try {
+			Pane pane = loader.load();
+			sqlPane.getChildren().add(pane);
+
+			allRequestControler = loader.getController();
+			pane.prefHeightProperty().bind(sqlPane.heightProperty());
+			pane.prefWidthProperty().bind(sqlPane.widthProperty());
+
+		} catch (IOException e) {
+
+		}
+
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
 				displayStructure();
@@ -81,5 +101,9 @@ public class DatabaseTabsController extends TabsController {
 	 */
 	public void setDatabase(Database database) {
 		this.database = database;
+	}
+
+	public void selectSqlTab(int index){
+		tabPane.getSelectionModel().select(sqlTab);
 	}
 }

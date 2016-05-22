@@ -11,12 +11,13 @@ import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.view.DataTableView;
 import sqlartan.view.tabs.struct.TableStructure;
+import java.io.IOException;
 
 
 /**
  * Created by julien on 29.04.16.
  */
-public class TableTabsController extends TabsController {
+public class TableTabsController{
 
 	@FXML
 	private TableColumn<TableStructure, String> colNo;
@@ -58,7 +59,7 @@ public class TableTabsController extends TabsController {
 	private Tab insertTab;
 
 	@FXML
-	private Pane sqlTab;
+	private Pane sqlPane;
 
 	@FXML
 	private TableView<InsertRowStructure> insertTable;
@@ -71,8 +72,20 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private void initialize() {
 
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
 
-		addPane(new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml")), sqlTab);
+		try {
+			Pane pane = loader.load();
+			sqlPane.getChildren().add(pane);
+
+			pane.prefHeightProperty().bind(sqlPane.heightProperty());
+			pane.prefWidthProperty().bind(sqlPane.widthProperty());
+
+		} catch (IOException e) {
+
+		}
+
+
 
 		/**
 		 * Display the datas from the tableStructures in display tab only when he's active.
