@@ -3,6 +3,7 @@ package sqlartan.core;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.stream.IterableAdapter;
 import sqlartan.core.stream.IterableStream;
+import sqlartan.core.util.QueryResolver;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.*;
 import java.util.*;
@@ -126,11 +127,6 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	//###################################################################
 
 	@Override
-	public IterableStream<PersistentStructure<? extends Column>> sources() {
-		throw new UnsupportedOperationException("This Result is not a QueryResult");
-	}
-
-	@Override
 	public ImmutableList<GeneratedColumn> columns() {
 		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
@@ -179,6 +175,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			columns = new ArrayList<>(count);
 			columnsIndex = new HashMap<>();
 
+			Optional<List<TableColumn>> cols = QueryResolver.resolveColumns(database, sql);
+			System.out.println(cols);
+
 			for (int i = 1; i <= count; i++) {
 				String name = meta.getColumnName(i);
 				String table = meta.getTableName(i);
@@ -202,11 +201,6 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 
 		@Override
 		public boolean isQueryResult() { return true; }
-
-		@Override
-		public ImmutableList<PersistentStructure<? extends Column>> sources() {
-			throw new UnsupportedOperationException("Not implemented");
-		}
 
 		@Override
 		public ImmutableList<GeneratedColumn> columns() {
