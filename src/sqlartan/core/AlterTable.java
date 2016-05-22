@@ -16,33 +16,31 @@ public class AlterTable
 {
 	private final Table table;
 
-	private CreateTableStatement.Def tableDefinition;
-
 	// register all actions by grouped by column name
-	private HashMap<String, LinkedList<AlterAction>> actions = new HashMap<>();
+	private HashMap<String, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
 
-	public AlterTable(Table table) throws SQLException, ParseException {
+	private List<AlterAction> actions = new LinkedList();
+
+	public AlterTable(Table table) {
 		this.table = table;
 	}
 
 	public void execute() throws ParseException {
 		// execute all registred actions
-		Iterator<String> keySetIterator = actions.keySet().iterator();
-		while(keySetIterator.hasNext()){
-			String key = keySetIterator.next();
-			for(AlterAction action : actions.get(key)){
-				try {
-					action.execute();
-				} catch (SQLException e) {
-					throw new RuntimeSQLException(e);
-				}
+		for(AlterAction action : actions){
+			try {
+				action.execute();
+			} catch (SQLException e) {
+				throw new RuntimeSQLException(e);
 			}
-			actions.remove(key);
+			actions.remove(action);
+			if(action instanceof AlterColumnAction)
+				columnsActions.remove(((AlterColumnAction) action).column.name);
 		}
 	}
 
-	public LinkedList<AlterAction> actions(String columnName){
-		return actions.get(columnName);
+	public List<AlterAction> actions(){
+		return actions;
 	}
 
 	public void addColumn(ColumnDefinition definition) throws ParseException, SQLException {
@@ -75,11 +73,17 @@ public class AlterTable
 	}
 
 	// Add action to the stack
-	private void add(String columnName, AlterAction action) throws ParseException, SQLException {
-		if(!actions.containsKey(columnName))
-			actions.put(columnName, new LinkedList<AlterAction>());
-		actions.get(columnName).push(action);
+	private void add(String columnName, AlterColumnAction action) throws ParseException, SQLException {
+		if(!columnsActions.containsKey(columnName))
+			columnsActions.put(columnName, new LinkedList<AlterColumnAction>());
+		columnsActions.get(columnName).push(action);
+		add(action);
 		checkColumnActions(columnName);
+	}
+
+	private void add(AlterAction action) throws ParseException, SQLException {
+		if(!actions.contains(action))
+			actions.add(action);
 	}
 
 	// look for unnecessary actions
@@ -87,22 +91,26 @@ public class AlterTable
 		AlterColumnAction addAction = findLastAddColumnAction(columnName);
 		AlterColumnAction dropAction = findLastDropColumnAction(columnName);
 		if(addAction != null && dropAction != null) {
-			if (actions.get(columnName).indexOf(addAction) < actions.get(columnName).indexOf(dropAction)) {
-				actions.get(columnName).remove(addAction);
-				actions.get(columnName).remove(dropAction);
+			if (columnsActions.get(columnName).indexOf(addAction) < columnsActions.get(columnName).indexOf(dropAction)) {
+				columnsActions.get(columnName).remove(addAction);
+				actions.remove(addAction);
+				columnsActions.get(columnName).remove(dropAction);
+				actions.remove(dropAction);
 			}
-			if (actions.get(columnName).indexOf(dropAction) < actions.get(columnName).indexOf(addAction) && table.column(columnName).isPresent() && compare(getTableDefinition().columns.stream().filter(col -> col.name.equals(columnName)).findFirst().get(), addAction.column())) {
-				actions.get(columnName).remove(addAction);
-				actions.get(columnName).remove(dropAction);
+			if (columnsActions.get(columnName).indexOf(dropAction) < columnsActions.get(columnName).indexOf(addAction) && table.column(columnName).isPresent() && compare(getTableDefinition().columns.stream().filter(col -> col.name.equals(columnName)).findFirst().get(), addAction.column())) {
+				columnsActions.get(columnName).remove(addAction);
+				actions.remove(addAction);
+				columnsActions.get(columnName).remove(dropAction);
+				actions.remove(dropAction);
 			}
 		}
 	}
 
 	// retrieve last add action in the stack
 	private AlterColumnAction findLastAddColumnAction(String columnName){
-		if(actions.get(columnName) == null)
+		if(columnsActions.get(columnName) == null)
 			return null;
-		AlterColumnAction[] addActions = actions.get(columnName).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] addActions = columnsActions.get(columnName).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(addActions.length == 0)
 			return null;
 		return addActions[addActions.length - 1];
@@ -110,9 +118,9 @@ public class AlterTable
 
 	// retrieve last drop action in the stack
 	private AlterColumnAction findLastDropColumnAction(String columnName){
-		if(actions.get(columnName) == null)
+		if(columnsActions.get(columnName) == null)
 			return null;
-		AlterColumnAction[] dropActions = actions.get(columnName).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] dropActions = columnsActions.get(columnName).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(dropActions.length == 0)
 			return null;
 		return dropActions[dropActions.length - 1];
@@ -174,7 +182,20 @@ public class AlterTable
 		return Parser.parse(createStatement, CreateTableStatement.Def::parse);
 	}
 
-	private List<CreateViewStatement> getViews() throws SQLException {
+	private List<CreateTriggerStatement> getTriggersDefinitions() throws ParseException, SQLException {
+		List<CreateTriggerStatement> definitions = new LinkedList();
+		Iterator<String> iterator = table.triggers().keySet().iterator();
+		while (iterator.hasNext()){
+			String createStatement = table.database.assemble("SELECT name, sql, tbl_name FROM ", table.database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND name = ?")
+			                                       .execute(table.name, iterator.next())
+			                                       .mapFirst(Row::getString);
+			definitions.add(Parser.parse(createStatement, CreateTriggerStatement::parse));
+		}
+
+		return definitions;
+	}
+
+	private List<CreateViewStatement> getViewsDefinitions() throws SQLException {
 		IterableStream<String> createStatements =  table.database.assemble("SELECT sql FROM ", table.database.name(), ".sqlite_master WHERE type = 'view'")
 		                             .execute()
 		                             .map(Row::getString);
@@ -187,7 +208,12 @@ public class AlterTable
 			}
 			return null;
 		}).filter(createViewStatement -> {
-			
+			if(createViewStatement.as instanceof SelectStatement.Simple){
+				SelectStatement.Simple select = (SelectStatement.Simple)createViewStatement.as;
+				if(select.from.get().alias.get().equals(table.name()))
+					return true;
+			}
+			return false;
 		}).toList();
 	}
 
@@ -266,7 +292,19 @@ public class AlterTable
 
 			String dropTemporary = "DROP TABLE " + temporaryTable.name;
 
+
+
+			List<CreateTriggerStatement> triggerDefinitions = getTriggersDefinitions();
 			table.database.executeTransaction(new String[]{createTemporary, populateTemporary, dropTable, createTable, populateTable, dropTemporary});
+
+			triggerDefinitions.stream().forEach(def -> {
+				def.columns.remove(column.name);
+				try {
+					table.database.execute(def.toSQL());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
 		}
 	}
 
@@ -309,10 +347,82 @@ public class AlterTable
 
 			String dropTemporary = "DROP TABLE " + temporaryTable.name;
 
+			List<CreateTriggerStatement> triggerDefinitions = getTriggersDefinitions();
 			table.database.executeTransaction(new String[]{createTemporary, populateTemporary, dropTable, createTable, populateTable, dropTemporary});
-		}
 
+			triggerDefinitions.stream().forEach(def -> {
+				def.columns.set(def.columns.indexOf(originalName), column.name);
+				try {
+					table.database.execute(def.toSQL());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
+		}
 	}
 
+	private class PrimaryKeyAction extends AlterAction{
+
+		private String[] columns;
+
+		public PrimaryKeyAction(String[] columns){
+			this.columns = columns;
+		}
+
+		@Override
+		protected void executeAction() throws SQLException, ParseException {
+			CreateTableStatement.Def temporaryTable = getTableDefinition();
+			temporaryTable.temporary = true;
+			temporaryTable.name = tableDefinition.name + "_backup";
+			temporaryTable.schema = Optional.empty();
+			List<IndexedColumn> indexedColumns = ((TableConstraint.Index) temporaryTable.constraints.stream().filter(tableConstraint -> tableConstraint instanceof TableConstraint.Index && ((TableConstraint.Index)tableConstraint).type == TableConstraint.Index.Type.PrimaryKey).findFirst().get()).columns;
+			indexedColumns.clear();
+			for(String column : columns){
+				Expression.ColumnReference ref = new Expression.ColumnReference();
+				ref.column = column;
+				ref.table = Optional.of(temporaryTable.name);
+				ref.schema = Optional.empty();
+				IndexedColumn indexedColumn = new IndexedColumn();
+				indexedColumn.expression = ref;
+			}
+			String createTemporary = temporaryTable.toSQL();
+
+			String populateTemporary = "INSERT INTO " + temporaryTable.name + " SELECT " +
+					tableDefinition.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + table.fullName();
+
+			String dropTable = "DROP TABLE " + table.fullName();
+
+			CreateTableStatement.Def newTable = getTableDefinition();
+			indexedColumns = ((TableConstraint.Index) newTable.constraints.stream().filter(tableConstraint -> tableConstraint instanceof TableConstraint.Index && ((TableConstraint.Index)tableConstraint).type == TableConstraint.Index.Type.PrimaryKey).findFirst().get()).columns;
+			indexedColumns.clear();
+			for(String column : columns){
+				Expression.ColumnReference ref = new Expression.ColumnReference();
+				ref.column = column;
+				ref.table = Optional.of(newTable.name);
+				ref.schema = newTable.schema;
+				IndexedColumn indexedColumn = new IndexedColumn();
+				indexedColumn.expression = ref;
+			}
+			String createTable = newTable.toSQL();
+
+			String populateTable = "INSERT INTO " + newTable.name + " SELECT " +
+					temporaryTable.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + temporaryTable.name;
+
+			String dropTemporary = "DROP TABLE " + temporaryTable.name;
+
+			List<CreateTriggerStatement> triggerDefinitions = getTriggersDefinitions();
+			table.database.executeTransaction(new String[]{createTemporary, populateTemporary, dropTable, createTable, populateTable, dropTemporary});
+
+			triggerDefinitions.stream().forEach(def -> {
+				try {
+					table.database.execute(def.toSQL());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
+		}
+	}
 }
 
