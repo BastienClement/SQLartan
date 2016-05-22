@@ -1,6 +1,8 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -48,7 +50,8 @@ public class SqlartanController {
 	/**
 	 * TextArea for the request history
 	 */
-	@FXML private TextArea request;
+	@FXML private ListView<String> request;
+	private ObservableList<String> requests = FXCollections.observableArrayList();
 
 	@FXML
 	private Menu databaseMenu;
@@ -244,9 +247,9 @@ public class SqlartanController {
 		db.registerListener(new Consumer<ReadOnlyResult>() {
 			@Override
 			public void accept(ReadOnlyResult readOnlyResult) {
-				String tmp = request.getText();
-				tmp = readOnlyResult.query() + "\n" + tmp;
-				request.setText(tmp);
+				request.setItems(requests);
+				requests.add(0, readOnlyResult.query());
+
 			}
 		});
 	}
