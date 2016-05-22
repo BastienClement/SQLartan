@@ -333,12 +333,7 @@ public class SqlartanController {
 
 
 		} catch (SQLException e) {
-
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Problem while attatching database");
-			alert.setHeaderText(null);
-			alert.setContentText(e.getMessage());
-			alert.show();
+			Popup.error("Problem while attaching database", e.getMessage());
 		}
 
 
