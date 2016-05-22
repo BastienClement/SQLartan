@@ -295,9 +295,7 @@ public class SqlartanController {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
 
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-
-		return file;
+		return fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 	}
 
 
