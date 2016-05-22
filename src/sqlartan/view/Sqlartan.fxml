@@ -48,6 +48,6 @@
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <ListView fx:id="request" prefHeight="104.0" prefWidth="1135.0" BorderPane.alignment="CENTER" />
+      <ListView fx:id="request" minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="1135.0" BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>

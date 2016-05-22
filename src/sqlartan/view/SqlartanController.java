@@ -1,6 +1,7 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -244,13 +245,39 @@ public class SqlartanController {
 
 		databaseMenu.setDisable(false);
 
-		db.registerListener(new Consumer<ReadOnlyResult>() {
-			@Override
-			public void accept(ReadOnlyResult readOnlyResult) {
-				request.setItems(requests);
-				requests.add(0, readOnlyResult.query());
 
-			}
+		request.setCellFactory(lv -> {
+
+			ListCell<String> cells = new ListCell<>();
+
+			ContextMenu menu = new ContextMenu();
+
+			MenuItem execute = new MenuItem();
+			execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+			execute.setOnAction(event -> {
+
+			});
+
+			menu.getItems().add(execute);
+
+			cells.textProperty().bind(cells.itemProperty());
+
+			cells.emptyProperty().addListener((obs, wasEmpty, isNotEMpty) -> {
+				if (isNotEMpty)
+				{
+					cells.setContextMenu(null);
+				}
+				else {
+					cells.setContextMenu(menu);
+				}
+			});
+
+			return cells;
+		});
+
+		db.registerListener(readOnlyResult -> {
+			request.setItems(requests);
+			requests.add(0, readOnlyResult.query());
 		});
 	}
 
