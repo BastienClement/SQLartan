@@ -216,4 +216,11 @@ public class Table extends PersistentStructure<TableColumn> {
 	public void addColumn(String name, Affinity affinity) {
 		// TODO
 	}
+
+	/**
+	 * Inserts a new row in this table
+	 */
+	public InsertRow insert() {
+		return new InsertRow(this);
+	}
 }

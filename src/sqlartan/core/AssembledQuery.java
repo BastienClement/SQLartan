@@ -17,6 +17,25 @@ public class AssembledQuery {
 	/**
 	 * TODO
 	 *
+	 * @return
+	 */
+	public String query() {
+		return query;
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	public PreparedQuery prepare() throws SQLException {
+		return database.prepare(query);
+	}
+
+	/**
+	 * TODO
+	 *
 	 * @throws SQLException
 	 */
 	public Result execute() throws SQLException {
