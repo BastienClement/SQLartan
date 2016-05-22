@@ -49,7 +49,7 @@
          </content></Tab>
       <Tab text="+ SQL">
          <content>
-            <StackPane fx:id="sqlTab" prefHeight="150.0" prefWidth="200.0" />
+            <StackPane fx:id="sqlPane" prefHeight="150.0" prefWidth="200.0" />
          </content></Tab>
   </tabs>
 </TabPane>

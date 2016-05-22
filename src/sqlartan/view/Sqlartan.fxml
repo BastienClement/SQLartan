@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
@@ -50,6 +51,10 @@
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <TextArea fx:id="request" disable="true" editable="false" prefHeight="55.0" prefWidth="904.0" style="-fx-background-color: blue;" BorderPane.alignment="CENTER" />
+      <TitledPane fx:id="historyPane" BorderPane.alignment="CENTER">
+         <content>
+            <ListView fx:id="request" minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="1135.0" />
+         </content>
+      </TitledPane>
    </bottom>
 </BorderPane>

@@ -1,8 +1,12 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -44,6 +48,20 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+
+	private DatabaseTabsController databaseTabsController;
+
+
+	/**
+	 * TextArea for the request history
+	 */
+	@FXML
+	private ListView<String> request;
+	private ObservableList<String> requests = FXCollections.observableArrayList();
+	@FXML
+	private TitledPane historyPane;
+	private CheckBox displayPragma = new CheckBox("Display PRAGMA");
+
 	@FXML
 	private Menu databaseMenu;
 	private List<String> atachedDBs = new LinkedList<>();
@@ -75,8 +93,8 @@ public class SqlartanController {
 							e.printStackTrace();
 						}
 
-						DatabaseTabsController tabsController = loader.getController();
-						tabsController.setDatabase(db);
+						databaseTabsController = loader.getController();
+						databaseTabsController.setDatabase(db);
 					}
 
 					break;
@@ -119,6 +137,15 @@ public class SqlartanController {
 		mainTreeItem.setExpanded(true);
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
+
+		BorderPane borderPane = new BorderPane();
+		borderPane.setLeft(new Label("History"));
+		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+		borderPane.setRight(displayPragma);
+		borderPane.prefWidthProperty().bind(historyPane.widthProperty().subtract(38));
+
+		historyPane.setGraphic(borderPane);
+
 	}
 
 
@@ -207,8 +234,38 @@ public class SqlartanController {
 
 		try {
 			File f = openSQLiteDatabase();
-			if(f != null) {
+			if (f != null) {
 				db = Database.open(f);
+
+				request.setCellFactory(lv -> {
+
+					ListCell<String> cells = new ListCell<>();
+					ContextMenu menu = new ContextMenu();
+					MenuItem execute = new MenuItem();
+
+					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+					execute.setOnAction(event -> {
+						treeView.getSelectionModel().select(0);
+						databaseTabsController.selectSqlTab();
+						databaseTabsController.setSqlRequest(cells.itemProperty().getValue());
+					});
+
+					menu.getItems().add(execute);
+
+					cells.textProperty().bind(cells.itemProperty());
+
+					cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
+						cells.setContextMenu(isNotEmpty ? null : menu);
+					});
+
+					return cells;
+				});
+
+				db.registerListener(readOnlyResult -> {
+					request.setItems(requests);
+					requests.add(0, readOnlyResult.query());
+				});
+
 				databaseMenu.setDisable(false);
 				refreshView();
 			}
