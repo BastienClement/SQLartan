@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
@@ -48,6 +49,10 @@
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <ListView fx:id="request" minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="1135.0" BorderPane.alignment="CENTER" />
+      <TitledPane fx:id="historyPane" BorderPane.alignment="CENTER">
+         <content>
+            <ListView fx:id="request" minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="1135.0" />
+         </content>
+      </TitledPane>
    </bottom>
 </BorderPane>

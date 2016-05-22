@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -56,6 +57,8 @@ public class SqlartanController {
 	 */
 	@FXML private ListView<String> request;
 	private ObservableList<String> requests = FXCollections.observableArrayList();
+	@FXML private TitledPane historyPane;
+	private CheckBox displayPragma = new CheckBox("Display PRAGMA");
 
 	@FXML
 	private Menu databaseMenu;
@@ -132,6 +135,14 @@ public class SqlartanController {
 		mainTreeItem.setExpanded(true);
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
+
+		BorderPane borderPane = new BorderPane();
+		borderPane.setLeft(new Label("History"));
+		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+		borderPane.setRight(displayPragma);
+		borderPane.prefWidthProperty().bind(historyPane.widthProperty().subtract(38));
+
+		historyPane.setGraphic(borderPane);
 
 	}
 
