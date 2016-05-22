@@ -77,6 +77,7 @@ public class SqlartanController {
 
 						DatabaseTabsController tabsController = loader.getController();
 						tabsController.setDatabase(db);
+						tabsController.setController(this);
 					}
 
 					break;
@@ -361,6 +362,16 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Drop a view
+	 *
+	 * @param view
+	 */
+	public void dropView(View view) {
+		view.drop();
+		refreshView();
+	}
+
 
 	/**
 	 * Duplicate a table
@@ -381,6 +392,17 @@ public class SqlartanController {
 	 */
 	public void renameTable(Table table, String name) {
 		table.rename(name);
+		refreshView();
+	}
+
+	/**
+	 * Rename a view
+	 *
+	 * @param view
+	 * @param name
+	 */
+	public void renameView(View view, String name) {
+		view.rename(name);
 		refreshView();
 	}
 

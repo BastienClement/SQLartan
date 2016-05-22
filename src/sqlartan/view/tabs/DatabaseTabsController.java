@@ -10,7 +10,9 @@ import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
+import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
+import sqlartan.view.util.Popup;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +41,8 @@ public class DatabaseTabsController extends TabsController {
 	private TableView<DatabaseStructure> structureTable;
 
 	private Database database;
+
+	private SqlartanController controller;
 
 	private ObservableList<DatabaseStructure> dbStructs = FXCollections.observableArrayList();
 
@@ -81,10 +85,18 @@ public class DatabaseTabsController extends TabsController {
 								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
 								switch(dbStruct.typeProperty().get()){
 									case "View" :
-										database.view(dbStruct.nameProperty().get());
+										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
+											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
+												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
+											}
+										});
 										break;
 									case "Table" :
-										database.table(dbStruct.nameProperty().get()).get();
+										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
+											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
+												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
+											}
+										});
 										break;
 								}
 							} );
@@ -120,10 +132,10 @@ public class DatabaseTabsController extends TabsController {
 								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
 								switch(dbStruct.typeProperty().get()){
 									case "View" :
-										database.view(dbStruct.nameProperty().get()).get().drop();
+										controller.dropTable(database.table(dbStruct.nameProperty().get()).get());
 										break;
 									case "Table" :
-										database.table(dbStruct.nameProperty().get()).get().drop();
+										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
 										break;
 								}
 							} );
@@ -160,5 +172,14 @@ public class DatabaseTabsController extends TabsController {
 	 */
 	public void setDatabase(Database database) {
 		this.database = database;
+	}
+
+	/**
+	 * Set the controller
+	 *
+	 * @param controller
+	 */
+	public void setController(SqlartanController controller) {
+		this.controller = controller;
 	}
 }
