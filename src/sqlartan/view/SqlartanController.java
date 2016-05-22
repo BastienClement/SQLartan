@@ -245,9 +245,10 @@ public class SqlartanController {
 
 					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
 					execute.setOnAction(event -> {
+						String request = cells.itemProperty().getValue();
 						treeView.getSelectionModel().select(0);
 						databaseTabsController.selectSqlTab();
-						databaseTabsController.setSqlRequest(cells.itemProperty().getValue());
+						databaseTabsController.setSqlRequest(request);
 					});
 
 					menu.getItems().add(execute);
