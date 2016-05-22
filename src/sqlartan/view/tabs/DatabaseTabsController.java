@@ -87,14 +87,14 @@ public class DatabaseTabsController extends TabsController {
 									case "View" :
 										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
 											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
+												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
 											}
 										});
 										break;
 									case "Table" :
 										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
 											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
+												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
 											}
 										});
 										break;
@@ -132,10 +132,10 @@ public class DatabaseTabsController extends TabsController {
 								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
 								switch(dbStruct.typeProperty().get()){
 									case "View" :
-										controller.dropTable(database.table(dbStruct.nameProperty().get()).get());
+										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
 										break;
 									case "Table" :
-										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
+										controller.dropTable(database.table(dbStruct.nameProperty().get()).get());
 										break;
 								}
 							} );

@@ -18,7 +18,8 @@
                   <TableColumn fx:id="colNull" prefWidth="75.0" text="Null" />
                   <TableColumn fx:id="colDefaultValue" prefWidth="104.0" text="Default Value" />
                   <TableColumn fx:id="colComment" prefWidth="108.0" text="Comments" />
-                  <TableColumn fx:id="colActions" prefWidth="75.0" text="Actions" />
+                  <TableColumn fx:id="colRename" text="" />
+                  <TableColumn fx:id="colDelete" text="" />
               </columns>
             </TableView>
          </content></Tab>

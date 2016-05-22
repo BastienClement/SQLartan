@@ -2,17 +2,21 @@ package sqlartan.view.tabs;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.util.Callback;
 import sqlartan.Sqlartan;
+import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
+import sqlartan.core.Table;
 import sqlartan.view.DataTableView;
+import sqlartan.view.SqlartanController;
+import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.tabs.struct.TableStructure;
+import sqlartan.view.util.Popup;
 
 
 /**
@@ -33,7 +37,9 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private TableColumn<TableStructure, String> colComment;
 	@FXML
-	private TableColumn<TableStructure, String> colActions;
+	private TableColumn<TableStructure, String> colRename;
+	@FXML
+	private TableColumn<TableStructure, String> colDelete;
 
 	private PersistentStructure<?> structure;
 
@@ -54,6 +60,12 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private TableView<TableStructure> structureTable;
 
+	private Database database;
+
+	private SqlartanController controller;
+
+	private Table table;
+
 	@FXML
 	private void initialize() {
 
@@ -72,13 +84,80 @@ public class TableTabsController extends TabsController {
 			}
 		});
 
-		colActions.setCellValueFactory(param -> param.getValue().actionProperty());
 		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
 		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValueProperty());
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
 		colNo.setCellValueFactory(param -> param.getValue().noProperty());
 		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
+		colRename.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
+			@Override
+			public TableCell call( final TableColumn<TableStructure, String> param )
+			{
+				final TableCell<TableStructure, String> cell = new TableCell<TableStructure, String>()
+				{
+					final Button btn = new Button( "Rename" );
+
+					@Override
+					public void updateItem( String item, boolean empty )
+					{
+						super.updateItem( item, empty );
+						if ( empty )
+						{
+							setGraphic( null );
+							setText( null );
+						}
+						else
+						{
+							btn.setOnAction( ( ActionEvent event ) ->
+							{
+								TableStructure tableStruct = getTableView().getItems().get( getIndex() );
+								Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ",  tableStruct.nameProperty().get()).ifPresent(name -> {
+									if (name.length() > 0 && ! tableStruct.nameProperty().get().equals(name)) {
+										controller.renameColumn(table, tableStruct.nameProperty().get(), name);
+									}
+								});
+							} );
+							setGraphic( btn );
+							setText( null );
+						}
+					}
+				};
+				return cell;
+			}
+		});
+		colDelete.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
+			@Override
+			public TableCell call( final TableColumn<TableStructure, String> param )
+			{
+				final TableCell<TableStructure, String> cell = new TableCell<TableStructure, String>()
+				{
+					final Button btn = new Button( "Drop" );
+
+					@Override
+					public void updateItem( String item, boolean empty )
+					{
+						super.updateItem( item, empty );
+						if ( empty )
+						{
+							setGraphic( null );
+							setText( null );
+						}
+						else
+						{
+							btn.setOnAction( ( ActionEvent event ) ->
+							{
+								TableStructure tableStruct = getTableView().getItems().get( getIndex() );
+								controller.dropColumn(table, tableStruct.nameProperty().get());
+							} );
+							setGraphic( btn );
+							setText( null );
+						}
+					}
+				};
+				return cell;
+			}
+		});
 
 		tabPane.getSelectionModel().clearSelection();
 
@@ -100,4 +179,30 @@ public class TableTabsController extends TabsController {
 			structureTable.setItems(tableStructures);
 	}
 
+	/**
+	 * Set the database
+	 *
+	 * @param database
+	 */
+	public void setDatabase(Database database) {
+		this.database = database;
+	}
+
+	/**
+	 * Set the controller
+	 *
+	 * @param controller
+	 */
+	public void setController(SqlartanController controller) {
+		this.controller = controller;
+	}
+
+	/**
+	 * Set the table
+	 *
+	 * @param table
+	 */
+	public void setTable(Table table) {
+		this.table = table;
+	}
 }

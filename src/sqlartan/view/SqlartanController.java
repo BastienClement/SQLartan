@@ -104,6 +104,9 @@ public class SqlartanController {
 						}
 
 						TableTabsController tabsController = loader.getController();
+						tabsController.setDatabase(db);
+						tabsController.setController(this);
+						tabsController.setTable(db.table(treeItem.name()).get());
 						structure.ifPresent(tabsController::setStructure);
 
 					}
@@ -472,6 +475,7 @@ public class SqlartanController {
 	 */
 	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
+		refreshView();
 	}
 
 	@FXML
@@ -483,6 +487,7 @@ public class SqlartanController {
 		} catch (SQLException | IOException | TokenizeException e) {
 			Popup.error(":(", e.getMessage());
 		}
+		refreshView();
 	}
 
 	/**

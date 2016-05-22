@@ -13,13 +13,19 @@ public class TableTreeItem extends StructureTreeItem {
 	@Override
 	public ContextMenu getMenu() {
 		MenuItem truncate = new MenuItem("Truncate");
+		MenuItem addColumn = new MenuItem("Add column");
 
 		truncate.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(table -> {
 			controller.truncateTable(table);
 		}));
+		addColumn.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(table -> {
+			// TODO
+			//controller.addColumn();
+		}));
 
 		ContextMenu res = super.getMenu();
 		res.getItems().add(truncate);
+		res.getItems().add(addColumn);
 		return res;
 	}
 	@Override

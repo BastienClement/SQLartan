@@ -20,6 +20,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 		MenuItem drop = new MenuItem("Drop");
 		MenuItem rename = new MenuItem("Rename");
 		MenuItem copie = new MenuItem("Copy");
+		MenuItem addTable = new MenuItem("Add table");
 
 		drop.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
 			ButtonType yes = new ButtonType("YES");
@@ -43,7 +44,11 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 				if (name.length() > 0 && !t.name().equals(name))
 					controller.duplicateTable(t, name);
 			});
+		}));
 
+		copie.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
+			// TODO
+			controller.
 		}));
 
 		return new ContextMenu(drop, rename, copie);
