@@ -176,9 +176,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			columnsIndex = new HashMap<>();
 
 			Optional<List<TableColumn>> cols = QueryResolver.resolveColumns(database, sql);
-			System.out.println(cols);
 
 			for (int i = 1; i <= count; i++) {
+				int index = i;
 				String name = meta.getColumnName(i);
 				String table = meta.getTableName(i);
 				String type = meta.getColumnTypeName(i);
@@ -186,11 +186,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 
 				GeneratedColumn col = new GeneratedColumn(new GeneratedColumn.Properties() {
 					public String name() { return name; }
-					public String type() {
-						return type;
-					}
-					public String sourceTable() { return table; }
-					public String sourceExpr() { throw new UnsupportedOperationException(); }
+					public String type() { return type; }
+					public Optional<Table> sourceTable() { return database.table(table); }
+					public Optional<TableColumn> sourceColumn() { return cols.map(c -> c.get(index - 1)); }
 					public boolean nullable() { return nullable; }
 				});
 

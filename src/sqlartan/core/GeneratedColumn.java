@@ -1,9 +1,11 @@
 package sqlartan.core;
 
+import java.util.Optional;
+
 public class GeneratedColumn extends Column {
 	interface Properties extends Column.Properties {
-		String sourceTable();
-		String sourceExpr();
+		Optional<Table> sourceTable();
+		Optional<TableColumn> sourceColumn();
 	}
 
 	private Properties props;
@@ -13,15 +15,8 @@ public class GeneratedColumn extends Column {
 		this.props = props;
 	}
 
-	public boolean isComputed() {
-		return props.sourceTable() == null;
-	}
-
-	public TableColumn sourceColumn() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-
-	public String sourceExpr() {
-		return props.sourceExpr();
+	public Optional<Table> sourceTable() { return props.sourceTable(); }
+	public Optional<TableColumn> sourceColumn() {
+		return props.sourceColumn();
 	}
 }
