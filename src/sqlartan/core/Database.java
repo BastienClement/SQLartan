@@ -15,9 +15,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import static sqlartan.core.ast.Keyword.BEGIN;
-import static sqlartan.core.ast.Keyword.END;
-import static sqlartan.core.ast.Keyword.MATCH;
+import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.SEMICOLON;
 import static sqlartan.util.Matching.match;
 
@@ -369,22 +367,27 @@ public class Database implements AutoCloseable {
 					}
 
 					int block_level = 0;
-					for (Token current = tokens.current(); block_level > 0 || !current.equals(SEMICOLON); tokens.consume(), current = tokens.current()) {
-						if (current.equals(BEGIN) || current.equals(MATCH)) {
+					for (Token current = tokens.current(); ; tokens.consume(), current = tokens.current()) {
+						if ((current.equals(BEGIN) && !tokens.next().equals(TRANSACTION)) || current.equals(MATCH)) {
 							block_level++;
 						} else if (current.equals(END)) {
 							block_level--;
 						} else if (current instanceof Token.EndOfStream) {
-							statement = query.substring(begin);
+							statement = query.substring(begin).trim();
 							begin = len;
-							return;
+							break;
+						} else if (block_level == 0 && current.equals(SEMICOLON)) {
+							int offset = current.offset + 1;
+							statement = query.substring(begin, offset).trim();
+							begin = offset;
+							tokens.consume();
+							break;
 						}
 					}
 
-					int offset = tokens.current().offset + 1;
-					statement = query.substring(begin, offset);
-					tokens.consume();
-					begin = offset;
+					if (statement.isEmpty()) {
+						findStatement();
+					}
 				}
 
 				@Override
@@ -507,6 +510,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
+
 	public void importfromFile(File file) throws SQLException, IOException, TokenizeException {
 		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
 	}
@@ -556,18 +560,18 @@ public class Database implements AutoCloseable {
 			}
 		};
 
-		// Get every triggers
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
-
 		// Get every views
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
 				.execute()
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every triggers
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n"));
 		sql += ";\n";
 
 		return sql + "COMMIT;";

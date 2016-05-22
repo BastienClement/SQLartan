@@ -17,14 +17,15 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
-import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.TableColumn;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.util.Popup;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -226,75 +227,60 @@ public class SqlartanController {
 	 * Open the main database
 	 */
 	@FXML
-	private void openDB() {
-		if (db != null && (!db.isClosed())) {
+	private void openDatabase() {
+		if (db != null && (!db.isClosed()))
 			db.close();
-		}
 
-		while (true) {
-			File file = openSQLLiteDB();
+		try {
+			File f = openSQLiteDatabase();
+			if(f != null) {
+				db = Database.open(f);
+				request.setCellFactory(lv -> {
 
-			if (file == null)
-				break;
+					ListCell<String> cells = new ListCell<>();
 
-			try {
-				db = Database.open(file.getPath());
+					ContextMenu menu = new ContextMenu();
+
+					MenuItem execute = new MenuItem();
+					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+					execute.setOnAction(event -> {
+						treeView.getSelectionModel().select(0);
+						databaseTabsController.selectSqlTab();
+						databaseTabsController.setSqlRequest(cells.itemProperty().getValue());
+					});
+
+					menu.getItems().add(execute);
+
+					cells.textProperty().bind(cells.itemProperty());
+
+					cells.emptyProperty().addListener((obs, wasEmpty, isNotEMpty) -> {
+						if (isNotEMpty)
+						{
+							cells.setContextMenu(null);
+						}
+						else {
+							cells.setContextMenu(menu);
+						}
+					});
+
+					return cells;
+				});
+
+				db.registerListener(readOnlyResult -> {
+					request.setItems(requests);
+					requests.add(0, readOnlyResult.query());
+				});
+
+				databaseMenu.setDisable(false);
 				refreshView();
-				break;
-			} catch (SQLException e) {
-
-				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choose new");
-				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
-					buttonCancel, buttonRetry, buttonNewFile);
-				if (res.isPresent()) {
-					if (res.get() == buttonNewFile)
-						file = openSQLLiteDB();
-					else if (res.get() == buttonCancel)
-						break;
-				}
 			}
+		} catch (SQLException e) {
+			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			ButtonType buttonRetry = new ButtonType("Retry");
+			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
+			     .filter(b -> buttonRetry == b)
+			     .ifPresent(b -> openDatabase());
 		}
-
-		databaseMenu.setDisable(false);
-
-
-		request.setCellFactory(lv -> {
-
-			ListCell<String> cells = new ListCell<>();
-
-			ContextMenu menu = new ContextMenu();
-
-			MenuItem execute = new MenuItem();
-			execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
-			execute.setOnAction(event -> {
-				treeView.getSelectionModel().select(0);
-				databaseTabsController.selectSqlTab();
-				databaseTabsController.setSqlRequest(cells.itemProperty().getValue());
-			});
-
-			menu.getItems().add(execute);
-
-			cells.textProperty().bind(cells.itemProperty());
-
-			cells.emptyProperty().addListener((obs, wasEmpty, isNotEMpty) -> {
-				if (isNotEMpty)
-				{
-					cells.setContextMenu(null);
-				}
-				else {
-					cells.setContextMenu(menu);
-				}
-			});
-
-			return cells;
-		});
-
-		db.registerListener(readOnlyResult -> {
-			request.setItems(requests);
-			requests.add(0, readOnlyResult.query());
-		});
 	}
 
 
@@ -369,14 +355,12 @@ public class SqlartanController {
 	 * @return the opend database
 	 */
 	@FXML
-	private File openSQLLiteDB() {
+	private File openSQLiteDatabase() {
 		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-		Database tmpDB = null;
 
-		return file;
+		return fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 	}
 
 
@@ -513,25 +497,52 @@ public class SqlartanController {
 		database.importFromString(sql);
 	}
 
+	@FXML
+	public void importFX() throws TokenizeException {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Import SQLite database");
+		try {
+			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
+		} catch (SQLException | IOException | TokenizeException e) {
+			Popup.error(":(", e.getMessage());
+		}
+	}
+
 	/**
-	 * Export a database
+	 * Export the database
 	 *
-	 * @param database
+	 * @throws SQLException
 	 */
-	public String export(Database database) throws SQLException {
-		return database.export();
+	@FXML
+	public void export() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		//Show save file dialog
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+
+		try {
+			FileWriter fileWriter = new FileWriter(file);
+			fileWriter.write(db.export());
+			fileWriter.close();
+		} catch (IOException ignored) {
+
+		}
 	}
 
 	/**
 	 * Display About
 	 */
 	@FXML
-	private void displayAbout(){
+	private void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
 		AttachedChooserController attachedChooserController = null;
 
-		try{
+		try {
 			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
 
 			stage.setTitle("SQLartan - About");
@@ -542,9 +553,9 @@ public class SqlartanController {
 			stage.setScene(new Scene(pane));
 			stage.showAndWait();
 
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
