@@ -432,7 +432,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public PreparedQuery prepare(String query) throws SQLException {
-		return new PreparedQuery(connection, query);
+		return new PreparedQuery(this, connection, query);
 	}
 
 	/**
