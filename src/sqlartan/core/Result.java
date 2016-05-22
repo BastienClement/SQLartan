@@ -157,6 +157,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		private ResultSet resultSet;
 		private boolean consumed = false;
 
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+		Optional<List<TableColumn>> columnRefs;
+
 		/**
 		 * Constructs a QueryResult by reading the given Statement object.
 		 * TODO: write more
@@ -175,7 +178,6 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			columns = new ArrayList<>(count);
 			columnsIndex = new HashMap<>();
 
-			Optional<List<TableColumn>> cols = QueryResolver.resolveColumns(database, sql);
 
 			for (int i = 1; i <= count; i++) {
 				int index = i;
@@ -188,13 +190,25 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 					public String name() { return name; }
 					public String type() { return type; }
 					public Optional<Table> sourceTable() { return database.table(table); }
-					public Optional<TableColumn> sourceColumn() { return cols.map(c -> c.get(index - 1)); }
+					public Optional<TableColumn> sourceColumn() { return columnRef(index); }
 					public boolean nullable() { return nullable; }
 				});
 
 				columns.add(col);
 				columnsIndex.put(name, col);
 			}
+		}
+
+		/**
+		 * TODO
+		 * @param index
+		 * @return
+		 */
+		private synchronized Optional<TableColumn> columnRef(int index) {
+			if (columnRefs == null) {
+				columnRefs = QueryResolver.resolveColumns(database(), query());
+			}
+			return columnRefs.map(c -> c.get(index - 1));
 		}
 
 		@Override
