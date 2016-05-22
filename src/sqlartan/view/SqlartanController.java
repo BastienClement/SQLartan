@@ -31,7 +31,6 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -56,9 +55,11 @@ public class SqlartanController {
 	/**
 	 * TextArea for the request history
 	 */
-	@FXML private ListView<String> request;
+	@FXML
+	private ListView<String> request;
 	private ObservableList<String> requests = FXCollections.observableArrayList();
-	@FXML private TitledPane historyPane;
+	@FXML
+	private TitledPane historyPane;
 	private CheckBox displayPragma = new CheckBox("Display PRAGMA");
 
 	@FXML
@@ -233,15 +234,15 @@ public class SqlartanController {
 
 		try {
 			File f = openSQLiteDatabase();
-			if(f != null) {
+			if (f != null) {
 				db = Database.open(f);
+
 				request.setCellFactory(lv -> {
 
 					ListCell<String> cells = new ListCell<>();
-
 					ContextMenu menu = new ContextMenu();
-
 					MenuItem execute = new MenuItem();
+
 					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
 					execute.setOnAction(event -> {
 						treeView.getSelectionModel().select(0);
@@ -253,14 +254,8 @@ public class SqlartanController {
 
 					cells.textProperty().bind(cells.itemProperty());
 
-					cells.emptyProperty().addListener((obs, wasEmpty, isNotEMpty) -> {
-						if (isNotEMpty)
-						{
-							cells.setContextMenu(null);
-						}
-						else {
-							cells.setContextMenu(menu);
-						}
+					cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
+						cells.setContextMenu(isNotEmpty ? null : menu);
 					});
 
 					return cells;
