@@ -62,6 +62,13 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	}
 
 	/**
+	 * Returns the Database from which this Result was generated
+	 */
+	public Database database() {
+		return database;
+	}
+
+	/**
 	 * Returns the SQL query that generated this Result
 	 */
 	public String query() {
@@ -111,7 +118,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * Returns the number of rows updated by the query.
 	 */
 	public int updateCount() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not an UpdateResult");
 	}
 
 	//###################################################################
@@ -120,22 +127,22 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 
 	@Override
 	public IterableStream<PersistentStructure<? extends Column>> sources() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
 	public ImmutableList<GeneratedColumn> columns() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
 	public Optional<GeneratedColumn> column(String name) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
 	public Optional<GeneratedColumn> column(int idx) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	/**
