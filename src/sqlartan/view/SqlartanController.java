@@ -13,8 +13,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
-import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.TableColumn;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -289,12 +289,7 @@ public class SqlartanController {
 
 
 		} catch (SQLException e) {
-
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Problem while attatching database");
-			alert.setHeaderText(null);
-			alert.setContentText(e.getMessage());
-			alert.show();
+			Popup.error("Problem while attaching database", e.getMessage());
 		}
 
 
@@ -492,12 +487,12 @@ public class SqlartanController {
 	 * Display About
 	 */
 	@FXML
-	private void displayAbout(){
+	private void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
 		AttachedChooserController attachedChooserController = null;
 
-		try{
+		try {
 			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
 
 			stage.setTitle("SQLartan - About");
@@ -508,9 +503,9 @@ public class SqlartanController {
 			stage.setScene(new Scene(pane));
 			stage.showAndWait();
 
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
