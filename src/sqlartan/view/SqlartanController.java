@@ -206,9 +206,12 @@ public class SqlartanController {
 			db.close();
 
 		try {
-			db = Database.open(openSQLiteDatabase());
-			databaseMenu.setDisable(false);
-			refreshView();
+			File f = openSQLiteDatabase();
+			if(f != null) {
+				db = Database.open(f);
+				databaseMenu.setDisable(false);
+				refreshView();
+			}
 		} catch (SQLException e) {
 			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 			ButtonType buttonRetry = new ButtonType("Retry");
