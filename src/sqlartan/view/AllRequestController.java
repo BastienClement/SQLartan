@@ -50,5 +50,9 @@ public class AllRequestController {
 		}
 	}
 
+	public void setRequest(String request){
+		SQLTextQuery.setText(request);
+	}
+
 
 }

@@ -90,7 +90,6 @@ public class DatabaseTabsController{
 		                               .map(DatabaseStructure::new)
 		                               .toList());
 
-
 		structureTable.setItems(dbStructs);
 	}
 
@@ -103,7 +102,16 @@ public class DatabaseTabsController{
 		this.database = database;
 	}
 
-	public void selectSqlTab(int index){
-		tabPane.getSelectionModel().select(sqlTab);
+	/**
+	 *
+	 *
+	 */
+	public void selectSqlTab(){
+		tabPane.getSelectionModel().selectFirst();
+		tabPane.getSelectionModel().selectNext();
+	}
+
+	public void setSqlRequest(String request){
+		allRequestControler.setRequest(request);
 	}
 }

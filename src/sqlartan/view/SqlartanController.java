@@ -259,7 +259,8 @@ public class SqlartanController {
 			execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
 			execute.setOnAction(event -> {
 				treeView.getSelectionModel().select(0);
-				databaseTabsController.selectSqlTab(1);
+				databaseTabsController.selectSqlTab();
+				databaseTabsController.setSqlRequest(cells.itemProperty().getValue());
 			});
 
 			menu.getItems().add(execute);
