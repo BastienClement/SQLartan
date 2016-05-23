@@ -227,17 +227,17 @@ public class SqlartanController {
 
 
 	/**
-	 * Open the main database
+	 * Open de main database
+	 * @param file: file of the database to open
 	 */
 	@FXML
-	private void openDatabase() {
+	private void openDatabase(File file) {
 		if (db != null && (!db.isClosed()))
 			db.close();
 
 		try {
-			File f = openSQLiteDatabase();
-			if (f != null) {
-				db = Database.open(f);
+			if (file != null) {
+				db = Database.open(file);
 
 				request.setCellFactory(lv -> {
 
@@ -277,13 +277,31 @@ public class SqlartanController {
 			ButtonType buttonRetry = new ButtonType("Retry");
 			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
 			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> openDatabase());
+			     .ifPresent(b -> openSQLiteDatabase());
 		}
 	}
 
 
 	/**
-	 * Attach a database to the main database
+	 * Function called by the GUI
+	 * to open a database
+	 */
+	@FXML
+	private void openSQLiteDatabase() {
+		// Create the file popup
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open SQLite database");
+
+		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+
+		openDatabase(file);
+	}
+
+
+
+	/**
+	 * FUnction called by the GUI
+	 * to attache a database
 	 */
 	@FXML
 	private void attachButton() {
@@ -313,6 +331,9 @@ public class SqlartanController {
 
 	/**
 	 * Attach a database to the main database
+	 *
+	 * @param file : file of the database
+	 * @param dbName : name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
 
@@ -341,20 +362,6 @@ public class SqlartanController {
 
 	}
 
-
-	/**
-	 * Open a dialog for the file to choose db
-	 *
-	 * @return the opend database
-	 */
-	@FXML
-	private File openSQLiteDatabase() {
-		// Create the file popup
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLite database");
-
-		return fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-	}
 
 
 	/**
@@ -556,7 +563,8 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Display About
+	 * Function called by the GUI
+	 * to display the about window
 	 */
 	@FXML
 	private void displayAbout() {
@@ -582,5 +590,25 @@ public class SqlartanController {
 
 	public void selectTreeIndex(int i) {
 		treeView.getSelectionModel().select(0);
+	}
+
+	/**
+	 * Function called by the GUI
+	 * to create a new database and open or attache it
+	 */
+	@FXML
+	private void createDatabase() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+
+		//Show save file dialog
+		fileChooser.setTitle("Create a new database");
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+
+		if (db != null && (!db.isClosed())) {
+			attachDatabase(file, file.getName().split("\\.")[0]);
+		}
+		else {
+			openDatabase(file);
+		}
 	}
 }
