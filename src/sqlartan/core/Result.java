@@ -3,7 +3,7 @@ package sqlartan.core;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.stream.IterableAdapter;
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.*;
 import java.util.*;
 
@@ -245,7 +245,7 @@ public abstract class Result implements QueryStructure<GeneratedColumn>, AutoClo
 					current = resultSet.next() ? new Row(QueryResult.this, resultSet) : null;
 					if (current == null) close();
 				} catch (SQLException e) {
-					throw new RuntimeSQLException(e);
+					throw new UncheckedSQLException(e);
 				}
 			}
 

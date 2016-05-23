@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.sql.SQLException;
 
@@ -16,11 +16,11 @@ public class AttachedDatabase extends Database {
 		return main;
 	}
 
-	public void detach() {
+	void detach() {
 		try {
-			main.detach(name());
+			assemble("DETACH DATABASE ", name()).execute();
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -28,10 +28,6 @@ public class AttachedDatabase extends Database {
 	public void close() {
 		// We must not call .close() on the Connection from a child Database
 		// Instead detach self
-		try {
-			assemble("DETACH DATABASE ", name()).execute();
-		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
-		}
+		main.detach(name());
 	}
 }

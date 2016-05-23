@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<Pane fx:id="attachedPane" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.attached.AttachedChooserController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="146.0" prefWidth="432.0">
+         <children>
+            <GridPane vgap="8.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.0" minWidth="10.0" prefWidth="114.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="288.0" minWidth="10.0" prefWidth="288.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label prefHeight="29.0" prefWidth="152.0" text="Database Name:" />
+                  <Label prefHeight="20.0" prefWidth="97.0" text="Path:" GridPane.rowIndex="1" />
+                  <TextField fx:id="dbName" GridPane.columnIndex="1" />
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <children>
+                        <TextField fx:id="path" prefHeight="27.0" prefWidth="221.0" />
+                        <Button fx:id="browse" alignment="BOTTOM_LEFT" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#browse" text="Browse" />
+                     </children>
+                  </HBox>
+               </children>
+            </GridPane>
+            <ButtonBar prefHeight="40.0" prefWidth="200.0">
+              <buttons>
+                  <Button fx:id="ok" mnemonicParsing="false" onAction="#validate" text="Attached" />
+                <Button fx:id="cancel" mnemonicParsing="false" onAction="#close" text="Cancel" />
+              </buttons>
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+            </ButtonBar>
+         </children>
+         <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+      </VBox>
+   </children>
+</Pane>

@@ -1,11 +1,19 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.io.File;
 import java.sql.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import static sqlartan.util.Matching.match;
 
 public class Database implements AutoCloseable {
 	/**
@@ -148,7 +156,7 @@ public class Database implements AutoCloseable {
 					.map(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -167,7 +175,7 @@ public class Database implements AutoCloseable {
 					.mapFirstOptional(Row::getString)
 					.map(builder);
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -212,7 +220,7 @@ public class Database implements AutoCloseable {
 		try {
 			execute("VACUUM");
 		} catch (SQLException e) {
-			throw new RuntimeSQLException(e);
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -227,13 +235,11 @@ public class Database implements AutoCloseable {
 	public void close() {
 		if (this.connection != null) {
 			try {
+				attached.clear();
 				this.connection.close();
 			} catch (SQLException ignored) {}
 			this.connection = null;
 		}
-
-		attached.values().forEach(AttachedDatabase::close);
-		attached.clear();
 	}
 
 	/**
@@ -303,6 +309,72 @@ public class Database implements AutoCloseable {
 	 */
 	public Result execute(String query) throws SQLException {
 		return Result.fromQuery(connection, query);
+	}
+
+	/**
+	 *
+	 * @param query
+	 * @return
+	 * @throws SQLException
+	 */
+	public IterableStream<Result> executeMulti(String query) throws SQLException {
+		final char[] input = query.toCharArray();
+		return IterableStream.from(() -> {
+			return new Iterator<Result>() {
+				private int i = 0;
+				private int len = query.length();
+				private int begin = 0;
+				private String statement;
+
+				// Initialization
+				{ findStatement(); }
+
+				private void findStatement() {
+					if (i >= len) {
+						statement = null;
+						return;
+					}
+
+					char delimiter = 0;
+					for (begin = i; i < len; i++) {
+						char current = input[i];
+						if (delimiter != 0) {
+							if (current == delimiter) {
+								if ((i + 1) < len && input[i+1] == delimiter) {
+									i++;
+								} else {
+									delimiter = 0;
+								}
+							}
+						} else if (current == '\'' || current == '"' || current == '`') {
+							delimiter = current;
+						} else if (current == ';') {
+							i++;
+							break;
+						}
+					}
+
+					statement = String.valueOf(input, begin, i - begin);
+					if (statement.trim().isEmpty()) findStatement();
+				}
+
+				@Override
+				public boolean hasNext() {
+					return statement != null;
+				}
+
+				@Override
+				public Result next() {
+					try {
+						return execute(statement);
+					} catch (SQLException e) {
+						throw new UncheckedSQLException(e);
+					} finally {
+						findStatement();
+					}
+				}
+			};
+		});
 	}
 
 	/**
@@ -403,10 +475,95 @@ public class Database implements AutoCloseable {
 	 *
 	 * @param name
 	 */
-	public void detach(String name) throws SQLException {
+	public void detach(String name) {
 		AttachedDatabase db = attached(name)
 				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
-		db.close();
+		db.detach();
 		attached.remove(name);
+	}
+
+	/**
+	 * Import SQL from a string
+	 *
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
+	public void importFromString(String sql) throws SQLException{
+		executeMulti(sql).forEach(Result::close);
+	}
+
+	/**
+	 * Import SQL from a file
+	 *
+	 * @param file
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public void importfromFile(File file) throws SQLException, IOException{
+		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
+	}
+
+	/**
+	 * Export SQL to a String
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String export() throws SQLException{
+		// Disable foreign_keys check and begin transaction
+		String sql = "PRAGMA foreign_keys=OFF;\n" +
+			         "BEGIN TRANSACTION;\n";
+
+		// Get every tables
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every values from tables
+		for(Table table : tables()){
+			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
+				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
+				insertSQL += assemble("SELECT * FROM ", table.fullName())
+						.execute()
+						.map(row -> {
+							String s = "(";
+							for (int i = 1; i <= row.size(); i++) {
+								if(i != 1) s += ", ";
+								s += match(row.getObject(i))
+									.when(String.class, str -> "'" + str.replace("'", "''") + "'")
+									.when(Number.class, n -> n.toString())
+									.orElse(() -> {
+										return "NULL";
+									});
+								// TODO Manage byte array
+							}
+							return s + ")";
+						})
+						.collect(Collectors.joining(", "));
+
+				sql += insertSQL + ";\n";
+			}
+		};
+
+		// Get every triggers
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every views
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+				.execute()
+				.map(Row::getString)
+				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		return sql + "COMMIT;";
 	}
 }
