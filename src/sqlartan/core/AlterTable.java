@@ -3,8 +3,11 @@ package sqlartan.core;
 import sqlartan.core.ast.*;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
+import sqlartan.core.ast.parser.ParserContext;
+import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.IterableStream;
-import sqlartan.core.util.RuntimeSQLException;
+import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,7 +34,7 @@ public class AlterTable
 			try {
 				action.execute();
 			} catch (SQLException e) {
-				throw new RuntimeSQLException(e);
+				throw new UncheckedSQLException(e);
 			}
 			actions.remove(action);
 			if(action instanceof AlterColumnAction)
@@ -235,16 +238,50 @@ public class AlterTable
 
 	private abstract class AlterColumnAction extends AlterAction
 	{
-		protected final ColumnDefinition column;
+		protected final TableColumn column;
 
-		AlterColumnAction(ColumnDefinition column) throws ParseException {
+		AlterColumnAction(TableColumn column) throws ParseException {
 			super();
 			this.column = column;
 
 		}
 
-		public ColumnDefinition column(){
+		public TableColumn column(){
 			return column;
+		}
+
+		private ColumnDefinition createDefinition(TableColumn column) throws TokenizeException {
+			ColumnDefinition definition = new ColumnDefinition();
+			definition.name = column.name();
+
+			TypeDefinition type = new TypeDefinition();
+			type.name = column.affinity().name();
+
+			definition.type = Optional.of(type);
+
+			if(column.unique()){
+				definition.constraints.add(new ColumnConstraint.Unique());
+			}
+
+			if(!column.nullable()){
+				definition.constraints.add(new ColumnConstraint.NotNull());
+			}
+
+			if(column.check().isPresent()){
+				TokenSource source = TokenSource.from(column.check().get());
+				ParserContext context = new ParserContext(source);
+				definition.constraints.add(ColumnConstraint.Check.parse(context));
+			}
+
+			Index pk = column.parentTable().primaryKey();
+			if(pk.getColumns().contains(column) && pk.getColumns().size() == 1){
+				ColumnConstraint.PrimaryKey constraint = new ColumnConstraint.PrimaryKey();
+				constraint.name = Optional.of(pk.getName());
+				constraint.autoincrement = false;
+				definition.constraints.add(constraint);
+			}
+
+			return definition;
 		}
 	}
 

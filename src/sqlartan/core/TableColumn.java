@@ -1,5 +1,7 @@
 package sqlartan.core;
 
+import sqlartan.core.ast.parser.ParseException;
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -44,7 +46,7 @@ public class TableColumn extends Column {
 	/**
 	 * Drop the column
 	 */
-	public void drop() {
+	public void drop() throws ParseException, SQLException {
 		parentTable().alter().dropColumn(name());
 	}
 }
