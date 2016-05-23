@@ -197,9 +197,10 @@ public class SqlartanController {
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
 
 		trees.getChildren().addAll(database.structures()
-		                                   .map(structure -> match(structure, CustomTreeItem.class).when(Table.class, t -> new TableTreeItem(t.name(), this))
-		                                                                                           .when(View.class, v -> new ViewTreeItem(v.name(), this))
-		                                                                                           .orElseThrow())
+		                                   .map(structure -> match(structure, CustomTreeItem.class)
+			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
+			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
+		                                       .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -209,9 +210,10 @@ public class SqlartanController {
 		database.attached().values().forEach(adb -> {
 			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
 			tItems.getChildren().addAll(
-				adb.structures().map(structure -> match(structure, CustomTreeItem.class).when(Table.class, t -> new TableTreeItem(t.name(), this))
-				                                                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
-				                                                                        .orElseThrow())
+				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
+										.when(Table.class, t -> new TableTreeItem(t.name(), this))
+                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
+                                        .orElseThrow())
 				                .map(TreeItem::new)
 				                .toList());
 
