@@ -66,7 +66,6 @@ public class TableTreeItem extends StructureTreeItem {
 
 			result.ifPresent(values -> {
 				controller.addColumn(table, values.getKey(), values.getValue());
-				System.out.println(table.name() + " " + values.getKey() + " " + values.getValue());
 			});
 		}));
 

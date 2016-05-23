@@ -22,7 +22,6 @@ public class DatabaseTreeItem extends CustomTreeItem {
 			Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
 		});
 		addTable.setOnAction(event -> {
-			// TODO
 			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
 				if (name.length() > 0){
 
