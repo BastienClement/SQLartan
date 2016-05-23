@@ -5,9 +5,7 @@ import sqlartan.core.util.DataConverter;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A results row.
@@ -27,8 +25,84 @@ public class Row implements Structure<ResultColumn> {
 		this.data = rd;
 	}
 
+	/**
+	 * TODO
+	 */
 	public void reset() {
 		currentColumn = 1;
+	}
+
+	/**
+	 * TODO
+	 */
+	public boolean isEditable(Set<ResultColumn> updateKeys) {
+		return !updateKeys.isEmpty() && updateKeys.stream().allMatch(
+			col -> getObject(col.index()) != null && col.sourceColumn().isPresent());
+	}
+
+	/**
+	 * TODO
+	 */
+	public boolean isEditable(ResultColumn column) {
+		return isEditable(column.updateKeys());
+	}
+
+	/**
+	 * TODO
+	 * @param column
+	 * @param value
+	 * @return
+	 */
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
+	public Result update(ResultColumn column, Object value) {
+		Set<ResultColumn> updateKeys = column.updateKeys();
+		if (!isEditable(updateKeys)) {
+			throw new UnsupportedOperationException("Column is not editable");
+		}
+
+		Table table = column.sourceTable().get();
+		TableColumn tcol = column.sourceColumn().get();
+
+		List<String> refs = new ArrayList<>();
+		List<Object> data = new ArrayList<>();
+
+		updateKeys.forEach(col -> {
+			refs.add(col.sourceColumn().get().name());
+			data.add(getObject(col.index()));
+		});
+
+		String phs = String.join(" AND ", (Iterable<String>) refs.stream().map(n -> "[" + n + "]" + " = ?")::iterator);
+
+		try {
+			PreparedQuery pq = res.database()
+			                      .assemble("UPDATE ", table.fullName(), " SET ", tcol.name(), " = ? WHERE " + phs)
+			                      .prepare();
+			pq.set(1, value);
+			for (int i = 0, j = 2; i < data.size(); i++, j++) { pq.set(j, data.get(i)); }
+			return pq.execute();
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	/**
+	 * TODO
+	 * @param index
+	 * @param value
+	 * @return
+	 */
+	public Optional<Result> update(int index, Object value) {
+		return column(index).map(c -> update(c, value));
+	}
+
+	/**
+	 * TODO
+	 * @param label
+	 * @param value
+	 * @return
+	 */
+	public Optional<Result> update(String label, Object value) {
+		return column(label).map(c -> update(c, value));
 	}
 
 	/**

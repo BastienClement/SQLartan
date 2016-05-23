@@ -2,9 +2,9 @@ package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
-import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -86,5 +86,22 @@ public class TableColumn extends Column {
 		} catch (ParseException | SQLException e){
 			throw new UncheckedException(e);
 		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		} else if (obj instanceof TableColumn) {
+			TableColumn col = (TableColumn) obj;
+			return parentTable().equals(col.parentTable()) && name().equals(col.name());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(parent, name());
 	}
 }

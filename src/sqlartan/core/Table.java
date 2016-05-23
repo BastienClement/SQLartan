@@ -9,6 +9,7 @@ import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
@@ -227,5 +228,22 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	public InsertRow insert() {
 		return new InsertRow(this);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		} else if (obj instanceof Table) {
+			Table table = (Table) obj;
+			return database == table.database && name.equals(table.name);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(database, name);
 	}
 }

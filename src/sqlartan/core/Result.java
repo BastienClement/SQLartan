@@ -186,7 +186,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 				String type = meta.getColumnTypeName(i);
 				boolean nullable = meta.isNullable(i) == 1;
 
-				ResultColumn col = new ResultColumn(this, new GeneratedColumn.Properties() {
+				ResultColumn col = new ResultColumn(this, index, new ResultColumn.Properties() {
 					public String name() { return name; }
 					public String type() { return type; }
 					public Optional<Table> sourceTable() { return database.table(table); }
