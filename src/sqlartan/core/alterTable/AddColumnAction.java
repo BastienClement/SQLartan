@@ -16,7 +16,7 @@ public class AddColumnAction extends AlterColumnAction{
 	}
 
 	public void executeAction() throws SQLException, ParseException {
-		String query = "ALTER TABLE " +table.fullName() + "  ADD COLUMN " + getColumnDefinition();
+		String query = "ALTER TABLE " + table.fullName() + "  ADD COLUMN " + getColumnDefinition().toSQL();
 		table.database().execute(query);
 	}
 }

@@ -43,14 +43,19 @@ public class TableColumn extends Column {
 	 * @param name
 	 */
 	public void rename(String name) {
+		boolean unique = props.unique();
+		String check = props.check();
+		String type = props.type();
+		boolean nullable = props.nullable();
+
 		props = new Properties() {
 			@Override
 			public boolean unique() {
-				return unique();
+				return unique;
 			}
 			@Override
 			public String check() {
-				return check();
+				return check;
 			}
 			@Override
 			public String name() {
@@ -58,11 +63,11 @@ public class TableColumn extends Column {
 			}
 			@Override
 			public String type() {
-				return type();
+				return type;
 			}
 			@Override
 			public boolean nullable() {
-				return nullable();
+				return nullable;
 			}
 		};
 

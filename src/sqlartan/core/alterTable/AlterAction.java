@@ -43,14 +43,15 @@ public abstract class AlterAction
 		CreateTableStatement.Def definition = getTableDefinition();
 
 		String populateTemporary = "INSERT INTO " + temporaryTable.name + " SELECT " +
-			definition.columns.stream().filter(col -> temporaryTable.columns.contains(col)).map(col -> col.name).collect(Collectors.joining(", ")) +
+			definition.columns.stream().filter(col -> temporaryTable.columns.stream().filter(c -> c.name.equals(col.name)).findFirst().isPresent()).map(col -> col.name).collect(Collectors.joining(", ")) +
 			" FROM " + table.fullName();
 
 		String dropTable = "DROP TABLE " + table.fullName();
 
+		tableDefinition.schema = Optional.of(table.database().name());
 		String createTable = tableDefinition.toSQL();
 
-		String populateTable = "INSERT INTO " + tableDefinition.name + " SELECT " +
+		String populateTable = "INSERT INTO " + table.fullName() + " SELECT " +
 			temporaryTable.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
 			" FROM " + temporaryTable.name;
 
@@ -74,7 +75,8 @@ public abstract class AlterAction
 		                                       .execute(table.name())
 		                                       .mapFirst(Row::getString);
 
-		return Parser.parse(createStatement, CreateTableStatement.Def::parse);
+		Parser.parse(createStatement, CreateTableStatement::parse);
+		return (CreateTableStatement.Def)Parser.parse(createStatement, CreateTableStatement::parse);
 	}
 
 	public List<CreateTriggerStatement> getTriggersDefinitions() throws ParseException, SQLException {

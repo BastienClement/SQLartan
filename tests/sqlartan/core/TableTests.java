@@ -1,6 +1,8 @@
 package sqlartan.core;
 
 import org.junit.Test;
+import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -225,7 +227,7 @@ public class TableTests {
 		}
 	}
 
-	/*@Test
+	@Test
 	public void alterTests() throws SQLException, ParseException {
 		try (Database db = Database.createEphemeral()) {
 			// Create simple table
@@ -239,15 +241,41 @@ public class TableTests {
 
 			AlterTable alter = test.alter();
 			// add
-			alter.addColumn(test, new TableColumn.Properties());
-			alter.addColumn("d", "FLOAT");
+			TableColumn d = new TableColumn(test, new TableColumn.Properties() {
+				@Override
+				public boolean unique() {
+					return false;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+				@Override
+				public String name() {
+					return "d";
+				}
+				@Override
+				public String type() {
+					return "FLOAT";
+				}
+				@Override
+				public boolean nullable() {
+					return true;
+				}
+			});
+			alter.addColumn(d);
 			alter.execute();
+
+			test = db.table("test").get();
+
+			test.columns().forEach(column -> System.out.println(column.name()));
+
 			assertTrue(test.column("d").isPresent());
 			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
 
 			// drop
-			alter.dropColumn("d");
+			alter.dropColumn(d);
 			alter.execute();
 			test = db.table("test").get();
 			assertFalse(test.column("d").isPresent());
@@ -255,7 +283,7 @@ public class TableTests {
 			assertEquals(3, count);
 
 			// modify column
-			alter.modifyColumn("c", "d", "FLOAT");
+			test.column("c").get().rename("d");
 			alter.execute();
 			test = db.table("test").get();
 			assertFalse(test.column("c").isPresent());
@@ -266,7 +294,7 @@ public class TableTests {
 			assertEquals(3, count);
 		}
 	}
-	*/
+
 	@Test
 	public void insertTests() throws SQLException {
 		try (Database db = Database.createEphemeral()) {

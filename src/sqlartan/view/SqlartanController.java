@@ -535,6 +535,7 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
+	 * @param name
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {

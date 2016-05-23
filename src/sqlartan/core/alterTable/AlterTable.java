@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class AlterTable
 {
-	private final Table table;
+	private Table table;
 
 	// register all actions by grouped by column name
 	private HashMap<TableColumn, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
@@ -38,7 +38,7 @@ public class AlterTable
 			}
 			actions.remove(action);
 			if(action instanceof AlterColumnAction)
-				columnsActions.remove(((AlterColumnAction) action));
+				columnsActions.get(((AlterColumnAction) action).column()).remove(action);
 		}
 	}
 
@@ -56,10 +56,12 @@ public class AlterTable
 		if(findLastAddColumnAction(column) != null) {
 			add(column, new DropColumnAction(table, findLastAddColumnAction(column).column()));
 		}
-		else if(table.column(column.name()).isPresent())
+		else if(table.column(column.name()).isPresent()) {
 			add(column, new DropColumnAction(table, column));
-		else
+		}
+		else {
 			throw new UnsupportedOperationException("Column does not exist!");
+		}
 	}
 
 	public void modifyColumn(String columnName, TableColumn column) throws ParseException, SQLException {
