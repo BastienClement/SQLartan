@@ -402,23 +402,13 @@ public class SqlartanController {
 		refreshView();
 	}
 
-	/**
-	 * Drop a view
-	 *
-	 * @param view
-	 */
-	public void dropView(View view) {
-		view.drop();
-		refreshView();
-	}
-
 
 	/**
 	 * Duplicate a table
 	 *
 	 * @param structure
 	 */
-	public void duplicateTable(PersistentStructure<?> structure, String name) {
+	public void duplicateStructure(PersistentStructure<?> structure, String name) {
 		structure.duplicate(name);
 		refreshView();
 	}
@@ -430,28 +420,8 @@ public class SqlartanController {
 	 * @param structure
 	 * @param name
 	 */
-	public void renameTable(PersistentStructure<?> structure, String name) {
+	public void renameStructure(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
-		refreshView();
-	}
-
-	/**
-	 * Rename a view
-	 *
-	 * @param view
-	 * @param name
-	 */
-	public void renameView(View view, String name) {
-		view.rename(name);
-		refreshView();
-	}
-
-
-	/**
-	 * Vacuum a database
-	 */
-	public void vacuumDatabase(Database db) {
-		db.vacuum();
 		refreshView();
 	}
 

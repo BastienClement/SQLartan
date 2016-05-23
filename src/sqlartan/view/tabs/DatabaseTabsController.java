@@ -99,14 +99,14 @@ public class DatabaseTabsController {
 									case "View":
 										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ", dbStruct.nameProperty().get()).ifPresent(name -> {
 											if (name.length() > 0 && !dbStruct.nameProperty().get().equals(name)) {
-												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
+												database.view(dbStruct.nameProperty().get()).ifPresent(v -> controller.renameStructure(v, name));
 											}
 										});
 										break;
 									case "Table":
 										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ", dbStruct.nameProperty().get()).ifPresent(name -> {
 											if (name.length() > 0 && !dbStruct.nameProperty().get().equals(name)) {
-												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
+												controller.renameStructure(database.table(dbStruct.nameProperty().get()).get(), name);
 											}
 										});
 										break;
@@ -135,14 +135,8 @@ public class DatabaseTabsController {
 							btn.setOnAction((ActionEvent event) ->
 							{
 								DatabaseStructure dbStruct = getTableView().getItems().get(getIndex());
-								switch (dbStruct.typeProperty().get()) {
-									case "View":
-										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
-										break;
-									case "Table":
-										controller.dropStructure(database.table(dbStruct.nameProperty().get()).get());
-										break;
-								}
+								database.structure(dbStruct.nameProperty().get())
+								        .ifPresent(structure -> controller.dropStructure(structure));
 							});
 							setGraphic(btn);
 							setText(null);
