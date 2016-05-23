@@ -241,6 +241,15 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
+	 * @return
+	 */
+	public IterableStream<PersistentStructure<? extends Column>> structures() {
+		return IterableStream.concat(tables(), views());
+	}
+
+	/**
+	 * TODO
 	 * @param name
 	 * @return
 	 */
