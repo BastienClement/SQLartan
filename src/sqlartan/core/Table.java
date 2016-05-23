@@ -1,12 +1,11 @@
 package sqlartan.core;
 
+import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
-import sqlartan.core.ast.ColumnDefinition;
-import sqlartan.core.ast.TypeDefinition;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -210,21 +209,5 @@ public class Table extends PersistentStructure<TableColumn> {
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
-	}
-
-	/**
-	 * Add a new column to the table
-	 *
-	 * @param name
-	 * @param affinity
-	 */
-	@Deprecated
-	public void addColumn(String name, Affinity affinity) throws ParseException, SQLException {
-		ColumnDefinition definition = new ColumnDefinition();
-		definition.name = name;
-		TypeDefinition type = new TypeDefinition();
-		type.name = affinity.name();
-		definition.type = Optional.of(type);
-		alter().addColumn(definition);
 	}
 }

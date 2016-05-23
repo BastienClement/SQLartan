@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -8,7 +9,7 @@ import java.util.Optional;
  * Defines a column of a table
  */
 public class TableColumn extends Column {
-	interface Properties extends Column.Properties {
+	public interface Properties extends Column.Properties {
 		boolean unique();
 		String check();
 	}
@@ -16,7 +17,7 @@ public class TableColumn extends Column {
 	private Table parent;
 	private Properties props;
 
-	TableColumn(Table table, Properties props) {
+	public TableColumn(Table table, Properties props) {
 		super(props);
 		this.parent = table;
 		this.props = props;
@@ -39,14 +40,41 @@ public class TableColumn extends Column {
 	 *
 	 * @param name
 	 */
-	public void rename(String name) {
-		parentTable().alter().modifyColumn(name(), name);
+	public void rename(String name) throws ParseException, SQLException {
+		props = new Properties() {
+			@Override
+			public boolean unique() {
+				return unique();
+			}
+			@Override
+			public String check() {
+				return check();
+			}
+			@Override
+			public String name() {
+				return name;
+			}
+			@Override
+			public String type() {
+				return type();
+			}
+			@Override
+			public boolean nullable() {
+				return nullable();
+			}
+		};
+
+		AlterTable alter = parentTable().alter();
+		alter.modifyColumn(name(), this);
+		alter.execute();
 	}
 
 	/**
 	 * Drop the column
 	 */
 	public void drop() throws ParseException, SQLException {
-		parentTable().alter().dropColumn(name());
+		AlterTable alter = parentTable().alter();
+		alter.dropColumn(this);
+		alter.execute();
 	}
 }

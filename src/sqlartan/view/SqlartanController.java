@@ -13,6 +13,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
+import sqlartan.core.TableColumn;
+import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -24,7 +27,6 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -397,8 +399,37 @@ public class SqlartanController {
 	 * @param type
 	 */
 	public void addColumn(Table table, String name, String type) {
-		Affinity affinity = Affinity.forType(type);
-		table.addColumn(name, affinity);
+		TableColumn column = new TableColumn(table, new TableColumn.Properties() {
+			@Override
+			public boolean unique() {
+				return false;
+			}
+			@Override
+			public String check() {
+				return null;
+			}
+			@Override
+			public String name() {
+				return name;
+			}
+			@Override
+			public String type() {
+				return type;
+			}
+			@Override
+			public boolean nullable() {
+				return false;
+			}
+		});
+		AlterTable alter = table.alter();
+		try {
+			alter.addColumn(column);
+			alter.execute();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		refreshView();
 	}
 
@@ -407,11 +438,17 @@ public class SqlartanController {
 	 * Drop the specified column from the table
 	 *
 	 * @param table
-	 * @param name
+	 * @param column
 	 */
-	public void dropColumn(Table table, String name) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().drop();
+	public void dropColumn(Table table, TableColumn column) {
+		if (table.column(column.name()).isPresent()) {
+			try {
+				column.drop();
+			} catch (ParseException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		refreshView();
 	}
@@ -421,12 +458,18 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
-	 * @param name
+	 * @param column
 	 * @param newName
 	 */
-	public void renameColumn(Table table, String name, String newName) {
-		if (table.column(name).isPresent()) {
-			table.column(name).get().rename(newName);
+	public void renameColumn(Table table, TableColumn column, String newName) {
+		if (table.column(column.name()).isPresent()) {
+			try {
+				column.rename(newName);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		refreshView();
 	}
