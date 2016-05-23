@@ -388,12 +388,12 @@ public class SqlartanController {
 
 
 	/**
-	 * Drop a table
+	 * Drop a structure
 	 *
-	 * @param table
+	 * @param structure
 	 */
-	public void dropTable(Table table) {
-		table.drop();
+	public void dropStructure(PersistentStructure<?> structure) {
+		structure.drop();
 		refreshView();
 	}
 
@@ -401,10 +401,10 @@ public class SqlartanController {
 	/**
 	 * Duplicate a table
 	 *
-	 * @param table
+	 * @param structure
 	 */
-	public void duplicateTable(Table table, String name) {
-		table.duplicate(name);
+	public void duplicateTable(PersistentStructure<?> structure, String name) {
+		structure.duplicate(name);
 		refreshView();
 	}
 
@@ -412,11 +412,11 @@ public class SqlartanController {
 	/**
 	 * Rename a table
 	 *
-	 * @param table
+	 * @param structure
 	 * @param name
 	 */
-	public void renameTable(Table table, String name) {
-		table.rename(name);
+	public void renameTable(PersistentStructure<?> structure, String name) {
+		structure.rename(name);
 		refreshView();
 	}
 
@@ -549,4 +549,7 @@ public class SqlartanController {
 		}
 	}
 
+	public void selectTreeIndex(int i) {
+		treeView.getSelectionModel().select(0);
+	}
 }

@@ -1,6 +1,7 @@
 package sqlartan;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -45,7 +46,10 @@ public class Sqlartan extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-			Popup.error("Something went wrong", throwable.getMessage());
+			Platform.runLater(() -> {
+				Popup.error("Something went wrong", throwable.getMessage());
+				throwable.printStackTrace();
+			});
 		});
 
 		this.primaryStage = primaryStage;

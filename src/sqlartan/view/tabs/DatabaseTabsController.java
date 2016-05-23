@@ -85,10 +85,10 @@ public class DatabaseTabsController{
 	 */
 	private void displayStructure() {
 		dbStructs.clear();
-		dbStructs.addAll(IterableStream.concat(database.tables(), database.views())
-		                               .sorted((a, b) -> a.name().compareTo(b.name()))
-		                               .map(DatabaseStructure::new)
-		                               .toList());
+		dbStructs.addAll(database.structures()
+		                         .sorted((a, b) -> a.name().compareTo(b.name()))
+		                         .map(DatabaseStructure::new)
+		                         .toList());
 
 		structureTable.setItems(dbStructs);
 	}

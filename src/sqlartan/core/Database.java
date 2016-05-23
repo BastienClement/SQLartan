@@ -5,6 +5,7 @@ import sqlartan.core.ast.token.TokenSource;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.Optionals;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -236,6 +237,24 @@ public class Database implements AutoCloseable {
 	 */
 	public Optional<View> view(String name) {
 		return findStructure("view", name, n -> new View(this, n));
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
+	public IterableStream<PersistentStructure<? extends Column>> structures() {
+		return IterableStream.concat(tables(), views());
+	}
+
+	/**
+	 * TODO
+	 * @param name
+	 * @return
+	 */
+	public Optional<PersistentStructure<? extends Column>> structure(String name) {
+		return Optionals.firstPresent(() -> table(name), () -> view(name));
 	}
 
 	/**
