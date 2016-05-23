@@ -47,7 +47,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 	private void renameDialog(PersistentStructure<?> structure) {
 		Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(name -> {
 			if (name.length() > 0 && !structure.name().equals(name)) {
-				controller.renameTable(structure, name);
+				controller.renameStructure(structure, name);
 			} else {
 				Popup.error("Rename error", "The name is already used or don't have enough chars");
 			}
