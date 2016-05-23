@@ -23,7 +23,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		});
 		addTable.setOnAction(event -> {
 			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
-				if (name.length() > 0){
+				if (name.length() > 0) {
 
 				}
 			});
