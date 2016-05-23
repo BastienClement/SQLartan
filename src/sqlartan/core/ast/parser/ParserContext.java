@@ -27,7 +27,7 @@ public class ParserContext {
 	 *
 	 * @param source the token source to use
 	 */
-	ParserContext(TokenSource source) {
+	public ParserContext(TokenSource source) {
 		this.source = source;
 	}
 

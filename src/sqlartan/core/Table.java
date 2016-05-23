@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
@@ -118,6 +119,10 @@ public class Table extends PersistentStructure<TableColumn> {
 		}
 	}
 
+	public AlterTable alter(){
+		return new AlterTable(this);
+	}
+
 	/**
 	 *
 	 * @param row
@@ -215,5 +220,12 @@ public class Table extends PersistentStructure<TableColumn> {
 	@Deprecated
 	public void addColumn(String name, Affinity affinity) {
 		// TODO
+	}
+
+	/**
+	 * Inserts a new row in this table
+	 */
+	public InsertRow insert() {
+		return new InsertRow(this);
 	}
 }

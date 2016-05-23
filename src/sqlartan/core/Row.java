@@ -1,7 +1,6 @@
 package sqlartan.core;
 
 import sqlartan.core.stream.ImmutableList;
-import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.DataConverter;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.ResultSet;
@@ -13,7 +12,7 @@ import java.util.TreeMap;
 /**
  * A results row.
  */
-public class Row implements QueryStructure<GeneratedColumn> {
+public class Row implements Structure<GeneratedColumn> {
 	private Result res;
 	private RowData data;
 	private int currentColumn = 1;
@@ -66,13 +65,8 @@ public class Row implements QueryStructure<GeneratedColumn> {
 	}
 
 	//###################################################################
-	// QueryStructure proxy
+	// Structure proxy
 	//###################################################################
-
-	@Override
-	public IterableStream<PersistentStructure<? extends Column>> sources() {
-		return res.sources();
-	}
 
 	@Override
 	public ImmutableList<GeneratedColumn> columns() {

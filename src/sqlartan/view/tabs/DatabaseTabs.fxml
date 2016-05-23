@@ -6,7 +6,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.StackPane?>
 
-<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.tabs.DatabaseTabsController">
+<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.tabs.DatabaseTabsController">
   <tabs>
     <Tab fx:id="structureTab" text="Structure">
          <content>
@@ -20,9 +20,9 @@
               </columns>
             </TableView>
          </content></Tab>
-      <Tab text="+ SQL">
+      <Tab fx:id="sqlTab" text="+ SQL">
          <content>
-            <StackPane fx:id="sqlTab" prefHeight="150.0" prefWidth="200.0" />
+            <StackPane fx:id="sqlPane" prefHeight="150.0" prefWidth="200.0" />
          </content></Tab>
   </tabs>
 </TabPane>

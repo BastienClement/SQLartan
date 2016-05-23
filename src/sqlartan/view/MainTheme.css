@@ -16,3 +16,39 @@
 .tree-cell:selected {
     -fx-font-weight: bold ;
 }
+
+
+.text-area-request {
+     -fx-background-insets: 0;
+    -fx-background-color: transparent, white, transparent, white;
+    -fx-text-fill: #FFFF00;
+
+}
+
+.text-area-request .scroll-pane .content{
+    -fx-background-color: #7ecfff;
+    -fx-text-fill: #FFFF00;
+}
+
+.text-area-about {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, white, transparent, white;
+}
+
+.text-area-about .content {
+    -fx-background-color: transparent, white, transparent, white;
+}
+
+.text-area-about:focused .content {
+    -fx-background-color: transparent, white, transparent, white;
+}
+
+.text-area-about:focused {
+    -fx-highlight-fill: #7ecfff;
+}
+
+.text-area-about .content {
+    -fx-padding: 10px;
+    -fx-text-fill: gray;
+    -fx-highlight-fill: #7ecfff;
+}

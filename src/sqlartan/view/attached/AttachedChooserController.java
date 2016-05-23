@@ -16,12 +16,24 @@ import java.io.File;
  */
 public class AttachedChooserController {
 
-	public Button ok;
-	public Button cancel;
-	public Button browse;
-	public TextField path;
-	public Pane attachedPane;
-	public TextField dbName;
+	@FXML
+	private Button ok;
+
+	@FXML
+	private Button cancel;
+
+	@FXML
+	private Button browse;
+
+	@FXML
+	private TextField path;
+
+	@FXML
+	private Pane attachedPane;
+
+	@FXML
+	private TextField dbName;
+
 
 	private SqlartanController sqlartanController;
 

@@ -5,6 +5,7 @@ import sqlartan.core.ast.token.TokenSource;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.Optionals;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -239,6 +240,24 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * TODO
+	 *
+	 * @return
+	 */
+	public IterableStream<PersistentStructure<? extends Column>> structures() {
+		return IterableStream.concat(tables(), views());
+	}
+
+	/**
+	 * TODO
+	 * @param name
+	 * @return
+	 */
+	public Optional<PersistentStructure<? extends Column>> structure(String name) {
+		return Optionals.firstPresent(() -> table(name), () -> view(name));
+	}
+
+	/**
 	 * Clean up the database by rebuilding it entirely.
 	 */
 	public void vacuum() {
@@ -325,6 +344,15 @@ public class Database implements AutoCloseable {
 		return new AssembledQuery(this, query.toString());
 	}
 
+	Result notifyListeners(String query, Result res) {
+		for (Consumer<ReadOnlyResult> listener : executeListeners) {
+			try {
+				listener.accept(res);
+			} catch (Throwable ignored) {}
+		}
+		return res;
+	}
+
 	/**
 	 * Executes a query on the database.
 	 *
@@ -333,13 +361,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		Result res = Result.fromQuery(connection, query);
-		for (Consumer<ReadOnlyResult> listener : executeListeners) {
-			try {
-				listener.accept(res);
-			} catch (Throwable ignored) {}
-		}
-		return res;
+		return notifyListeners(query, Result.fromQuery(this, connection, query));
 	}
 
 	/**
@@ -426,13 +448,36 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Executes a transaction on the database.
+	 *
+	 * @param queries
+	 * @throws SQLException
+	 */
+	public void executeTransaction(String[] queries) throws SQLException {
+		try {
+			connection.setAutoCommit(false);
+			for(String query : queries) {
+				execute(query).close();
+			}
+			connection.commit();
+		}
+		catch (SQLException e){
+			connection.rollback();
+			throw e;
+		}
+		finally {
+			connection.setAutoCommit(true);
+		}
+	}
+
+	/**
 	 * Prepares a query for execution.
 	 *
 	 * @param query
 	 * @throws SQLException
 	 */
 	public PreparedQuery prepare(String query) throws SQLException {
-		return new PreparedQuery(connection, query);
+		return new PreparedQuery(this, connection, query);
 	}
 
 	/**

@@ -12,17 +12,28 @@ import java.util.Optional;
 public class Popup {
 
 	/**
+	 * A private function to factore the public alert.
+	 *
+	 * @param title   the title
+	 * @param message the message
+	 * @param type    the type
+	 * @return the alert from the type
+	 */
+	private static Alert alert(String title, String message, Alert.AlertType type) {
+		Alert alert = new Alert(type);
+		alert.setTitle(title);
+		alert.setContentText(message);
+		alert.setHeaderText(null);
+		return alert;
+	}
+	/**
 	 * A error popup
 	 *
 	 * @param title   the title
 	 * @param message the message
 	 */
-	public static void error(String title, String message) {
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setTitle(title);
-		alert.setContentText(message);
-		alert.setHeaderText(null);
-		alert.showAndWait();
+	public static Optional<ButtonType> error(String title, String message) {
+		return alert(title, message, Alert.AlertType.ERROR).showAndWait();
 	}
 
 	/**
@@ -34,10 +45,7 @@ public class Popup {
 	 * @return An optional of one of the button types
 	 */
 	public static Optional<ButtonType> warning(String title, String message, ButtonType... buttonTypes) {
-		Alert alert = new Alert(Alert.AlertType.WARNING);
-		alert.setHeaderText(null);
-		alert.setTitle(title);
-		alert.setContentText(message);
+		Alert alert = alert(title, message, Alert.AlertType.WARNING);
 		alert.getButtonTypes().setAll(buttonTypes);
 		return alert.showAndWait();
 
@@ -49,12 +57,8 @@ public class Popup {
 	 * @param title   the title
 	 * @param message the message
 	 */
-	public static void information(String title, String message) {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setTitle(title);
-		alert.setHeaderText(null);
-		alert.setContentText(message);
-		alert.showAndWait();
+	public static Optional<ButtonType> information(String title, String message) {
+		return alert(title, message, Alert.AlertType.INFORMATION).showAndWait();
 	}
 
 	/**
