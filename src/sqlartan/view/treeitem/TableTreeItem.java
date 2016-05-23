@@ -20,13 +20,10 @@ public class TableTreeItem extends StructureTreeItem {
 			controller.truncateTable(table);
 		}));
 		addColumn.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(table -> {
-			// TODO
-			Popup.input("Add column", "Name : ", "").ifPresent(name -> {
-				if (name.length() > 0){
-
-				}
+			Popup.doubleInput("Add column", "Name : ", "Type : ").ifPresent(values -> {
+				controller.addColumn(table, values.getKey(), values.getValue());
+				System.out.println(table.name() + " " + values.getKey() + " " + values.getValue());
 			});
-			//controller.addColumn();
 		}));
 
 		ContextMenu res = super.getMenu();
