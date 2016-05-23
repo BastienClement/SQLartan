@@ -3,6 +3,7 @@ package sqlartan.core;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.stream.IterableAdapter;
 import sqlartan.core.stream.IterableStream;
+import sqlartan.core.util.QueryResolver;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.*;
 import java.util.*;
@@ -20,20 +21,19 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query      the SQL query
 	 * @throws SQLException
 	 */
-	public static Result fromQuery(Connection connection, String query) throws SQLException {
+	static Result fromQuery(Database database, Connection connection, String query) throws SQLException {
 		Statement statement = connection.createStatement();
-		return from(statement, statement.execute(query), query);
+		return from(database, statement, statement.execute(query), query);
 	}
 
 	/**
 	 * Constructs a Result by executing the given prepared statement.
 	 *
-	 * @param preparedStatement the prepared statement to execute
+	 * @param statement the prepared statement to execute
 	 * @throws SQLException
 	 */
-	public static Result fromPreparedStatement(PreparedStatement preparedStatement, String sql)
-			throws SQLException {
-		return from(preparedStatement, preparedStatement.execute(), sql);
+	static Result fromPreparedStatement(Database database, PreparedStatement statement, String sql) throws SQLException {
+		return from(database, statement, statement.execute(), sql);
 	}
 
 	/**
@@ -43,9 +43,12 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query     a flag indicating if the request was a SELECT or UPDATE statement
 	 * @throws SQLException
 	 */
-	private static Result from(Statement statement, boolean query, String sql) throws SQLException {
-		return query ? new QueryResult(statement, sql) : new UpdateResult(statement, sql);
+	private static Result from(Database database, Statement statement, boolean query, String sql) throws SQLException {
+		return query ? new QueryResult(database, statement, sql) : new UpdateResult(database, statement, sql);
 	}
+
+	/** The source database */
+	private Database database;
 
 	/** The underlying statement object */
 	private Statement statement;
@@ -53,9 +56,17 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	/** The source SQL query */
 	private String sql;
 
-	private Result(Statement statement, String sql) {
+	private Result(Database database, Statement statement, String sql) {
+		this.database = database;
 		this.statement = statement;
 		this.sql = sql;
+	}
+
+	/**
+	 * Returns the Database from which this Result was generated
+	 */
+	public Database database() {
+		return database;
 	}
 
 	/**
@@ -108,7 +119,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * Returns the number of rows updated by the query.
 	 */
 	public int updateCount() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not an UpdateResult");
 	}
 
 	//###################################################################
@@ -116,23 +127,18 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	//###################################################################
 
 	@Override
-	public IterableStream<PersistentStructure<? extends Column>> sources() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public ImmutableList<GeneratedColumn> columns() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
 	public Optional<GeneratedColumn> column(String name) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
 	public Optional<GeneratedColumn> column(int idx) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	/**
@@ -151,6 +157,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		private ResultSet resultSet;
 		private boolean consumed = false;
 
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+		Optional<List<TableColumn>> columnRefs;
+
 		/**
 		 * Constructs a QueryResult by reading the given Statement object.
 		 * TODO: write more
@@ -158,8 +167,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		 * @param statement
 		 * @throws SQLException
 		 */
-		private QueryResult(Statement statement, String sql) throws SQLException {
-			super(statement, sql);
+		private QueryResult(Database database, Statement statement, String sql) throws SQLException {
+			super(database, statement, sql);
 			resultSet = statement.getResultSet();
 
 			// Read metadata
@@ -169,7 +178,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			columns = new ArrayList<>(count);
 			columnsIndex = new HashMap<>();
 
+
 			for (int i = 1; i <= count; i++) {
+				int index = i;
 				String name = meta.getColumnName(i);
 				String table = meta.getTableName(i);
 				String type = meta.getColumnTypeName(i);
@@ -177,11 +188,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 
 				GeneratedColumn col = new GeneratedColumn(new GeneratedColumn.Properties() {
 					public String name() { return name; }
-					public String type() {
-						return type;
-					}
-					public String sourceTable() { return table; }
-					public String sourceExpr() { throw new UnsupportedOperationException(); }
+					public String type() { return type; }
+					public Optional<Table> sourceTable() { return database.table(table); }
+					public Optional<TableColumn> sourceColumn() { return columnRef(index); }
 					public boolean nullable() { return nullable; }
 				});
 
@@ -190,13 +199,20 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			}
 		}
 
-		@Override
-		public boolean isQueryResult() { return true; }
+		/**
+		 * TODO
+		 * @param index
+		 * @return
+		 */
+		private synchronized Optional<TableColumn> columnRef(int index) {
+			if (columnRefs == null) {
+				columnRefs = QueryResolver.resolveColumns(database(), query());
+			}
+			return columnRefs.map(c -> c.get(index - 1));
+		}
 
 		@Override
-		public ImmutableList<PersistentStructure<? extends Column>> sources() {
-			throw new UnsupportedOperationException("Not implemented");
-		}
+		public boolean isQueryResult() { return true; }
 
 		@Override
 		public ImmutableList<GeneratedColumn> columns() {
@@ -303,8 +319,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	private static class UpdateResult extends Result implements IterableAdapter<Row> {
 		private int updateCount = 0;
 
-		private UpdateResult(Statement statement, String sql) throws SQLException {
-			super(statement, sql);
+		private UpdateResult(Database database, Statement statement, String sql) throws SQLException {
+			super(database, statement, sql);
 			updateCount = statement.getUpdateCount();
 			close();
 		}

@@ -3,13 +3,12 @@ package sqlartan.core;
 import sqlartan.core.ast.CreateViewStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
-import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class View extends PersistentStructure<GeneratedColumn> implements QueryStructure<GeneratedColumn> {
+public class View extends PersistentStructure<GeneratedColumn> implements Structure<GeneratedColumn> {
 	protected View(Database database, String name) {
 		super(database, name);
 	}
@@ -50,15 +49,11 @@ public class View extends PersistentStructure<GeneratedColumn> implements QueryS
 	}
 
 	@Override
-	public IterableStream<PersistentStructure<? extends Column>> sources() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-
-	@Override
 	protected GeneratedColumn columnBuilder(Row row) {
+		// TODO: implements sources
 		return new GeneratedColumn(new GeneratedColumn.Properties() {
-			public String sourceTable() { throw new UnsupportedOperationException(); }
-			public String sourceExpr() { throw new UnsupportedOperationException(); }
+			public Optional<Table> sourceTable() { return Optional.empty(); }
+			public Optional<TableColumn> sourceColumn() { return Optional.empty(); }
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
 			public boolean nullable() { return row.getInt("notnull") == 0; }
