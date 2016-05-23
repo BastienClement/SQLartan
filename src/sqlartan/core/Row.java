@@ -12,7 +12,7 @@ import java.util.TreeMap;
 /**
  * A results row.
  */
-public class Row implements Structure<GeneratedColumn> {
+public class Row implements Structure<ResultColumn> {
 	private Result res;
 	private RowData data;
 	private int currentColumn = 1;
@@ -50,7 +50,7 @@ public class Row implements Structure<GeneratedColumn> {
 
 	@Override
 	public String toString() {
-		List<GeneratedColumn> columns = res.columns();
+		List<ResultColumn> columns = res.columns();
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("Row(");
@@ -69,17 +69,17 @@ public class Row implements Structure<GeneratedColumn> {
 	//###################################################################
 
 	@Override
-	public ImmutableList<GeneratedColumn> columns() {
+	public ImmutableList<ResultColumn> columns() {
 		return res.columns();
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(String name) {
+	public Optional<ResultColumn> column(String name) {
 		return res.column(name);
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(int idx) {
+	public Optional<ResultColumn> column(int idx) {
 		return res.column(idx);
 	}
 
@@ -188,7 +188,7 @@ public class Row implements Structure<GeneratedColumn> {
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
 		private RowData(Result res, ResultSet rs) {
-			List<GeneratedColumn> columns = res.columns();
+			List<ResultColumn> columns = res.columns();
 			values = new Object[columns.size()];
 
 			int currentColumn = 1;

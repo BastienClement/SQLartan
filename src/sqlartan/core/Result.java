@@ -127,17 +127,17 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	//###################################################################
 
 	@Override
-	public ImmutableList<GeneratedColumn> columns() {
+	public ImmutableList<ResultColumn> columns() {
 		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(String name) {
+	public Optional<ResultColumn> column(String name) {
 		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(int idx) {
+	public Optional<ResultColumn> column(int idx) {
 		throw new UnsupportedOperationException("This Result is not a QueryResult");
 	}
 
@@ -151,8 +151,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * TODO: write more
 	 */
 	private static class QueryResult extends Result implements IterableAdapter<Row> {
-		private ArrayList<GeneratedColumn> columns;
-		private HashMap<String, GeneratedColumn> columnsIndex;
+		private ArrayList<ResultColumn> columns;
+		private HashMap<String, ResultColumn> columnsIndex;
 
 		private ResultSet resultSet;
 		private boolean consumed = false;
@@ -186,7 +186,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 				String type = meta.getColumnTypeName(i);
 				boolean nullable = meta.isNullable(i) == 1;
 
-				GeneratedColumn col = new GeneratedColumn(new GeneratedColumn.Properties() {
+				ResultColumn col = new ResultColumn(this, new GeneratedColumn.Properties() {
 					public String name() { return name; }
 					public String type() { return type; }
 					public Optional<Table> sourceTable() { return database.table(table); }
@@ -215,17 +215,17 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		public boolean isQueryResult() { return true; }
 
 		@Override
-		public ImmutableList<GeneratedColumn> columns() {
+		public ImmutableList<ResultColumn> columns() {
 			return ImmutableList.from(columns);
 		}
 
 		@Override
-		public Optional<GeneratedColumn> column(String name) {
+		public Optional<ResultColumn> column(String name) {
 			return Optional.ofNullable(columnsIndex.get(name));
 		}
 
 		@Override
-		public Optional<GeneratedColumn> column(int idx) {
+		public Optional<ResultColumn> column(int idx) {
 			return (idx < 0 || idx >= columns.size()) ? Optional.empty() : Optional.of(columns.get(idx));
 		}
 
