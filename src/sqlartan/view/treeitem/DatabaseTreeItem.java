@@ -15,12 +15,23 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	@Override
 	public ContextMenu getMenu() {
 		MenuItem vacuum = new MenuItem("Vacuum");
+		MenuItem addTable = new MenuItem("Add table");
+
 		vacuum.setOnAction(event -> {
 			SqlartanController.getDB().vacuum();
 			Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
 		});
+		addTable.setOnAction(event -> {
+			// TODO
+			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
+				if (name.length() > 0){
 
-		return new ContextMenu(vacuum);
+				}
+			});
+			//controller.addColumn();
+		});
+
+		return new ContextMenu(vacuum, addTable);
 
 	}
 	@Override
