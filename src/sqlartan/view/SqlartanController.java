@@ -484,12 +484,13 @@ public class SqlartanController {
 	/**
 	 * Rename the specified column from the table
 	 *
-	 * @param table
+	 * @param structure
 	 * @param newName
 	 */
-	public void renameColumn(Table table, String name, String newName) {
-		table.column(name).ifPresent(t -> t.rename(newName));
-		refreshView();
+	public void renameColumn(PersistentStructure<?> structure, String name, String newName) {
+		throw new RuntimeException("not implemented");
+		// structure.column(name).ifPresent(c -> c.rename(newName)); // TODO
+		//refreshView();
 	}
 
 	/**

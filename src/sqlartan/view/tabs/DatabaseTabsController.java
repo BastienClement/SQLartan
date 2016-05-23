@@ -95,22 +95,13 @@ public class DatabaseTabsController {
 							btn.setOnAction((ActionEvent event) ->
 							{
 								DatabaseStructure dbStruct = getTableView().getItems().get(getIndex());
-								switch (dbStruct.typeProperty().get()) {
-									case "View":
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ", dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && !dbStruct.nameProperty().get().equals(name)) {
-												database.view(dbStruct.nameProperty().get()).ifPresent(v -> controller.renameStructure(v, name));
-											}
-										});
-										break;
-									case "Table":
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ", dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && !dbStruct.nameProperty().get().equals(name)) {
-												controller.renameStructure(database.table(dbStruct.nameProperty().get()).get(), name);
-											}
-										});
-										break;
-								}
+								String oldName = dbStruct.nameProperty().get();
+								Popup.input("Rename", "Rename " + oldName + " into : ", oldName).ifPresent(newName -> {
+									if (newName.length() > 0 && !oldName.equals(newName)) {
+										database.structure(oldName)
+										        .ifPresent(s -> controller.renameColumn(s, oldName, newName));
+									}
+								});
 							});
 							setGraphic(btn);
 							setText(null);
