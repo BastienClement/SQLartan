@@ -15,10 +15,10 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	@Override
 	public ContextMenu getMenu() {
 		MenuItem vacuum = new MenuItem("Vacuum");
-		vacuum.setOnAction(event -> SqlartanController.getDB().attached(name()).ifPresent(db -> {
-			controller.vacuumDatabase(db);
+		vacuum.setOnAction(event -> {
+			SqlartanController.getDB().vacuum();
 			Popup.information("Vacuum", "The database " + SqlartanController.getDB().name() + " get vacuumed");
-		}));
+		});
 
 		return new ContextMenu(vacuum);
 
