@@ -549,4 +549,7 @@ public class SqlartanController {
 		}
 	}
 
+	public void selectTreeIndex(int i) {
+		treeView.getSelectionModel().select(0);
+	}
 }

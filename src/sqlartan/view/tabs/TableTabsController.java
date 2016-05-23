@@ -1,5 +1,6 @@
 package sqlartan.view.tabs;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,8 +10,10 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
+import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.DataTableView;
 import sqlartan.view.tabs.struct.TableStructure;
+import sqlartan.view.util.Popup;
 import java.io.IOException;
 
 
@@ -152,12 +155,22 @@ public class TableTabsController{
 		ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
 
 		TableStructure.IDReset();
-		tableStructures.addAll(structure.columns()
-		                                .map(TableStructure::new)
-		                                .toList());
+		try {
+			tableStructures.addAll(structure.columns()
+			                                .map(TableStructure::new)
+			                                .toList());
+		} catch(UncheckedSQLException e){
+			Platform.runLater(() -> {
+				ButtonType ok = new ButtonType("Yes drop it");
+				ButtonType cancel = new ButtonType("Cancel");
+				Popup.warning("Error while display structure", e.getMessage(), ok, cancel)
+				     .filter(d -> d == ok)
+				     .ifPresent(d -> Sqlartan.getInstance().getController().dropStructure(structure));
+				Sqlartan.getInstance().getController().selectTreeIndex(0);
+			});
+		}
 
-
-			structureTable.setItems(tableStructures);
+		structureTable.setItems(tableStructures);
 	}
 
 }
