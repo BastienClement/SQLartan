@@ -1,10 +1,12 @@
 package sqlartan.core;
 
+import sqlartan.core.ast.*;
+import sqlartan.core.ast.parser.ParseException;
+import sqlartan.core.ast.parser.Parser;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.RuntimeSQLException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -14,14 +16,16 @@ public class AlterTable
 {
 	private final Table table;
 
+	private CreateTableStatement.Def tableDefinition;
+
 	// register all actions by grouped by column name
 	private HashMap<String, LinkedList<AlterAction>> actions = new HashMap<>();
 
-	public AlterTable(Table table){
+	public AlterTable(Table table) throws SQLException, ParseException {
 		this.table = table;
 	}
 
-	public void execute(){
+	public void execute() throws ParseException {
 		// execute all registred actions
 		Iterator<String> keySetIterator = actions.keySet().iterator();
 		while(keySetIterator.hasNext()){
@@ -41,112 +45,53 @@ public class AlterTable
 		return actions.get(columnName);
 	}
 
-	public void addColumn(String columnName, String typeName){
-		if(!((!table.column(columnName).isPresent() && findLastAddAction(columnName) == null) || findLastDropAction(columnName) != null))
+	public void addColumn(ColumnDefinition definition) throws ParseException, SQLException {
+		if(!((!table.column(definition.name).isPresent() && findLastAddColumnAction(definition.name) == null) || findLastDropColumnAction(definition.name) != null))
 			throw new UnsupportedOperationException("Column does already exist!");
-		add(columnName, new AlterAction(new TableColumn(table, new TableColumn.Properties() {
-					@Override
-					public boolean unique() {
-						return false;
-					}
-					@Override
-					public String check() {
-						return null;
-					}
-					@Override
-					public String name() {
-						return columnName;
-					}
-					@Override
-					public String type() {
-						return typeName;
-					}
-					@Override
-					public boolean nullable() {
-						return true;
-					}
-				}), ActionType.ADD)
-		);
+		add(definition.name, new AddColumnAction(definition));
 	}
 
-	public void dropColumn(String columnName){
-		if(findLastAddAction(columnName) != null) {
-			add(columnName, new AlterAction(findLastAddAction(columnName).column(), ActionType.DROP));
+	public void dropColumn(String columnName) throws ParseException, SQLException {
+		if(findLastAddColumnAction(columnName) != null) {
+			add(columnName, new DropColumnAction(findLastAddColumnAction(columnName).column()));
 		}
 		else if(table.column(columnName).isPresent())
-			add(columnName, new AlterAction(table.column(columnName).get(), ActionType.DROP));
+			add(columnName, new DropColumnAction(getTableDefinition().columns.stream().filter(col -> col.name.equals(columnName)).findFirst().get()));
 		else
 			throw new UnsupportedOperationException("Column does not exist!");
 	}
 
-	public void modifyColumn(String columnName, String newName, String typeName, boolean unique, boolean nullable){
-		if(findLastAddAction(columnName) != null || table.column(columnName).isPresent()) {
-			add(columnName, new AlterAction(new TableColumn(table, new TableColumn.Properties() {
-						@Override
-						public boolean unique() {
-							return unique;
-						}
-						@Override
-						public String check() {
-							return null;
-						}
-						@Override
-						public String name() {
-							return newName;
-						}
-						@Override
-						public String type() {
-							return typeName;
-						}
-						@Override
-						public boolean nullable() {
-							return nullable;
-						}
-					}), findLastAddAction(columnName) != null ? findLastAddAction(columnName).column() : table.column(columnName).get(),
-							ActionType.MODIFY)
-			);
-		}
-	}
-
-	public void modifyColumn(String columnName, String newName, String typeName){
-		if(findLastAddAction(columnName) != null || table.column(columnName).isPresent()) {
-			TableColumn column = (findLastAddAction(columnName) != null ? findLastAddAction(columnName).column() : table.column(columnName).get());
-			modifyColumn(columnName, newName, typeName, column.unique(), column.nullable());
-		}
-	}
-
-	public void modifyColumn(String columnName, String newName){
-		if(findLastAddAction(columnName) != null || table.column(columnName).isPresent()) {
-			TableColumn column = (findLastAddAction(columnName) != null ? findLastAddAction(columnName).column() : table.column(columnName).get());
-			modifyColumn(columnName, newName, column.type(), column.unique(), column.nullable());
+	public void modifyColumn(String columnName, ColumnDefinition newColumn) throws ParseException, SQLException {
+		if(findLastAddColumnAction(columnName) != null || table.column(columnName).isPresent()) {
+			add(columnName, new ModifyColumnAction(newColumn, columnName));
 		}
 	}
 
 	public void setPrimaryKey(String[] columnsNames){
 		for(String columnName : columnsNames){
-			if(findLastDropAction(columnName) != null || (findLastAddAction(columnName) == null && !table.column(columnName).isPresent()))
+			if(findLastDropColumnAction(columnName) != null || (findLastAddColumnAction(columnName) == null && !table.column(columnName).isPresent()))
 				throw new UnsupportedOperationException("Column does not exist!");
 		}
 	}
 
 	// Add action to the stack
-	private void add(String columnName, AlterAction action){
+	private void add(String columnName, AlterAction action) throws ParseException, SQLException {
 		if(!actions.containsKey(columnName))
 			actions.put(columnName, new LinkedList<AlterAction>());
 		actions.get(columnName).push(action);
-		check(columnName);
+		checkColumnActions(columnName);
 	}
 
 	// look for unnecessary actions
-	private void check(String columnName){
-		AlterAction addAction = findLastAddAction(columnName);
-		AlterAction dropAction = findLastDropAction(columnName);
+	private void checkColumnActions(String columnName) throws ParseException, SQLException {
+		AlterColumnAction addAction = findLastAddColumnAction(columnName);
+		AlterColumnAction dropAction = findLastDropColumnAction(columnName);
 		if(addAction != null && dropAction != null) {
 			if (actions.get(columnName).indexOf(addAction) < actions.get(columnName).indexOf(dropAction)) {
 				actions.get(columnName).remove(addAction);
 				actions.get(columnName).remove(dropAction);
 			}
-			if (actions.get(columnName).indexOf(dropAction) < actions.get(columnName).indexOf(addAction) && table.column(columnName).isPresent() && compare(table.column(columnName).get(), addAction.column())) {
+			if (actions.get(columnName).indexOf(dropAction) < actions.get(columnName).indexOf(addAction) && table.column(columnName).isPresent() && compare(getTableDefinition().columns.stream().filter(col -> col.name.equals(columnName)).findFirst().get(), addAction.column())) {
 				actions.get(columnName).remove(addAction);
 				actions.get(columnName).remove(dropAction);
 			}
@@ -154,112 +99,219 @@ public class AlterTable
 	}
 
 	// retrieve last add action in the stack
-	private AlterAction findLastAddAction(String columnName){
+	private AlterColumnAction findLastAddColumnAction(String columnName){
 		if(actions.get(columnName) == null)
 			return null;
-		AlterAction[] addActions = actions.get(columnName).stream().filter(action -> action.type() == ActionType.ADD).toArray(size -> new AlterAction[size]);
+		AlterColumnAction[] addActions = actions.get(columnName).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(addActions.length == 0)
 			return null;
 		return addActions[addActions.length - 1];
 	}
 
 	// retrieve last drop action in the stack
-	private AlterAction findLastDropAction(String columnName){
+	private AlterColumnAction findLastDropColumnAction(String columnName){
 		if(actions.get(columnName) == null)
 			return null;
-		AlterAction[] dropActions = actions.get(columnName).stream().filter(action -> action.type() == ActionType.DROP).toArray(size -> new AlterAction[size]);
+		AlterColumnAction[] dropActions = actions.get(columnName).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(dropActions.length == 0)
 			return null;
 		return dropActions[dropActions.length - 1];
 	}
 
-	// compare two columns, with name, type, ...
-	private boolean compare(TableColumn col1, TableColumn col2){
-		return col1.name().equals(col2.name()) && col1.type().equals(col2.name()) && col1.unique() == col2.unique() && col1.nullable() == col2.nullable();
+	// compare two columns definitions, with name, type, ...
+	private boolean compare(ColumnDefinition col1, ColumnDefinition col2){
+		if(!col1.name.equals(col2.name))
+			return false;
+
+		if((!col1.type.isPresent() && col2.type.isPresent()) || (col1.type.isPresent() && !col2.type.isPresent()))
+			return false;
+
+		if(col1.type.isPresent()){
+			TypeDefinition type1 = col1.type.get();
+			TypeDefinition type2 = col2.type.get();
+
+			if(!type1.name.equals(type2.name))
+				return false;
+
+			if((!type1.length.isPresent() && type2.length.isPresent()) || (type1.length.isPresent() && !type2.length.isPresent()))
+				return false;
+
+			if(type1.length.isPresent()){
+				if(!type1.length.get().sign.equals(type2.length.get().sign) || !type1.length.get().value.equals(type2.length.get().value))
+					return false;
+			}
+
+			if((!type1.scale.isPresent() && type2.scale.isPresent()) || (type1.scale.isPresent() && !type2.scale.isPresent()))
+				return false;
+
+			if(type1.scale.isPresent()){
+				if(!type1.scale.get().sign.equals(type2.scale.get().sign) || !type1.scale.get().value.equals(type2.scale.get().value))
+					return false;
+			}
+		}
+
+		if((!col1.constraints.isEmpty() && col2.constraints.isEmpty()) || (col1.constraints.isEmpty() && !col2.constraints.isEmpty()) || col1.constraints.size() != col2.constraints.size())
+			return false;
+
+		if(!col1.constraints.isEmpty()){
+			int n = col1.constraints.size();
+			for(int i = 0; i < n; i++){
+				if((!col1.constraints.get(i).name.isPresent() && col2.constraints.get(i).name.isPresent()) || (col1.constraints.get(i).name.isPresent() && !col2.constraints.get(i).name.isPresent()))
+					return false;
+
+				if(col1.constraints.get(i).name.isPresent() && !col1.constraints.get(i).name.get().equals(col2.constraints.get(i).name.get()))
+					return false;
+			}
+		}
+
+		return true;
 	}
 
-	// allowed actions, maybe to improve
-	private enum ActionType {
-		ADD,
-		DROP,
-		MODIFY
+	private CreateTableStatement.Def getTableDefinition() throws ParseException, SQLException {
+		String createStatement = table.database.assemble("SELECT sql FROM ", table.database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+		                                       .execute(table.name)
+		                                       .mapFirst(Row::getString);
+		return Parser.parse(createStatement, CreateTableStatement.Def::parse);
 	}
 
-	private class AlterAction
+	private List<CreateViewStatement> getViews() throws SQLException {
+		IterableStream<String> createStatements =  table.database.assemble("SELECT sql FROM ", table.database.name(), ".sqlite_master WHERE type = 'view'")
+		                             .execute()
+		                             .map(Row::getString);
+
+		return createStatements.map(createStatement -> {
+			try {
+				return Parser.parse(createStatement, CreateViewStatement::parse);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}).filter(createViewStatement -> {
+			
+		}).toList();
+	}
+
+	private abstract class AlterAction
 	{
-		private final TableColumn originalColumn;
-		private final TableColumn column;
-		private ActionType type;
+		protected CreateTableStatement.Def tableDefinition;
 
-		AlterAction(TableColumn column, ActionType type){
-			originalColumn = null;
+		AlterAction() {
+
+		}
+
+		public void execute() throws SQLException, ParseException{
+			tableDefinition = getTableDefinition();
+			executeAction();
+		}
+
+		protected abstract void executeAction() throws SQLException, ParseException;
+	}
+
+	private abstract class AlterColumnAction extends AlterAction
+	{
+		protected final ColumnDefinition column;
+
+		AlterColumnAction(ColumnDefinition column) throws ParseException {
+			super();
 			this.column = column;
-			this.type = type;
+
 		}
 
-		AlterAction(TableColumn column, TableColumn originalColumn, ActionType type){
-			this.originalColumn = originalColumn;
-			this.column = column;
-			this.type = type;
-		}
-
-		public void execute() throws SQLException {
-			// execute, depending of action type, to improve
-			if(type == ActionType.DROP){
-				String[] queries = new String[6];
-				queries[0] = "CREATE TEMPORARY TABLE " + table.name() + "_backup" + "(" +
-						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
-						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
-						"))";
-				queries[1] = "INSERT INTO " + table.name() + "_backup SELECT " +
-						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-						" FROM " + table.fullName();
-				queries[2] = "DROP TABLE " + table.fullName();
-				queries[3] = "CREATE TABLE " + table.fullName() + "(" +
-						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
-						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
-						"))";
-				queries[4] = "INSERT INTO " + table.fullName() + " SELECT " +
-						table.columns().filter(col -> !col.name().equals(column.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-						" FROM " + table.name() + "_backup";
-				queries[5] = "DROP TABLE " + table.name() + "_backup";
-
-				table.database.executeTransaction(queries);
-			}
-			else if(type == ActionType.ADD){
-				String query = "ALTER TABLE " + column.parentTable().fullName() + "  ADD COLUMN " + column.name() + " " + column.type();
-				table.database.execute(query);
-			}
-			else{
-				String[] queries = new String[6];
-				queries[0] = "CREATE TEMPORARY TABLE " + table.name() + "_backup" + "(" +
-						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name() + " " + col.type()  + (col.unique() ? " UNIQUE" : "") + (col.nullable() ? "" : " NOT NULL")).collect(Collectors.joining(", ")) +
-						", " + column.name() + " " + column.type()  + (column.unique() ? " UNIQUE" : "") + (column.nullable() ? "" : " NOT NULL") +
-						", PRIMARY KEY(" + table.primaryKey().getColumns().stream().collect(Collectors.joining(", ")) +
-						"))";
-				queries[1] ="INSERT INTO " + table.name() + "_backup SELECT " +
-						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-						", " + originalColumn.name() +
-						" FROM " + table.fullName();
-				queries[2] = "DROP TABLE " + table.fullName();
-				queries[3] = queries[0].replace("TEMPORARY", "").replace(table.name() + "_backup", table.name());
-				queries[4] = "INSERT INTO " + table.fullName() + " SELECT " +
-						table.columns().filter(col -> !col.name().equals(originalColumn.name())).map(col -> col.name()).collect(Collectors.joining(", ")) +
-						", " + column.name() +
-						" FROM " + table.name() + "_backup";
-				queries[5] = "DROP TABLE " + table.name() + "_backup";
-
-				table.database.executeTransaction(queries);
-			}
-		}
-
-		public TableColumn column(){
+		public ColumnDefinition column(){
 			return column;
 		}
+	}
 
-		public ActionType type(){
-			return type;
+	private class AddColumnAction extends AlterColumnAction{
+
+		AddColumnAction(ColumnDefinition column) throws ParseException {
+			super(column);
 		}
+
+		public void executeAction() throws SQLException {
+			String query = "ALTER TABLE " +table.fullName() + "  ADD COLUMN " + column.toSQL();
+			table.database.execute(query);
+		}
+	}
+
+	private class DropColumnAction extends AlterColumnAction{
+
+		DropColumnAction(ColumnDefinition column) throws ParseException {
+			super(column);
+		}
+
+		public void executeAction() throws SQLException, ParseException {
+			CreateTableStatement.Def temporaryTable = getTableDefinition();
+			temporaryTable.temporary = true;
+			temporaryTable.name = tableDefinition.name + "_backup";
+			temporaryTable.schema = Optional.empty();
+			ColumnDefinition definition = temporaryTable.columns.stream().filter(column -> column.name.equals(column.name)).findFirst().get();
+			temporaryTable.columns.remove(definition);
+			String createTemporary = temporaryTable.toSQL();
+
+			String populateTemporary = "INSERT INTO " + temporaryTable.name + " SELECT " +
+					tableDefinition.columns.stream().filter(col -> col.name != column.name).map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + table.fullName();
+
+			String dropTable = "DROP TABLE " + table.fullName();
+
+			CreateTableStatement.Def newTable = getTableDefinition();
+			definition = newTable.columns.stream().filter(column -> column.name.equals(column.name)).findFirst().get();
+			newTable.columns.remove(definition);
+			String createTable = newTable.toSQL();
+
+			String populateTable = "INSERT INTO " + newTable.name + " SELECT " +
+					temporaryTable.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + temporaryTable.name;
+
+			String dropTemporary = "DROP TABLE " + temporaryTable.name;
+
+			table.database.executeTransaction(new String[]{createTemporary, populateTemporary, dropTable, createTable, populateTable, dropTemporary});
+		}
+	}
+
+	private class ModifyColumnAction extends AlterColumnAction{
+
+		private final String originalName;
+
+		ModifyColumnAction(ColumnDefinition column, String originalName) throws ParseException {
+			super(column);
+			this.originalName = originalName;
+		}
+
+		public void executeAction() throws ParseException, SQLException {
+			CreateTableStatement.Def temporaryTable = getTableDefinition();
+			temporaryTable.temporary = true;
+			temporaryTable.name = tableDefinition.name + "_backup";
+			temporaryTable.schema = Optional.empty();
+			ColumnDefinition definition = temporaryTable.columns.stream().filter(column -> column.name.equals(originalName)).findFirst().get();
+			definition.name = column.name;
+			definition.type = column.type;
+			definition.constraints = column.constraints;
+			String createTemporary = temporaryTable.toSQL();
+
+			String populateTemporary = "INSERT INTO " + temporaryTable.name + " SELECT " +
+					tableDefinition.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + table.fullName();
+
+			String dropTable = "DROP TABLE " + table.fullName();
+
+			CreateTableStatement.Def newTable = getTableDefinition();
+			definition = newTable.columns.stream().filter(column -> column.name.equals(originalName)).findFirst().get();
+			definition.name = column.name;
+			definition.type = column.type;
+			definition.constraints = column.constraints;
+			String createTable = newTable.toSQL();
+
+			String populateTable = "INSERT INTO " + newTable.name + " SELECT " +
+					temporaryTable.columns.stream().map(col -> col.name).collect(Collectors.joining(", ")) +
+					" FROM " + temporaryTable.name;
+
+			String dropTemporary = "DROP TABLE " + temporaryTable.name;
+
+			table.database.executeTransaction(new String[]{createTemporary, populateTemporary, dropTable, createTable, populateTable, dropTemporary});
+		}
+
 	}
 
 }
