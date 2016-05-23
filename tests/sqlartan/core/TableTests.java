@@ -225,6 +225,48 @@ public class TableTests {
 		}
 	}
 
+	/*@Test
+	public void alterTests() throws SQLException, ParseException {
+		try (Database db = Database.createEphemeral()) {
+			// Create simple table
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			db.execute("INSERT INTO test VALUES (1, 'abc', 11)");
+			db.execute("INSERT INTO test VALUES (2, 'def', 12)");
+			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
+			db.execute("CREATE TABLE test_backup (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			db.execute("INSERT INTO test_backup VALUES (1, 'abc', 11)");
+			Table test = db.table("test").get();
+
+			AlterTable alter = test.alter();
+			// add
+			alter.addColumn(test, new TableColumn.Properties());
+			alter.addColumn("d", "FLOAT");
+			alter.execute();
+			assertTrue(test.column("d").isPresent());
+			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// drop
+			alter.dropColumn("d");
+			alter.execute();
+			test = db.table("test").get();
+			assertFalse(test.column("d").isPresent());
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// modify column
+			alter.modifyColumn("c", "d", "FLOAT");
+			alter.execute();
+			test = db.table("test").get();
+			assertFalse(test.column("c").isPresent());
+			assertTrue(test.column("d").isPresent());
+
+			// Check if we have exactly 3 rows in the table
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+		}
+	}
+	*/
 	@Test
 	public void insertTests() throws SQLException {
 		try (Database db = Database.createEphemeral()) {

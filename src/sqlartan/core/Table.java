@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
@@ -116,6 +117,10 @@ public class Table extends PersistentStructure<TableColumn> {
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
+	}
+
+	public AlterTable alter(){
+		return new AlterTable(this);
 	}
 
 	/**

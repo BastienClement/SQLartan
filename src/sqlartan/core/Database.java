@@ -448,6 +448,29 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Executes a transaction on the database.
+	 *
+	 * @param queries
+	 * @throws SQLException
+	 */
+	public void executeTransaction(String[] queries) throws SQLException {
+		try {
+			connection.setAutoCommit(false);
+			for(String query : queries) {
+				execute(query).close();
+			}
+			connection.commit();
+		}
+		catch (SQLException e){
+			connection.rollback();
+			throw e;
+		}
+		finally {
+			connection.setAutoCommit(true);
+		}
+	}
+
+	/**
 	 * Prepares a query for execution.
 	 *
 	 * @param query

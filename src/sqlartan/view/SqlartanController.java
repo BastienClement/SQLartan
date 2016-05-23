@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
+import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
@@ -438,8 +440,37 @@ public class SqlartanController {
 	 * @param type
 	 */
 	public void addColumn(Table table, String name, String type) {
-		Affinity affinity = Affinity.forType(type);
-		table.addColumn(name, affinity);
+		TableColumn column = new TableColumn(table, new TableColumn.Properties() {
+			@Override
+			public boolean unique() {
+				return false;
+			}
+			@Override
+			public String check() {
+				return null;
+			}
+			@Override
+			public String name() {
+				return name;
+			}
+			@Override
+			public String type() {
+				return type;
+			}
+			@Override
+			public boolean nullable() {
+				return false;
+			}
+		});
+		AlterTable alter = table.alter();
+		try {
+			alter.addColumn(column);
+			alter.execute();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		refreshView();
 	}
 
@@ -448,7 +479,7 @@ public class SqlartanController {
 	 * Drop the specified column from the table
 	 *
 	 * @param table
-	 * @param name
+	 * @param column
 	 */
 	public void dropColumn(Table table, String name) {
 		table.column(name).ifPresent(TableColumn::drop);
@@ -460,7 +491,7 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
-	 * @param name
+	 * @param column
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {

@@ -40,7 +40,7 @@ public abstract class TableConstraint implements Node {
 	}
 
 	public static class Index extends TableConstraint {
-		enum Type {PrimaryKey, Unique}
+		public enum Type {PrimaryKey, Unique}
 
 		public Type type;
 		public List<IndexedColumn> columns;

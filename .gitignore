@@ -4,3 +4,5 @@
 /.idea/dataSources*
 /.idea/dictionaries
 *.db
+hs_err_pid*
+
