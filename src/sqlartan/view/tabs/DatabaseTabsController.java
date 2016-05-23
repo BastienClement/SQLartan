@@ -15,6 +15,7 @@ import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 /**
  * Created by julien on 30.04.16.
@@ -65,10 +66,7 @@ public class DatabaseTabsController {
 			allRequestControler = loader.getController();
 			pane.prefHeightProperty().bind(sqlPane.heightProperty());
 			pane.prefWidthProperty().bind(sqlPane.widthProperty());
-
-		} catch (IOException e) {
-
-		}
+		} catch (IOException ignored) {}
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
@@ -79,65 +77,41 @@ public class DatabaseTabsController {
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
 		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
-		colRename.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell<DatabaseStructure, String> call(final TableColumn<DatabaseStructure, String> param) {
-				return new TableCell<DatabaseStructure, String>() {
-					private final Button btn = new Button("Rename");
 
-					@Override
-					public void updateItem(String item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setGraphic(null);
-							setText(null);
-						} else {
-							btn.setOnAction((ActionEvent event) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get(getIndex());
-								String oldName = dbStruct.nameProperty().get();
-								Popup.input("Rename", "Rename " + oldName + " into : ", oldName).ifPresent(newName -> {
-									if (newName.length() > 0 && !oldName.equals(newName)) {
-										database.structure(oldName)
-										        .ifPresent(s -> controller.renameColumn(s, oldName, newName));
-									}
-								});
-							});
-							setGraphic(btn);
-							setText(null);
-						}
-					}
-				};
-			}
-		});
-		colDelete.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell<DatabaseStructure, String> call(final TableColumn<DatabaseStructure, String> param) {
-				return new TableCell<DatabaseStructure, String>() {
-					private final Button btn = new Button("Drop");
+		colDelete.setCellFactory(actionButton("Rename", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			String structName = dbStruct.nameProperty().get();
+			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
+				if (name.length() > 0 && !structName.equals(name)) {
+					database.structure(structName).ifPresent(s -> controller.renameStructure(s, name));
+				}
+			});
+		}));
 
-					@Override
-					public void updateItem(String item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setGraphic(null);
-							setText(null);
-						} else {
-							btn.setOnAction((ActionEvent event) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get(getIndex());
-								database.structure(dbStruct.nameProperty().get())
-								        .ifPresent(structure -> controller.dropStructure(structure));
-							});
-							setGraphic(btn);
-							setText(null);
-						}
-					}
-				};
-			}
-		});
+		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> controller.dropStructure(s));
+		}));
 
 		tabPane.getSelectionModel().clearSelection();
+	}
+
+	private Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>
+			actionButton(String label, BiConsumer<TableCell<DatabaseStructure, String>, ActionEvent> action) {
+		Button btn = new Button(label);
+		return param -> new TableCell<DatabaseStructure, String>() {
+			public void updateItem(String item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+					setText(null);
+				} else {
+					btn.setOnAction(event -> action.accept(this, event));
+					setGraphic(btn);
+					setText(null);
+				}
+			}
+		};
 	}
 
 	/**
@@ -149,7 +123,6 @@ public class DatabaseTabsController {
 		                         .sorted((a, b) -> a.name().compareTo(b.name()))
 		                         .map(DatabaseStructure::new)
 		                         .toList());
-
 		structureTable.setItems(dbStructs);
 	}
 

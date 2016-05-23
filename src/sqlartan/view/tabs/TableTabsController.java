@@ -17,7 +17,6 @@ import sqlartan.core.Table;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.DataTableView;
 import sqlartan.view.SqlartanController;
-import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.tabs.struct.TableStructure;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.io.IOException;
 /**
  * Created by julien on 29.04.16.
  */
-public class TableTabsController{
+public class TableTabsController {
 
 	@FXML
 	private TableColumn<TableStructure, String> colNo;
@@ -48,7 +47,7 @@ public class TableTabsController{
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
-	private  TableColumn<InsertRowStructure, String> insertColType;
+	private TableColumn<InsertRowStructure, String> insertColType;
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColValue;
 
@@ -101,7 +100,6 @@ public class TableTabsController{
 		}
 
 
-
 		/**
 		 * Display the datas from the tableStructures in display tab only when he's active.
 		 * Every time a new query is done.
@@ -111,7 +109,7 @@ public class TableTabsController{
 				displayTab.setContent(dataTableView.getTableView(structure));
 			} else if (newTab == structureTab) {
 				displayStructure();
-			} else if (newTab == insertTab){
+			} else if (newTab == insertTab) {
 				displayInsertTab();
 			}
 		});
@@ -124,70 +122,56 @@ public class TableTabsController{
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 		colRename.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
 			@Override
-			public TableCell call( final TableColumn<TableStructure, String> param )
-			{
-				final TableCell<TableStructure, String> cell = new TableCell<TableStructure, String>()
-				{
-					final Button btn = new Button( "Rename" );
+			public TableCell<TableStructure, String> call(final TableColumn<TableStructure, String> param) {
+				return new TableCell<TableStructure, String>() {
+					private final Button btn = new Button("Rename");
 
 					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
+					public void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
+						if (empty) {
+							setGraphic(null);
+							setText(null);
+						} else {
+							btn.setOnAction((ActionEvent event) ->
 							{
-								TableStructure tableStruct = getTableView().getItems().get( getIndex() );
-								Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ",  tableStruct.nameProperty().get()).ifPresent(name -> {
-									if (name.length() > 0 && ! tableStruct.nameProperty().get().equals(name)) {
+								TableStructure tableStruct = getTableView().getItems().get(getIndex());
+								Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
+									if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
 										controller.renameColumn(table, tableStruct.nameProperty().get(), name);
 									}
 								});
-							} );
-							setGraphic( btn );
-							setText( null );
+							});
+							setGraphic(btn);
+							setText(null);
 						}
 					}
 				};
-				return cell;
 			}
 		});
 		colDelete.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
 			@Override
-			public TableCell call( final TableColumn<TableStructure, String> param )
-			{
-				final TableCell<TableStructure, String> cell = new TableCell<TableStructure, String>()
-				{
-					final Button btn = new Button( "Drop" );
+			public TableCell<TableStructure, String> call(final TableColumn<TableStructure, String> param) {
+				return new TableCell<TableStructure, String>() {
+					private final Button btn = new Button("Drop");
 
 					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
+					public void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
+						if (empty) {
+							setGraphic(null);
+							setText(null);
+						} else {
+							btn.setOnAction((ActionEvent event) ->
 							{
-								TableStructure tableStruct = getTableView().getItems().get( getIndex() );
+								TableStructure tableStruct = getTableView().getItems().get(getIndex());
 								controller.dropColumn(table, tableStruct.nameProperty().get());
-							} );
-							setGraphic( btn );
-							setText( null );
+							});
+							setGraphic(btn);
+							setText(null);
 						}
 					}
 				};
-				return cell;
 			}
 		});
 
@@ -209,7 +193,7 @@ public class TableTabsController{
 
 	}
 
-	private void displayInsertTab(){
+	private void displayInsertTab() {
 		ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
 
 		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
@@ -220,8 +204,7 @@ public class TableTabsController{
 	}
 
 	@FXML
-	private void submitNewData()
-	{
+	private void submitNewData() {
 		ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
 		//TODO call the insert methode on the core
 	}
@@ -238,7 +221,7 @@ public class TableTabsController{
 			tableStructures.addAll(structure.columns()
 			                                .map(TableStructure::new)
 			                                .toList());
-		} catch(UncheckedSQLException e){
+		} catch (UncheckedSQLException e) {
 			Platform.runLater(() -> {
 				ButtonType ok = new ButtonType("Yes drop it");
 				ButtonType cancel = new ButtonType("Cancel");

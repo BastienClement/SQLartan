@@ -393,7 +393,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Drop a structure
+	 * Drop a table or a view
 	 *
 	 * @param structure
 	 */
@@ -415,7 +415,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Rename a table
+	 * Rename a table or a view
 	 *
 	 * @param structure
 	 * @param name
@@ -425,6 +425,13 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Vacuum a database
+	 */
+	public void vacuumDatabase(Database db) {
+		db.vacuum();
+		refreshView();
+	}
 
 	/**
 	 * Add a column to the specified table
