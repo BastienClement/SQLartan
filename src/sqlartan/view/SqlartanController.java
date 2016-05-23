@@ -21,6 +21,7 @@ import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.TokenizeException;
+import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -232,6 +233,7 @@ public class SqlartanController {
 
 	/**
 	 * Open de main database
+	 *
 	 * @param file: file of the database to open
 	 */
 	@FXML
@@ -302,7 +304,6 @@ public class SqlartanController {
 	}
 
 
-
 	/**
 	 * FUnction called by the GUI
 	 * to attache a database
@@ -336,7 +337,7 @@ public class SqlartanController {
 	/**
 	 * Attach a database to the main database
 	 *
-	 * @param file : file of the database
+	 * @param file   : file of the database
 	 * @param dbName : name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
@@ -365,7 +366,6 @@ public class SqlartanController {
 
 
 	}
-
 
 
 	/**
@@ -552,13 +552,16 @@ public class SqlartanController {
 	}
 
 	@FXML
-	public void importFX() throws TokenizeException {
+	public void importFX() {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Import SQLite database");
 		try {
-			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
+			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+			if (f != null) {
+				db.importfromFile(f);
+			}
 		} catch (SQLException | IOException | TokenizeException e) {
-			Popup.error(":(", e.getMessage());
+			throw new UncheckedException(e);
 		}
 		refreshView();
 	}
@@ -569,22 +572,23 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	@FXML
-	public void export() throws SQLException {
+	public void export() {
 		FileChooser fileChooser = new FileChooser();
 
 		//Set extension filter
 		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
 		fileChooser.getExtensionFilters().add(extFilter);
 
-		//Show save file dialog
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
 		try {
-			FileWriter fileWriter = new FileWriter(file);
-			fileWriter.write(db.export());
-			fileWriter.close();
-		} catch (IOException ignored) {
-
+			//Show save file dialog
+			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+			if(file != null){
+				FileWriter fileWriter = new FileWriter(file);
+				fileWriter.write(db.export());
+				fileWriter.close();
+			}
+		} catch (IOException | SQLException e) {
+			throw new UncheckedException(e);
 		}
 	}
 
@@ -632,8 +636,7 @@ public class SqlartanController {
 
 		if (db != null && (!db.isClosed())) {
 			attachDatabase(file, file.getName().split("\\.")[0]);
-		}
-		else {
+		} else {
 			openDatabase(file);
 		}
 	}
