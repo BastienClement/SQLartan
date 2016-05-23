@@ -393,22 +393,12 @@ public class SqlartanController {
 
 
 	/**
-	 * Drop a structure
+	 * Drop a table or a view
 	 *
 	 * @param structure
 	 */
 	public void dropStructure(PersistentStructure<?> structure) {
 		structure.drop();
-		refreshView();
-	}
-
-	/**
-	 * Drop a view
-	 *
-	 * @param view
-	 */
-	public void dropView(View view) {
-		view.drop();
 		refreshView();
 	}
 
@@ -425,24 +415,13 @@ public class SqlartanController {
 
 
 	/**
-	 * Rename a table
+	 * Rename a table or a view
 	 *
 	 * @param structure
 	 * @param name
 	 */
-	public void renameTable(PersistentStructure<?> structure, String name) {
+	public void renameStructure(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
-		refreshView();
-	}
-
-	/**
-	 * Rename a view
-	 *
-	 * @param view
-	 * @param name
-	 */
-	public void renameView(View view, String name) {
-		view.rename(name);
 		refreshView();
 	}
 

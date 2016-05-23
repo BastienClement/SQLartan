@@ -10,20 +10,17 @@ import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
+import sqlartan.view.AllRequestController;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.util.Popup;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import sqlartan.core.stream.IterableStream;
-import sqlartan.view.AllRequestController;
-import sqlartan.view.tabs.struct.DatabaseStructure;
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController{
+public class DatabaseTabsController {
 
 	@FXML
 	private TableColumn<DatabaseStructure, String> colName;
@@ -69,10 +66,7 @@ public class DatabaseTabsController{
 			allRequestControler = loader.getController();
 			pane.prefHeightProperty().bind(sqlPane.heightProperty());
 			pane.prefWidthProperty().bind(sqlPane.widthProperty());
-
-		} catch (IOException e) {
-
-		}
+		} catch (IOException ignored) {}
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
@@ -83,94 +77,41 @@ public class DatabaseTabsController{
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
 		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
-		colRename.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell call( final TableColumn<DatabaseStructure, String> param )
-			{
-				final TableCell<DatabaseStructure, String> cell = new TableCell<DatabaseStructure, String>()
-				{
-					final Button btn = new Button( "Rename" );
 
-					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
-								switch(dbStruct.typeProperty().get()){
-									case "View" :
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
-											}
-										});
-										break;
-									case "Table" :
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
-											}
-										});
-										break;
-								}
-							} );
-							setGraphic( btn );
-							setText( null );
-						}
-					}
-				};
-				return cell;
-			}
-		});
-		colDelete.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell call( final TableColumn<DatabaseStructure, String> param )
-			{
-				final TableCell<DatabaseStructure, String> cell = new TableCell<DatabaseStructure, String>()
-				{
-					final Button btn = new Button( "Drop" );
+		colDelete.setCellFactory(actionButton("Rename", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			String structName = dbStruct.nameProperty().get();
+			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
+				if (name.length() > 0 && !structName.equals(name)) {
+					database.structure(structName).ifPresent(s -> controller.renameStructure(s, name));
+				}
+			});
+		}));
 
-					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
-								switch(dbStruct.typeProperty().get()){
-									case "View" :
-										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
-										break;
-									case "Table" :
-										controller.dropStructure(database.table(dbStruct.nameProperty().get()).get());
-										break;
-								}
-							} );
-							setGraphic( btn );
-							setText( null );
-						}
-					}
-				};
-				return cell;
-			}
-		});
+		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> controller.dropStructure(s));
+		}));
 
 		tabPane.getSelectionModel().clearSelection();
+	}
+
+	private Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>
+			actionButton(String label, BiConsumer<TableCell<DatabaseStructure, String>, ActionEvent> action) {
+		Button btn = new Button(label);
+		return param -> new TableCell<DatabaseStructure, String>() {
+			public void updateItem(String item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+					setText(null);
+				} else {
+					btn.setOnAction(event -> action.accept(this, event));
+					setGraphic(btn);
+					setText(null);
+				}
+			}
+		};
 	}
 
 	/**
@@ -182,7 +123,6 @@ public class DatabaseTabsController{
 		                         .sorted((a, b) -> a.name().compareTo(b.name()))
 		                         .map(DatabaseStructure::new)
 		                         .toList());
-
 		structureTable.setItems(dbStructs);
 	}
 
@@ -204,12 +144,12 @@ public class DatabaseTabsController{
 		this.controller = controller;
 	}
 
-	public void selectSqlTab(){
+	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();
 		tabPane.getSelectionModel().selectNext();
 	}
 
-	public void setSqlRequest(String request){
+	public void setSqlRequest(String request) {
 		allRequestControler.setRequest(request);
 	}
 }
