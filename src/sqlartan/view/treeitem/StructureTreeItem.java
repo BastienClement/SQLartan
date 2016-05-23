@@ -25,6 +25,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 		MenuItem rename = new MenuItem("Rename");
 		MenuItem copie = new MenuItem("Copy");
 
+
 		drop.setOnAction(openStructureDialog(this::dropDialog));
 		rename.setOnAction(openStructureDialog(this::renameDialog));
 		copie.setOnAction(openStructureDialog(this::copyDialog));

@@ -97,6 +97,7 @@ public class SqlartanController {
 
 						databaseTabsController = loader.getController();
 						databaseTabsController.setDatabase(db);
+						databaseTabsController.setController(this);
 					}
 
 					break;
@@ -123,6 +124,9 @@ public class SqlartanController {
 						}
 
 						TableTabsController tabsController = loader.getController();
+						tabsController.setDatabase(db);
+						tabsController.setController(this);
+						tabsController.setTable(db.table(treeItem.name()).get());
 						structure.ifPresent(tabsController::setStructure);
 
 					}
@@ -406,6 +410,16 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Drop a view
+	 *
+	 * @param view
+	 */
+	public void dropView(View view) {
+		view.drop();
+		refreshView();
+	}
+
 
 	/**
 	 * Duplicate a table
@@ -426,6 +440,17 @@ public class SqlartanController {
 	 */
 	public void renameTable(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
+		refreshView();
+	}
+
+	/**
+	 * Rename a view
+	 *
+	 * @param view
+	 * @param name
+	 */
+	public void renameView(View view, String name) {
+		view.rename(name);
 		refreshView();
 	}
 
@@ -498,7 +523,6 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
-	 * @param column
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {
@@ -524,6 +548,7 @@ public class SqlartanController {
 	 */
 	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
+		refreshView();
 	}
 
 	@FXML
@@ -535,6 +560,7 @@ public class SqlartanController {
 		} catch (SQLException | IOException | TokenizeException e) {
 			Popup.error(":(", e.getMessage());
 		}
+		refreshView();
 	}
 
 	/**

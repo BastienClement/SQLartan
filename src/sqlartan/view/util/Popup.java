@@ -1,8 +1,9 @@
 package sqlartan.view.util;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextInputDialog;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
 import java.util.Optional;
 
 /**
