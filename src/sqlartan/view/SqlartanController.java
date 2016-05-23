@@ -7,11 +7,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.NodeOrientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -141,9 +140,14 @@ public class SqlartanController {
 		treeView.setRoot(mainTreeItem);
 
 		BorderPane borderPane = new BorderPane();
+		Button clearHistory = new Button("Clear");
 		borderPane.setLeft(new Label("History"));
 		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-		borderPane.setRight(displayPragma);
+		HBox leftPane = new HBox();
+		leftPane.setAlignment(Pos.CENTER);
+		leftPane.setSpacing(5);
+		leftPane.getChildren().addAll(displayPragma, clearHistory);
+		borderPane.setRight(leftPane);
 		borderPane.prefWidthProperty().bind(historyPane.widthProperty().subtract(38));
 
 		historyPane.setGraphic(borderPane);
@@ -266,6 +270,12 @@ public class SqlartanController {
 
 				db.registerListener(readOnlyResult -> {
 					request.setItems(requests);
+
+					String resultat = readOnlyResult.query();
+
+					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
+						return;
+
 					requests.add(0, readOnlyResult.query());
 				});
 
@@ -486,7 +496,6 @@ public class SqlartanController {
 	 * Drop the specified column from the table
 	 *
 	 * @param table
-	 * @param column
 	 */
 	public void dropColumn(Table table, String name) {
 		table.column(name).ifPresent(TableColumn::drop);
@@ -498,7 +507,6 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
-	 * @param column
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {
