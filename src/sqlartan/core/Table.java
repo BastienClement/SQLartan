@@ -210,4 +210,22 @@ public class Table extends PersistentStructure<TableColumn> {
 			throw new UncheckedSQLException(e);
 		}
 	}
+
+	/**
+	 * Add a new column to the table
+	 *
+	 * @param name
+	 * @param affinity
+	 */
+	@Deprecated
+	public void addColumn(String name, Affinity affinity) {
+		// TODO
+	}
+
+	/**
+	 * Inserts a new row in this table
+	 */
+	public InsertRow insert() {
+		return new InsertRow(this);
+	}
 }

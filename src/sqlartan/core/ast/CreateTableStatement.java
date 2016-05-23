@@ -65,7 +65,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 			Def create = new Def();
 			context.consume(LEFT_PAREN);
 			create.columns = context.parseList(ColumnDefinition::parse);
-			context.parseList(create.constraints, TableConstraint::parse);
+			if (context.tryConsume(COMMA)) {
+				context.parseList(create.constraints, TableConstraint::parse);
+			}
 			context.consume(RIGHT_PAREN);
 			create.withoutRowid = context.tryConsume(WITHOUT, ROWID);
 			return create;

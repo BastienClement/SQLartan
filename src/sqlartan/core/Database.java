@@ -1,18 +1,23 @@
 package sqlartan.core;
 
+import sqlartan.core.ast.token.Token;
+import sqlartan.core.ast.token.TokenSource;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.Optionals;
 import java.io.File;
-import java.sql.*;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import static sqlartan.core.ast.Keyword.*;
+import static sqlartan.core.ast.Operator.SEMICOLON;
 import static sqlartan.util.Matching.match;
 
 public class Database implements AutoCloseable {
@@ -67,6 +72,11 @@ public class Database implements AutoCloseable {
 	 * The underlying JDBC connection
 	 */
 	protected Connection connection;
+
+	/**
+	 * The set of registered execute listeners
+	 */
+	private Set<Consumer<ReadOnlyResult>> executeListeners = new HashSet<>();
 
 	/**
 	 * @throws SQLException
@@ -144,6 +154,22 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 * @param listener
+	 */
+	public void registerListener(Consumer<ReadOnlyResult> listener) {
+		executeListeners.add(listener);
+	}
+
+	/**
+	 * TODO
+	 * @param listener
+	 */
+	public void removeListener(Consumer<ReadOnlyResult> listener) {
+		executeListeners.remove(listener);
+	}
+
+	/**
+	 * TODO
 	 *
 	 * @param type
 	 * @param builder
@@ -211,6 +237,24 @@ public class Database implements AutoCloseable {
 	 */
 	public Optional<View> view(String name) {
 		return findStructure("view", name, n -> new View(this, n));
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
+	public IterableStream<PersistentStructure<? extends Column>> structures() {
+		return IterableStream.concat(tables(), views());
+	}
+
+	/**
+	 * TODO
+	 * @param name
+	 * @return
+	 */
+	public Optional<PersistentStructure<? extends Column>> structure(String name) {
+		return Optionals.firstPresent(() -> table(name), () -> view(name));
 	}
 
 	/**
@@ -300,6 +344,15 @@ public class Database implements AutoCloseable {
 		return new AssembledQuery(this, query.toString());
 	}
 
+	Result notifyListeners(String query, Result res) {
+		for (Consumer<ReadOnlyResult> listener : executeListeners) {
+			try {
+				listener.accept(res);
+			} catch (Throwable ignored) {}
+		}
+		return res;
+	}
+
 	/**
 	 * Executes a query on the database.
 	 *
@@ -308,7 +361,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		return Result.fromQuery(connection, query);
+		return notifyListeners(query, Result.fromQuery(this, connection, query));
 	}
 
 	/**
@@ -317,45 +370,46 @@ public class Database implements AutoCloseable {
 	 * @return
 	 * @throws SQLException
 	 */
-	public IterableStream<Result> executeMulti(String query) throws SQLException {
-		final char[] input = query.toCharArray();
+	public IterableStream<Result> executeMulti(String query) throws SQLException, TokenizeException {
+		TokenSource tokens = TokenSource.from(query);
 		return IterableStream.from(() -> {
 			return new Iterator<Result>() {
-				private int i = 0;
-				private int len = query.length();
 				private int begin = 0;
+				private int len = query.length();
 				private String statement;
 
 				// Initialization
 				{ findStatement(); }
 
+				@SuppressWarnings("EqualsBetweenInconvertibleTypes")
 				private void findStatement() {
-					if (i >= len) {
+					if (begin >= len) {
 						statement = null;
 						return;
 					}
 
-					char delimiter = 0;
-					for (begin = i; i < len; i++) {
-						char current = input[i];
-						if (delimiter != 0) {
-							if (current == delimiter) {
-								if ((i + 1) < len && input[i+1] == delimiter) {
-									i++;
-								} else {
-									delimiter = 0;
-								}
-							}
-						} else if (current == '\'' || current == '"' || current == '`') {
-							delimiter = current;
-						} else if (current == ';') {
-							i++;
+					int block_level = 0;
+					for (Token current = tokens.current(); ; tokens.consume(), current = tokens.current()) {
+						if ((current.equals(BEGIN) && !tokens.next().equals(TRANSACTION)) || current.equals(MATCH)) {
+							block_level++;
+						} else if (current.equals(END)) {
+							block_level--;
+						} else if (current instanceof Token.EndOfStream) {
+							statement = query.substring(begin).trim();
+							begin = len;
+							break;
+						} else if (block_level == 0 && current.equals(SEMICOLON)) {
+							int offset = current.offset + 1;
+							statement = query.substring(begin, offset).trim();
+							begin = offset;
+							tokens.consume();
 							break;
 						}
 					}
 
-					statement = String.valueOf(input, begin, i - begin);
-					if (statement.trim().isEmpty()) findStatement();
+					if (statement.isEmpty()) {
+						findStatement();
+					}
 				}
 
 				@Override
@@ -423,7 +477,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public PreparedQuery prepare(String query) throws SQLException {
-		return new PreparedQuery(connection, query);
+		return new PreparedQuery(this, connection, query);
 	}
 
 	/**
@@ -489,7 +543,7 @@ public class Database implements AutoCloseable {
 	 * @return
 	 * @throws SQLException
 	 */
-	public void importFromString(String sql) throws SQLException{
+	public void importFromString(String sql) throws SQLException, TokenizeException {
 		executeMulti(sql).forEach(Result::close);
 	}
 
@@ -501,7 +555,8 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public void importfromFile(File file) throws SQLException, IOException{
+
+	public void importfromFile(File file) throws SQLException, IOException, TokenizeException {
 		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
 	}
 
@@ -550,18 +605,18 @@ public class Database implements AutoCloseable {
 			}
 		};
 
-		// Get every triggers
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
-
 		// Get every views
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
 				.execute()
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));
+		sql += ";\n";
+
+		// Get every triggers
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n"));
 		sql += ";\n";
 
 		return sql + "COMMIT;";

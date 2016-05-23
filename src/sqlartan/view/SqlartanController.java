@@ -1,8 +1,12 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -16,12 +20,14 @@ import sqlartan.core.*;
 import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
+import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.util.Popup;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -34,9 +40,7 @@ import java.util.Optional;
 public class SqlartanController {
 
 	private static Database db = null;
-
-	TreeItem<CustomTreeItem> mainTreeItem;
-
+	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
@@ -46,21 +50,30 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+
+	private DatabaseTabsController databaseTabsController;
+
+
+	/**
+	 * TextArea for the request history
+	 */
+	@FXML
+	private ListView<String> request;
+	private ObservableList<String> requests = FXCollections.observableArrayList();
+	@FXML
+	private TitledPane historyPane;
+	private CheckBox displayPragma = new CheckBox("Display PRAGMA");
+
 	@FXML
 	private Menu databaseMenu;
-
 	private List<String> atachedDBs = new LinkedList<>();
-
 
 	/***********
 	 * METHODES*
 	 ***********/
-
-
 	static public Database getDB() {
 		return db;
 	}
-
 	/**
 	 * First methode call when loaded
 	 */
@@ -82,8 +95,8 @@ public class SqlartanController {
 							e.printStackTrace();
 						}
 
-						DatabaseTabsController tabsController = loader.getController();
-						tabsController.setDatabase(db);
+						databaseTabsController = loader.getController();
+						databaseTabsController.setDatabase(db);
 					}
 
 					break;
@@ -126,6 +139,15 @@ public class SqlartanController {
 		mainTreeItem.setExpanded(true);
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
+
+		BorderPane borderPane = new BorderPane();
+		borderPane.setLeft(new Label("History"));
+		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+		borderPane.setRight(displayPragma);
+		borderPane.prefWidthProperty().bind(historyPane.widthProperty().subtract(38));
+
+		historyPane.setGraphic(borderPane);
+
 	}
 
 
@@ -144,8 +166,17 @@ public class SqlartanController {
 	 */
 	void refreshView() {
 		if (db != null) {
+			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+			for (int i = 0; i < exp.length; ++i) {
+				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+			}
+
 			mainTreeItem.getChildren().clear();
 			tree(db);
+
+			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+			}
 		}
 	}
 
@@ -199,38 +230,55 @@ public class SqlartanController {
 	 * Open the main database
 	 */
 	@FXML
-	private void openDB() {
-		if (db != null && (!db.isClosed())) {
+	private void openDatabase() {
+		if (db != null && (!db.isClosed()))
 			db.close();
-		}
 
-		while (true) {
-			File file = openSQLLiteDB();
+		try {
+			File f = openSQLiteDatabase();
+			if (f != null) {
+				db = Database.open(f);
 
-			if (file == null)
-				break;
+				request.setCellFactory(lv -> {
 
-			try {
-				db = Database.open(file.getPath());
+					ListCell<String> cells = new ListCell<>();
+					ContextMenu menu = new ContextMenu();
+					MenuItem execute = new MenuItem();
+
+					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+					execute.setOnAction(event -> {
+						String request = cells.itemProperty().getValue();
+						treeView.getSelectionModel().select(0);
+						databaseTabsController.selectSqlTab();
+						databaseTabsController.setSqlRequest(request);
+					});
+
+					menu.getItems().add(execute);
+
+					cells.textProperty().bind(cells.itemProperty());
+
+					cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
+						cells.setContextMenu(isNotEmpty ? null : menu);
+					});
+
+					return cells;
+				});
+
+				db.registerListener(readOnlyResult -> {
+					request.setItems(requests);
+					requests.add(0, readOnlyResult.query());
+				});
+
+				databaseMenu.setDisable(false);
 				refreshView();
-				break;
-			} catch (SQLException e) {
-
-				ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-				ButtonType buttonRetry = new ButtonType("Retry");
-				ButtonType buttonNewFile = new ButtonType("Choose new");
-				Optional<ButtonType> res = Popup.warning("Problem while opening database", "Error: " + e.getMessage(),
-						buttonCancel, buttonRetry, buttonNewFile);
-				if (res.isPresent()) {
-					if (res.get() == buttonNewFile)
-						file = openSQLLiteDB();
-					else if (res.get() == buttonCancel)
-						break;
-				}
 			}
+		} catch (SQLException e) {
+			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			ButtonType buttonRetry = new ButtonType("Retry");
+			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
+			     .filter(b -> buttonRetry == b)
+			     .ifPresent(b -> openDatabase());
 		}
-
-		databaseMenu.setDisable(false);
 	}
 
 
@@ -287,12 +335,7 @@ public class SqlartanController {
 
 
 		} catch (SQLException e) {
-
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setTitle("Problem while attatching database");
-			alert.setHeaderText(null);
-			alert.setContentText(e.getMessage());
-			alert.show();
+			Popup.error("Problem while attaching database", e.getMessage());
 		}
 
 
@@ -305,14 +348,12 @@ public class SqlartanController {
 	 * @return the opend database
 	 */
 	@FXML
-	private File openSQLLiteDB() {
+	private File openSQLiteDatabase() {
 		// Create the file popup
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open SQLite database");
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-		Database tmpDB = null;
 
-		return file;
+		return fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 	}
 
 
@@ -349,12 +390,12 @@ public class SqlartanController {
 
 
 	/**
-	 * Drop a table
+	 * Drop a structure
 	 *
-	 * @param table
+	 * @param structure
 	 */
-	public void dropTable(Table table) {
-		table.drop();
+	public void dropStructure(PersistentStructure<?> structure) {
+		structure.drop();
 		refreshView();
 	}
 
@@ -362,10 +403,10 @@ public class SqlartanController {
 	/**
 	 * Duplicate a table
 	 *
-	 * @param table
+	 * @param structure
 	 */
-	public void duplicateTable(Table table, String name) {
-		table.duplicate(name);
+	public void duplicateTable(PersistentStructure<?> structure, String name) {
+		structure.duplicate(name);
 		refreshView();
 	}
 
@@ -373,11 +414,11 @@ public class SqlartanController {
 	/**
 	 * Rename a table
 	 *
-	 * @param table
+	 * @param structure
 	 * @param name
 	 */
-	public void renameTable(Table table, String name) {
-		table.rename(name);
+	public void renameTable(PersistentStructure<?> structure, String name) {
+		structure.rename(name);
 		refreshView();
 	}
 
@@ -440,16 +481,8 @@ public class SqlartanController {
 	 * @param table
 	 * @param column
 	 */
-	public void dropColumn(Table table, TableColumn column) {
-		if (table.column(column.name()).isPresent()) {
-			try {
-				column.drop();
-			} catch (ParseException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+	public void dropColumn(Table table, String name) {
+		table.column(name).ifPresent(TableColumn::drop);
 		refreshView();
 	}
 
@@ -461,16 +494,8 @@ public class SqlartanController {
 	 * @param column
 	 * @param newName
 	 */
-	public void renameColumn(Table table, TableColumn column, String newName) {
-		if (table.column(column.name()).isPresent()) {
-			try {
-				column.rename(newName);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+	public void renameColumn(Table table, String name, String newName) {
+		table.column(name).ifPresent(t -> t.rename(newName));
 		refreshView();
 	}
 
@@ -490,17 +515,72 @@ public class SqlartanController {
 	 * @param database
 	 * @param sql
 	 */
-	public void importFromString(Database database, String sql) throws SQLException {
+	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
 	}
 
-	/**
-	 * Export a database
-	 *
-	 * @param database
-	 */
-	public String export(Database database) throws SQLException {
-		return database.export();
+	@FXML
+	public void importFX() throws TokenizeException {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Import SQLite database");
+		try {
+			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
+		} catch (SQLException | IOException | TokenizeException e) {
+			Popup.error(":(", e.getMessage());
+		}
 	}
 
+	/**
+	 * Export the database
+	 *
+	 * @throws SQLException
+	 */
+	@FXML
+	public void export() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		//Show save file dialog
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+
+		try {
+			FileWriter fileWriter = new FileWriter(file);
+			fileWriter.write(db.export());
+			fileWriter.close();
+		} catch (IOException ignored) {
+
+		}
+	}
+
+	/**
+	 * Display About
+	 */
+	@FXML
+	private void displayAbout() {
+		Stage stage = new Stage();
+		Pane pane;
+		AttachedChooserController attachedChooserController = null;
+
+		try {
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
+
+			stage.setTitle("SQLartan - About");
+			pane = loader.load();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setResizable(false);
+
+			stage.setScene(new Scene(pane));
+			stage.showAndWait();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void selectTreeIndex(int i) {
+		treeView.getSelectionModel().select(0);
+	}
 }

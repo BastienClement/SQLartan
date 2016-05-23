@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class TableTests {
 	@Test
 	public void tablesColumnsTests() throws SQLException {
@@ -266,4 +267,26 @@ public class TableTests {
 		}
 	}
 	*/
+	@Test
+	public void insertTests() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			db.execute("CREATE TABLE test (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
+			Table test = db.table("test").get();
+
+			InsertRow row = test.insert();
+			row.set(1, "a", 3.14).execute();
+			row.set(2, "b", 6.28).execute();
+
+			assertEquals(2, db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt).intValue());
+
+			List<Double> res = db.execute("SELECT * FROM test ORDER BY a").map(r -> {
+				assertEquals(Integer.class, r.getObject().getClass());
+				assertEquals(String.class, r.getObject().getClass());
+				assertEquals(Double.class, r.getObject().getClass());
+				return r.getDouble(3);
+			}).toList();
+
+			assertEquals(Arrays.asList(3.14, 6.28), res);
+		}
+	}
 }

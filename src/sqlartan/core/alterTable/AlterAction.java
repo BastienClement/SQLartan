@@ -10,10 +10,7 @@ import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
 import sqlartan.core.stream.IterableStream;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -81,7 +78,7 @@ public abstract class AlterAction
 	}
 
 	public List<CreateTriggerStatement> getTriggersDefinitions() throws ParseException, SQLException {
-		List<CreateTriggerStatement> definitions = new LinkedList();
+		List<CreateTriggerStatement> definitions = new ArrayList<>();
 		Iterator<String> iterator = table.triggers().keySet().iterator();
 		while (iterator.hasNext()){
 			String createStatement = table.database().assemble("SELECT name, sql, tbl_name FROM ", table.database().name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND name = ?")

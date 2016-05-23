@@ -2,6 +2,8 @@ package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
+import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -40,7 +42,7 @@ public class TableColumn extends Column {
 	 *
 	 * @param name
 	 */
-	public void rename(String name) throws ParseException, SQLException {
+	public void rename(String name) {
 		props = new Properties() {
 			@Override
 			public boolean unique() {
@@ -64,17 +66,25 @@ public class TableColumn extends Column {
 			}
 		};
 
-		AlterTable alter = parentTable().alter();
-		alter.modifyColumn(name(), this);
-		alter.execute();
+		try {
+			AlterTable alter = parentTable().alter();
+			alter.modifyColumn(name(), this);
+			alter.execute();
+		} catch (ParseException | SQLException e){
+			throw new UncheckedException(e);
+		}
 	}
 
 	/**
 	 * Drop the column
 	 */
-	public void drop() throws ParseException, SQLException {
-		AlterTable alter = parentTable().alter();
-		alter.dropColumn(this);
-		alter.execute();
+	public void drop() {
+		try {
+			AlterTable alter = parentTable().alter();
+			alter.dropColumn(this);
+			alter.execute();
+		} catch (ParseException | SQLException e){
+			throw new UncheckedException(e);
+		}
 	}
 }

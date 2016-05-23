@@ -7,6 +7,7 @@ import sqlartan.core.ast.TypeDefinition;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class AlterTable
 	// register all actions by grouped by column name
 	private HashMap<TableColumn, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
 
-	private List<AlterAction> actions = new LinkedList();
+	private List<AlterAction> actions = new ArrayList<>();
 
 	public AlterTable(Table table) {
 		this.table = table;
