@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -196,16 +197,11 @@ public class SqlartanController {
 		// Main
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
 
-		trees.getChildren().addAll(database.tables()
-		                                   .map(Table::name) // .map(table -> table.name())
-		                                   .map(name -> (CustomTreeItem) new TableTreeItem(name, this)) // flux de dbtreeitme
-		                                   .map(TreeItem::new)
-		                                   .toList());
-
-
-		trees.getChildren().addAll(database.views()
-		                                   .map(View::name)
-		                                   .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
+		trees.getChildren().addAll(database.structures()
+		                                   .map(structure -> match(structure, CustomTreeItem.class)
+			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
+			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
+		                                       .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -214,17 +210,13 @@ public class SqlartanController {
 		// Attached database
 		database.attached().values().forEach(adb -> {
 			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
-			tItems.getChildren().addAll(adb.tables()
-			                               .map(Table::name)
-			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, this))
-			                               .map(TreeItem::new)
-			                               .toList());
-
-			tItems.getChildren().addAll(adb.views()
-			                               .map(View::name)
-			                               .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
-			                               .map(TreeItem::new)
-			                               .toList());
+			tItems.getChildren().addAll(
+				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
+										.when(Table.class, t -> new TableTreeItem(t.name(), this))
+                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
+                                        .orElseThrow())
+				                .map(TreeItem::new)
+				                .toList());
 
 			mainTreeItem.getChildren().add(tItems);
 		});
@@ -511,7 +503,7 @@ public class SqlartanController {
 	 * Drop the specified column from the table
 	 *
 	 * @param table
-	 * @param column
+	 * @param name
 	 */
 	public void dropColumn(Table table, String name) {
 		table.column(name).ifPresent(TableColumn::drop);

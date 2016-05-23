@@ -23,22 +23,22 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 
 		MenuItem drop = new MenuItem("Drop");
 		MenuItem rename = new MenuItem("Rename");
-		MenuItem copie = new MenuItem("Copy");
+		MenuItem duplicate = new MenuItem("Duplicate");
 
 
 		drop.setOnAction(openStructureDialog(this::dropDialog));
 		rename.setOnAction(openStructureDialog(this::renameDialog));
-		copie.setOnAction(openStructureDialog(this::copyDialog));
+		duplicate.setOnAction(openStructureDialog(this::duplicateDialog));
 
-		return new ContextMenu(drop, rename, copie);
+		return new ContextMenu(drop, rename, duplicate);
 	}
 
 	private EventHandler<ActionEvent> openStructureDialog(Consumer<PersistentStructure<?>> dialog) {
 		return event -> SqlartanController.getDB().structure(name()).ifPresent(dialog);
 	}
 
-	private void copyDialog(PersistentStructure<?> structure) {
-		Popup.input("Copy", "Name : ", structure.name()).ifPresent(name -> {
+	private void duplicateDialog(PersistentStructure<?> structure) {
+		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
 			if (name.length() > 0 && !structure.name().equals(name))
 				controller.duplicateTable(structure, name);
 		});
