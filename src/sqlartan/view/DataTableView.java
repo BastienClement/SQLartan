@@ -3,15 +3,14 @@ package sqlartan.view;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.core.Column;
 import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Result;
+import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.util.Popup;
-import java.sql.SQLException;
 
 /**
  * Created by julien on 29.04.16.
@@ -54,12 +53,11 @@ public class DataTableView {
 	 */
 	public TableView getTableView(PersistentStructure<?> structure) {
 		try {
-			return getTableView(structure.database().assemble("SELECT * FROM ", structure.fullName()).execute());
-		} catch (SQLException e) {
+			return getTableView(structure.selectAll());
+		} catch (UncheckedSQLException e) {
 			Popup.error("Bad Request", e.getMessage());
 			return new TableView();
 		}
-
 	}
 }
 
