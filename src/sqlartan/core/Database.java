@@ -325,6 +325,15 @@ public class Database implements AutoCloseable {
 		return new AssembledQuery(this, query.toString());
 	}
 
+	Result notifyListeners(String query, Result res) {
+		for (Consumer<ReadOnlyResult> listener : executeListeners) {
+			try {
+				listener.accept(res);
+			} catch (Throwable ignored) {}
+		}
+		return res;
+	}
+
 	/**
 	 * Executes a query on the database.
 	 *
@@ -333,13 +342,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Result execute(String query) throws SQLException {
-		Result res = Result.fromQuery(this, connection, query);
-		for (Consumer<ReadOnlyResult> listener : executeListeners) {
-			try {
-				listener.accept(res);
-			} catch (Throwable ignored) {}
-		}
-		return res;
+		return notifyListeners(query, Result.fromQuery(this, connection, query));
 	}
 
 	/**

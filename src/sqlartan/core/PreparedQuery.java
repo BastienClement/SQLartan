@@ -62,6 +62,6 @@ public class PreparedQuery {
 	}
 
 	public Result execute() throws SQLException {
-		return Result.fromPreparedStatement(database, stmt, sql);
+		return database.notifyListeners(sql, Result.fromPreparedStatement(database, stmt, sql));
 	}
 }
