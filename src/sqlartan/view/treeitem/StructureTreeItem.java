@@ -21,27 +21,26 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 		MenuItem rename = new MenuItem("Rename");
 		MenuItem copie = new MenuItem("Copy");
 
-		drop.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
+		drop.setOnAction(event -> SqlartanController.getDB().structure(name()).ifPresent(structure -> {
 			ButtonType yes = new ButtonType("YES");
 			ButtonType no = new ButtonType("NO");
-			Popup.warning("Drop table", "Are you sure to drop the table : " + t.name(), yes, no).ifPresent(type -> {
-				if (type == yes) {
-					controller.dropTable(t);
-				}
+			String structTypeName = this.type().toString().toLowerCase();
+			Popup.warning("Drop " + structTypeName, "Are you sure to drop the " + structTypeName + " : " + structure.name(), yes, no)
+			     .filter(b -> b == yes)
+			     .ifPresent(b -> controller.dropStructure(structure));
+		}));
+
+		rename.setOnAction(event -> SqlartanController.getDB().structure(name()).ifPresent(structure -> {
+			Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(name -> {
+				if (name.length() > 0 && !structure.name().equals(name))
+					controller.renameTable(structure, name);
 			});
 		}));
 
-		rename.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
-			Popup.input("Rename", "Rename " + t.name() + " into : ", t.name()).ifPresent(name -> {
-				if (name.length() > 0 && !t.name().equals(name))
-					controller.renameTable(t, name);
-			});
-		}));
-
-		copie.setOnAction(event -> SqlartanController.getDB().table(name()).ifPresent(t -> {
-			Popup.input("Copy", "Name : ", t.name()).ifPresent(name -> {
-				if (name.length() > 0 && !t.name().equals(name))
-					controller.duplicateTable(t, name);
+		copie.setOnAction(event -> SqlartanController.getDB().structure(name()).ifPresent(structure -> {
+			Popup.input("Copy", "Name : ", structure.name()).ifPresent(name -> {
+				if (name.length() > 0 && !structure.name().equals(name))
+					controller.duplicateTable(structure, name);
 			});
 
 		}));
