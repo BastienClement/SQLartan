@@ -110,6 +110,11 @@ public class TabsController {
 		structureTable.setItems(tableStructures);
 	}
 
+	protected void displayDataTable(){
+		displayTab.setContent(dataTableView.getTableView(structure));
+
+	}
+
 	public void setStructure(PersistentStructure<?> structure) {
 		this.structure = structure;
 	}

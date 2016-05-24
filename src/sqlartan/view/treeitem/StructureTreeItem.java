@@ -41,7 +41,8 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 	private void duplicateDialog(PersistentStructure<?> structure) {
 		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
 			if (name.length() > 0 && !structure.name().equals(name))
-				controller.duplicateStructure(structure, name);
+				structure.duplicate(name);
+				controller.refreshView();
 		});
 	}
 

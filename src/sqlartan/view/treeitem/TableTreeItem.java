@@ -37,7 +37,8 @@ public class TableTreeItem extends StructureTreeItem {
 	}
 
 	private void truncateDialog(Table table) {
-		controller.truncateTable(table);
+		table.truncate();
+		controller.refreshView();
 	}
 
 	private void addColumnDialog(Table table) {

@@ -1,21 +1,14 @@
 package sqlartan.view.tabs;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-import sqlartan.Sqlartan;
 import sqlartan.core.Database;
-import sqlartan.core.PersistentStructure;
 import sqlartan.core.Table;
-import sqlartan.core.util.UncheckedSQLException;
-import sqlartan.view.DataTableView;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.TableStructure;
 import sqlartan.view.util.Popup;
@@ -75,6 +68,9 @@ public class TableTabsController extends TabsController {
 			}
 		});
 
+
+
+
 		colRename.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
 			@Override
 			public TableCell<TableStructure, String> call(final TableColumn<TableStructure, String> param) {
@@ -121,7 +117,8 @@ public class TableTabsController extends TabsController {
 							btn.setOnAction((ActionEvent event) ->
 							{
 								TableStructure tableStruct = getTableView().getItems().get(getIndex());
-								controller.dropColumn(table, tableStruct.nameProperty().get());
+								table.column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
+								controller.refreshView();
 							});
 							setGraphic(btn);
 							setText(null);
@@ -144,6 +141,27 @@ public class TableTabsController extends TabsController {
 		});
 
 		insertColValue.setEditable(true);
+	}
+
+	public void refresh() {
+		Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+
+		switch (tabPane.getSelectionModel().getSelectedIndex()){
+			case 0:{
+				displayStructure();
+			}
+			break;
+			case 1:
+			{
+				displayTab.setContent(dataTableView.getTableView(structure));
+			}
+			break;
+			case 2:{
+				displayInsertTab();
+			}
+		}
+
+
 	}
 
 	private void displayInsertTab() {

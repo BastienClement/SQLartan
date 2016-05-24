@@ -1,6 +1,5 @@
 package sqlartan.view;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -13,7 +12,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -142,6 +144,7 @@ public class SqlartanController {
 						stackPane.getChildren().add(tableTabPane);
 						tableTabController.setTable(db.table(newValue.getValue().name()).get());
 						structure.ifPresent(tableTabController::setStructure);
+						tableTabController.refresh();
 					}
 					break;
 					case VIEW: {
@@ -427,7 +430,7 @@ public class SqlartanController {
 	/**
 	 * CellFactory for the history listedView
 	 *
-	 * @return the new ListCell
+	 * @return the new listcell
 	 */
 	private ListCell<String> setCellFactoryHistory(){
 		ListCell<String> cells = new ListCell<>();
@@ -506,8 +509,8 @@ public class SqlartanController {
 	/**
 	 * Attach a database to the main database
 	 *
-	 * @param file   : file of the database
-	 * @param dbName : name that will be shown in the treeView
+	 * @param file file of the database
+	 * @param dbName name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
 
@@ -538,34 +541,12 @@ public class SqlartanController {
 
 
 	/**
-	 * Truncate a table
-	 *
-	 * @param table
-	 */
-	public void truncateTable(Table table) {
-		table.truncate();
-		refreshView();
-	}
-
-
-	/**
 	 * Drop a table or a view
 	 *
-	 * @param structure
+	 * @param structure structure to drop
 	 */
 	public void dropStructure(PersistentStructure<?> structure) {
 		structure.drop();
-		refreshView();
-	}
-
-
-	/**
-	 * Duplicate a table
-	 *
-	 * @param structure
-	 */
-	public void duplicateStructure(PersistentStructure<?> structure, String name) {
-		structure.duplicate(name);
 		refreshView();
 	}
 
@@ -621,17 +602,6 @@ public class SqlartanController {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		refreshView();
-	}
-
-
-	/**
-	 * Drop the specified column from the table
-	 *
-	 * @param table
-	 */
-	public void dropColumn(Table table, String name) {
-		table.column(name).ifPresent(TableColumn::drop);
 		refreshView();
 	}
 

@@ -12,7 +12,7 @@ public class ViewTabsController extends TabsController {
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == displayTab) {
-				displayTab.setContent(dataTableView.getTableView(structure));
+				displayDataTable();
 			} else if (newTab == structureTab) {
 				displayStructure();
 			}
