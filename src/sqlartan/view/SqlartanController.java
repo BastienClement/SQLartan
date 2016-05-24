@@ -7,11 +7,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.NodeOrientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -64,7 +63,7 @@ public class SqlartanController {
 	private ObservableList<String> requests = FXCollections.observableArrayList();
 	@FXML
 	private TitledPane historyPane;
-	private CheckBox displayPragma = new CheckBox("Display PRAGMA");
+	private CheckBox displayPragma = new CheckBox("PRAGMA");
 
 	@FXML
 	private Menu databaseMenu;
@@ -146,10 +145,26 @@ public class SqlartanController {
 		treeView.setShowRoot(false);
 		treeView.setRoot(mainTreeItem);
 
+
+		// Pane for request history
 		BorderPane borderPane = new BorderPane();
-		borderPane.setLeft(new Label("History"));
+		Button clearHistory = new Button("Clear");
+		clearHistory.setOnMouseClicked(event -> {
+			requests.clear();
+		});
+
+		displayPragma.setSelected(true);
+
 		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-		borderPane.setRight(displayPragma);
+		HBox leftPane = new HBox();
+		HBox rightPane = new HBox();
+		rightPane.setAlignment(Pos.CENTER);
+		leftPane.setAlignment(Pos.CENTER);
+		leftPane.setSpacing(5);
+		leftPane.getChildren().addAll(displayPragma, clearHistory);
+		rightPane.getChildren().add(new Label("History"));
+		borderPane.setLeft(rightPane);
+		borderPane.setRight(leftPane);
 		borderPane.prefWidthProperty().bind(historyPane.widthProperty().subtract(38));
 
 		historyPane.setGraphic(borderPane);
@@ -264,6 +279,12 @@ public class SqlartanController {
 
 				db.registerListener(readOnlyResult -> {
 					request.setItems(requests);
+
+					String resultat = readOnlyResult.query();
+
+					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
+						return;
+
 					requests.add(0, readOnlyResult.query());
 				});
 
@@ -503,7 +524,6 @@ public class SqlartanController {
 	 * Drop the specified column from the table
 	 *
 	 * @param table
-	 * @param name
 	 */
 	public void dropColumn(Table table, String name) {
 		table.column(name).ifPresent(TableColumn::drop);
