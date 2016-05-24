@@ -13,9 +13,10 @@
             <TableView fx:id="structureTable" prefHeight="200.0" prefWidth="200.0">
               <columns>
                 <TableColumn fx:id="colName" prefWidth="75.0" text="Name" />
-                  <TableColumn fx:id="colType" prefWidth="75.0" text="Type" />
+	              <TableColumn fx:id="colType" prefWidth="75.0" text="Type" />
                   <TableColumn fx:id="colLignes" prefWidth="75.0" text="Lignes" />
-                <TableColumn fx:id="colActions" prefWidth="75.0" text="Actions" />
+                <TableColumn fx:id="colRename" text="" />
+                  <TableColumn fx:id="colDelete" text="" />
               </columns>
             </TableView>
          </content></Tab>

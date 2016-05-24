@@ -20,6 +20,7 @@ import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.TokenizeException;
+import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
@@ -32,6 +33,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import static sqlartan.util.Matching.match;
 
 /**
  * Created by guillaume on 04.04.16.
@@ -96,6 +98,7 @@ public class SqlartanController {
 
 						databaseTabsController = loader.getController();
 						databaseTabsController.setDatabase(db);
+						databaseTabsController.setController(this);
 					}
 
 					break;
@@ -122,6 +125,9 @@ public class SqlartanController {
 						}
 
 						TableTabsController tabsController = loader.getController();
+						tabsController.setDatabase(db);
+						tabsController.setController(this);
+						tabsController.setTable(db.table(treeItem.name()).get());
 						structure.ifPresent(tabsController::setStructure);
 
 					}
@@ -206,16 +212,11 @@ public class SqlartanController {
 		// Main
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
 
-		trees.getChildren().addAll(database.tables()
-		                                   .map(Table::name) // .map(table -> table.name())
-		                                   .map(name -> (CustomTreeItem) new TableTreeItem(name, this)) // flux de dbtreeitme
-		                                   .map(TreeItem::new)
-		                                   .toList());
-
-
-		trees.getChildren().addAll(database.views()
-		                                   .map(View::name)
-		                                   .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
+		trees.getChildren().addAll(database.structures()
+		                                   .map(structure -> match(structure, CustomTreeItem.class)
+			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
+			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
+		                                       .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -224,17 +225,13 @@ public class SqlartanController {
 		// Attached database
 		database.attached().values().forEach(adb -> {
 			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
-			tItems.getChildren().addAll(adb.tables()
-			                               .map(Table::name)
-			                               .map(name -> (CustomTreeItem) new TableTreeItem(name, this))
-			                               .map(TreeItem::new)
-			                               .toList());
-
-			tItems.getChildren().addAll(adb.views()
-			                               .map(View::name)
-			                               .map(name -> (CustomTreeItem) new ViewTreeItem(name, this))
-			                               .map(TreeItem::new)
-			                               .toList());
+			tItems.getChildren().addAll(
+				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
+										.when(Table.class, t -> new TableTreeItem(t.name(), this))
+                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
+                                        .orElseThrow())
+				                .map(TreeItem::new)
+				                .toList());
 
 			mainTreeItem.getChildren().add(tItems);
 		});
@@ -243,6 +240,7 @@ public class SqlartanController {
 
 	/**
 	 * Open de main database
+	 *
 	 * @param file: file of the database to open
 	 */
 	@FXML
@@ -319,7 +317,6 @@ public class SqlartanController {
 	}
 
 
-
 	/**
 	 * FUnction called by the GUI
 	 * to attache a database
@@ -353,7 +350,7 @@ public class SqlartanController {
 	/**
 	 * Attach a database to the main database
 	 *
-	 * @param file : file of the database
+	 * @param file   : file of the database
 	 * @param dbName : name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
@@ -382,7 +379,6 @@ public class SqlartanController {
 
 
 	}
-
 
 
 	/**
@@ -427,6 +423,16 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Drop a view
+	 *
+	 * @param view
+	 */
+	public void dropView(View view) {
+		view.drop();
+		refreshView();
+	}
+
 
 	/**
 	 * Duplicate a table
@@ -447,6 +453,17 @@ public class SqlartanController {
 	 */
 	public void renameTable(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
+		refreshView();
+	}
+
+	/**
+	 * Rename a view
+	 *
+	 * @param view
+	 * @param name
+	 */
+	public void renameView(View view, String name) {
+		view.rename(name);
 		refreshView();
 	}
 
@@ -543,17 +560,22 @@ public class SqlartanController {
 	 */
 	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
 		database.importFromString(sql);
+		refreshView();
 	}
 
 	@FXML
-	public void importFX() throws TokenizeException {
+	public void importFX() {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Import SQLite database");
 		try {
-			db.importfromFile(fileChooser.showOpenDialog(sqlartan.getPrimaryStage()));
+			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+			if (f != null) {
+				db.importfromFile(f);
+			}
 		} catch (SQLException | IOException | TokenizeException e) {
-			Popup.error(":(", e.getMessage());
+			throw new UncheckedException(e);
 		}
+		refreshView();
 	}
 
 	/**
@@ -562,22 +584,23 @@ public class SqlartanController {
 	 * @throws SQLException
 	 */
 	@FXML
-	public void export() throws SQLException {
+	public void export() {
 		FileChooser fileChooser = new FileChooser();
 
 		//Set extension filter
 		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
 		fileChooser.getExtensionFilters().add(extFilter);
 
-		//Show save file dialog
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
 		try {
-			FileWriter fileWriter = new FileWriter(file);
-			fileWriter.write(db.export());
-			fileWriter.close();
-		} catch (IOException ignored) {
-
+			//Show save file dialog
+			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+			if(file != null){
+				FileWriter fileWriter = new FileWriter(file);
+				fileWriter.write(db.export());
+				fileWriter.close();
+			}
+		} catch (IOException | SQLException e) {
+			throw new UncheckedException(e);
 		}
 	}
 
@@ -625,8 +648,7 @@ public class SqlartanController {
 
 		if (db != null && (!db.isClosed())) {
 			attachDatabase(file, file.getName().split("\\.")[0]);
-		}
-		else {
+		} else {
 			openDatabase(file);
 		}
 	}
