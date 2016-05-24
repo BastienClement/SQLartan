@@ -239,7 +239,7 @@ public class TableTests {
 			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
 			db.execute("CREATE TABLE test_backup (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			db.execute("INSERT INTO test_backup VALUES (1, 'abc', 11)");
-			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b) VALUES (new.a, new.b); END;");
+			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b) VALUES(new.a, new.b); END;");
 			Table test = db.table("test").get();
 
 			AlterTable alter = test.alter();

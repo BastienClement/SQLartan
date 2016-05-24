@@ -69,8 +69,9 @@ public class InsertStatement implements Statement {
 	public static InsertStatement parse(ParserContext context) {
 		Type type = Type.parse(context);
 		Optional<String> schema = context.optConsumeSchema();
+		System.out.println("start");
+		context.consume(INTO);
 		String table = context.consumeIdentifier();
-
 		List<String> columns = new ArrayList<>();
 		if (context.tryConsume(LEFT_PAREN)) {
 			columns = context.parseList(ParserContext::consumeIdentifier);
@@ -109,6 +110,8 @@ public class InsertStatement implements Statement {
 
 		public static Select parse(ParserContext context) {
 			Select select = new Select();
+			System.out.println("st");
+			System.out.println(context.);
 			select.select = SelectStatement.parse(context);
 			return select;
 		}

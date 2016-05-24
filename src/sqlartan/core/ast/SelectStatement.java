@@ -83,7 +83,9 @@ public interface SelectStatement extends Statement {
 	 */
 	interface Core extends SelectStatement, Compoundable {
 		static Core parse(ParserContext context) {
+			System.out.println("stop");
 			if (context.current(VALUES)) {
+				System.out.println("sas");
 				return ValuesStatement.parse(context);
 			} else {
 				return CoreSelectStatement.parse(context);

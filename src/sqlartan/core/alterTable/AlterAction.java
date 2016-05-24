@@ -83,6 +83,7 @@ public abstract class AlterAction
 			String createStatement = table.database().assemble("SELECT sql FROM ", table.database().name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND name = ?")
 			                                       .execute(table.name(), iterator.next())
 			                                       .mapFirst(Row::getString);
+			System.out.println(createStatement);
 			definitions.add(Parser.parse(createStatement, CreateTriggerStatement::parse));
 		}
 

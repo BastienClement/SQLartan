@@ -73,7 +73,7 @@ public class ParserContext {
 	 * @param token the token to check
 	 */
 	public boolean current(Tokenizable<?> token) {
-		return match(current(), token);
+		System.out.println(current());return match(current(), token);
 	}
 
 	/**
@@ -301,6 +301,11 @@ public class ParserContext {
 			        .when(Token.Identifier.class, id -> id)
 			        .when(Token.Literal.Text.class, Token.Literal.Text::toIdentifier)
 			        .get();
+
+		Matching.match(current())
+		        .when(Token.Identifier.class, id -> {System.out.println(id); return id;})
+		        .when(Token.Literal.Text.class, Token.Literal.Text::toIdentifier)
+		        .get();
 		if (res.isPresent()) source.consume();
 		return res.map(Token.Identifier::value);
 	}
