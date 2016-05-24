@@ -5,6 +5,7 @@ import sqlartan.core.ast.ColumnConstraint;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
@@ -16,9 +17,6 @@ public class Table extends PersistentStructure<TableColumn> {
 	/** Set of indices */
 	private HashMap<String, Index> indices = new HashMap<>();
 
-	/** Set of triggers */
-	private HashMap<String, Trigger> triggers = new HashMap<>();
-
 	/**
 	 * Construct a new table linked to the specified database and with the specified name.
 	 *
@@ -29,7 +27,7 @@ public class Table extends PersistentStructure<TableColumn> {
 		super(database, name);
 		try {
 			database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
-			        .execute().map(Row::view)
+			        .execute()
 			        .forEach(
 						row -> {
 							try {
@@ -47,13 +45,6 @@ public class Table extends PersistentStructure<TableColumn> {
 							}
 						}
 					);
-			database.assemble("SELECT name, sql, tbl_name FROM ", database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ?")
-			        .execute(name)
-			        .forEach(
-					        row -> {
-						        triggers.put(row.getString("name"), new Trigger(database, row .getString("name"), row.getString("sql")));
-					        }
-			        );
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -224,11 +215,35 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	/**
+	 * build the correct trigger instance from
+	 * a row of the result set
+	 *
+	 * @param row
+	 * @return
+	 */
+	private Trigger triggerBuilder(Row row){
+		return new Trigger(this, row .getString("name"), row.getString("sql"));
+	}
+
+	/**
+	 * Returns the triggers infos result for this table.
+	 */
+	private Result triggersInfo() {
+		try {
+			return database.assemble("SELECT name, sql, tbl_name FROM ", database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ?").execute(name);
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	/**
 	 * Returns the hashmap containing every triggers.
 	 *
 	 * @return the hashmap containing the triggers
 	 */
-	public HashMap<String, Trigger> triggers() { return triggers; }
+	public IterableStream<Trigger> triggers() {
+		return triggersInfo().map(this::triggerBuilder);
+	}
 
 	/**
 	 * Returns a trigger with a specific name.
@@ -236,10 +251,16 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param name
 	 * @return the trigger contained in the hashmap under the key name, null if it doesn't exist
 	 */
-	public Trigger trigger(String name) {
-		if(triggers.containsKey(name))
-			return triggers.get(name);
-		return null;
+	public Optional<Trigger> trigger(String name) {
+		try (Result res = triggersInfo()) {
+			return res.find(row -> row.getString("name").equals(name)).map(this::triggerBuilder);
+		}
+	}
+
+	public Optional<Trigger> trigger(int idx) {
+		try (Result res = triggersInfo()) {
+			return res.skip(idx).mapFirstOptional(this::triggerBuilder);
+		}
 	}
 
 	/**

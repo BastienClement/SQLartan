@@ -1,10 +1,6 @@
 package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
-import sqlartan.core.ast.parser.ParseException;
-import sqlartan.core.util.UncheckedSQLException;
-import sqlartan.util.UncheckedException;
-import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -77,26 +73,16 @@ public class TableColumn extends Column {
 				}
 		});
 		AlterTable alter = parentTable().alter();
-		try {
-			alter.modifyColumn(name(), column);
-			alter.execute();
-		} catch (ParseException e) {
-			throw new UncheckedException(e);
-		} catch (SQLException e) {
-			throw new UncheckedSQLException(e);
-		}
+		alter.modifyColumn(name(), column);
+		alter.execute();
 	}
 
 	/**
 	 * Drop the column
 	 */
 	public void drop() {
-		try {
-			AlterTable alter = parentTable().alter();
-			alter.dropColumn(this);
-			alter.execute();
-		} catch (ParseException | SQLException e){
-			throw new UncheckedException(e);
-		}
+		AlterTable alter = parentTable().alter();
+		alter.dropColumn(this);
+		alter.execute();
 	}
 }

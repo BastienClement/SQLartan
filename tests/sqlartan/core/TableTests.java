@@ -185,8 +185,8 @@ public class TableTests {
 			db.execute("CREATE TRIGGER trig  AFTER INSERT ON test BEGIN DELETE FROM test; END;");
 
 			// Check that an existing trigger can be found
-			assertNull(db.table("test").get().trigger("trigg"));
-			assertNotNull(db.table("test").get().trigger("trig"));
+			assertFalse(db.table("test").get().trigger("trigg").isPresent());
+			assertTrue(db.table("test").get().trigger("trig").isPresent());
 
 			// Rename table
 			test.rename("test2");
@@ -194,16 +194,16 @@ public class TableTests {
 			assertNotNull(db.table("test2").get().trigger("trig"));
 
 			// Rename trigger
-			db.table("test2").get().trigger("trig").rename("trigg");
+			db.table("test2").get().trigger("trig").get().rename("trigg");
 			// Check that the old trigger does not exist anymore
-			assertNull(db.table("test2").get().trigger("trig"));
+			assertFalse(db.table("test2").get().trigger("trig").isPresent());
 			// Check that the new trigger exists
-			assertNotNull(db.table("test2").get().trigger("trigg"));
+			assertTrue(db.table("test2").get().trigger("trigg").isPresent());
 
 			// Delete trigger
-			db.table("test2").get().trigger("trigg").drop();
+			db.table("test2").get().trigger("trigg").get().drop();
 			// Check that the trigger does not exist anymore
-			assertNull(db.table("test2").get().trigger("trig"));
+			assertFalse(db.table("test2").get().trigger("trigg").isPresent());
 		}
 	}
 
@@ -239,7 +239,7 @@ public class TableTests {
 			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
 			db.execute("CREATE TABLE test_backup (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			db.execute("INSERT INTO test_backup VALUES (1, 'abc', 11)");
-			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b) VALUES(new.a, new.b); END;");
+			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b, c) VALUES(new.a, new.b, new.c); END;");
 			Table test = db.table("test").get();
 
 			AlterTable alter = test.alter();
@@ -297,7 +297,6 @@ public class TableTests {
 			// Check if we have exactly 3 rows in the table
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
-
 
 			// modify column type
 			alter.modifyColumn("b", new TableColumn(test, new TableColumn.Properties(){
@@ -359,6 +358,17 @@ public class TableTests {
 			alter.execute();
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
+
+			// drop column b
+			alter.dropColumn(test.column("b").get());
+			alter.execute();
+			test = db.table("test").get();
+			assertFalse(test.column("b").isPresent());
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// test if trigger still exists
+			assertTrue(test.triggers().findFirst().isPresent());
 		}
 	}
 

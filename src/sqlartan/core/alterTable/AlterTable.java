@@ -27,12 +27,14 @@ public class AlterTable
 		this.table = table;
 	}
 
-	public void execute() throws ParseException {
+	public void execute() {
 		// execute all registred actions
 		for(AlterAction action : actions){
 			try {
 				action.execute();
 			} catch (SQLException e) {
+				throw new UncheckedSQLException(e);
+			} catch (ParseException e) {
 				throw new UncheckedSQLException(e);
 			}
 			actions.remove(action);
@@ -45,30 +47,42 @@ public class AlterTable
 		return actions;
 	}
 
-	public void addColumn(TableColumn column) throws ParseException, SQLException {
+	public void addColumn(TableColumn column) {
 		if(!((!table.column(column.name()).isPresent() && findLastAddColumnAction(column) == null) || findLastDropColumnAction(column) != null))
 			throw new UnsupportedOperationException("Column does already exist!");
-		add(column, new AddColumnAction(table, column));
-	}
-
-	public void dropColumn(TableColumn column) throws ParseException, SQLException {
-		if(findLastAddColumnAction(column) != null) {
-			add(column, new DropColumnAction(table, findLastAddColumnAction(column).column()));
-		}
-		else if(table.column(column.name()).isPresent()) {
-			add(column, new DropColumnAction(table, column));
-		}
-		else {
-			throw new UnsupportedOperationException("Column does not exist!");
+		try {
+			add(column, new AddColumnAction(table, column));
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
 		}
 	}
 
-	public void modifyColumn(String columnName, TableColumn column) throws ParseException, SQLException {
-		if((findLastAddColumnAction(column) != null || table.column(columnName).isPresent()) && findLastDropColumnAction(column) == null) {
-			add(column, new ModifyColumnAction(table, column, columnName));
+	public void dropColumn(TableColumn column) {
+		try {
+			if(findLastAddColumnAction(column) != null) {
+				add(column, new DropColumnAction(table, findLastAddColumnAction(column).column()));
+			}
+			else if(table.column(column.name()).isPresent()) {
+				add(column, new DropColumnAction(table, column));
+			}
+			else {
+				throw new UnsupportedOperationException("Column does not exist!");
+			}
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
 		}
-		else{
-			throw new UnsupportedOperationException("Column does not exist!");
+	}
+
+	public void modifyColumn(String columnName, TableColumn column) {
+		try {
+			if((findLastAddColumnAction(column) != null || table.column(columnName).isPresent()) && findLastDropColumnAction(column) == null) {
+				add(column, new ModifyColumnAction(table, column, columnName));
+			}
+			else{
+				throw new UnsupportedOperationException("Column does not exist!");
+			}
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -81,7 +95,7 @@ public class AlterTable
 	}
 
 	// Add action to the stack
-	private void add(TableColumn column, AlterColumnAction action) throws ParseException, SQLException {
+	private void add(TableColumn column, AlterColumnAction action) {
 		if(!columnsActions.containsKey(column.name()))
 			columnsActions.put(column.name(), new LinkedList<AlterColumnAction>());
 		columnsActions.get(column.name()).push(action);
@@ -95,7 +109,7 @@ public class AlterTable
 	}
 
 	// look for unnecessary actions
-	private void checkColumnActions(TableColumn column) throws ParseException, SQLException {
+	private void checkColumnActions(TableColumn column) {
 		AlterColumnAction addAction = findLastAddColumnAction(column);
 		AlterColumnAction dropAction = findLastDropColumnAction(column);
 		if(addAction != null && dropAction != null) {
