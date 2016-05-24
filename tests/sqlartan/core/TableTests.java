@@ -382,7 +382,8 @@ public class TableTests {
 			row.set(1, "a", 3.14).execute();
 			row.set(2, "b", 6.28).execute();
 
-			assertEquals(2, db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt).intValue());
+			assertEquals(2, (int)db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt));
+			db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 
 			List<Double> res = db.execute("SELECT * FROM test ORDER BY a").map(r -> {
 				assertEquals(Integer.class, r.getObject().getClass());

@@ -9,13 +9,9 @@ import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
-	/** Set of indices */
-	private HashMap<String, Index> indices = new HashMap<>();
 
 	/**
 	 * Construct a new table linked to the specified database and with the specified name.
@@ -25,29 +21,6 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	Table(Database database, String name) {
 		super(database, name);
-		try {
-			database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
-			        .execute()
-			        .forEach(
-						row -> {
-							try {
-								Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
-								database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
-								        .execute().map(Row::view)
-								        .forEach(
-											r -> {
-												index.addColumn(r.getString("name"));
-											}
-										);
-								indices.put(row.getString("name"), index);
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
-						}
-					);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -135,12 +108,7 @@ public class Table extends PersistentStructure<TableColumn> {
 						public String name() { return row.getString("name"); }
 						public String type() { return row.getString("type"); }
 						public boolean unique() {
-							for (String key : indices.keySet()) {
-								if (indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique()) {
-									return true;
-								}
-							}
-							return false;
+							return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
 						}
 						@Override
 						public boolean primaryKey() {
@@ -163,12 +131,7 @@ public class Table extends PersistentStructure<TableColumn> {
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
 			public boolean unique() {
-				for (String key : indices.keySet()) {
-					if (indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique()) {
-						return true;
-					}
-				}
-				return false;
+				return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
 			}
 			@Override
 			public boolean primaryKey() {
@@ -180,22 +143,53 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	/**
-	 * Returns the hashmap containing every indices.
-	 *
-	 * @return the hashmap containing the indices
+	 * Returns the list of indices associated with this table.
 	 */
-	public HashMap<String, Index> indices() { return indices; }
+	public IterableStream<Index> indices() {
+		try {
+			return database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
+			               .execute()
+			               .map(row -> {
+					               Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
+					               try {
+						               database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
+						                       .execute()
+						                       .forEach(
+							                       r -> {
+								                       index.addColumn(r.getString("name"));
+							                       }
+						                       );
+					               } catch (SQLException e) {
+						               throw new UncheckedSQLException(e);
+					               }
+					               return index;
+				               }
+			               );
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
 
 	/**
-	 * Returns an index with a specific name.
+	 * Returns the index with the given name, if it exists.
 	 *
-	 * @param name
-	 * @return the index contained in the hashmap under the key name, null if it doesn't exist
+	 * @param name the name of the index
 	 */
-	public Index index(String name) {
-		if(indices.containsKey(name))
-			return indices.get(name);
-		return null;
+	public Optional<Index> index(String name) {
+		try (IterableStream<Index> indices = indices()) {
+			return indices.find(index -> index.getName().equals(name));
+		}
+	}
+
+	/**
+	 * Returns the i-th index from this table, it it exists
+	 *
+	 * @param idx the index of the index
+	 */
+	public Optional<Index> index(int idx) {
+		try (IterableStream<Index> indices = indices()) {
+			return indices.skip(idx).findFirst();
+		}
 	}
 
 	/**
@@ -205,13 +199,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	public Optional<Index> primaryKey() {
 		// Search in the indices the one which is a primary key
-		Iterator<String> keySetIterator = indices.keySet().iterator();
-		while(keySetIterator.hasNext()){
-			String key = keySetIterator.next();
-			if(indices.get(key).isPrimaryKey())
-				return Optional.of(index(key));
-		}
-		return Optional.empty();
+		return indices().filter(index -> index.isPrimaryKey()).findFirst();
 	}
 
 	/**
@@ -237,19 +225,16 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	/**
-	 * Returns the hashmap containing every triggers.
-	 *
-	 * @return the hashmap containing the triggers
+	 * Returns the list of trigggers associated with this table.
 	 */
 	public IterableStream<Trigger> triggers() {
 		return triggersInfo().map(this::triggerBuilder);
 	}
 
 	/**
-	 * Returns a trigger with a specific name.
+	 * Returns the trigger with the given name, if it exists.
 	 *
-	 * @param name
-	 * @return the trigger contained in the hashmap under the key name, null if it doesn't exist
+	 * @param name the name of the trigger
 	 */
 	public Optional<Trigger> trigger(String name) {
 		try (Result res = triggersInfo()) {
@@ -257,6 +242,11 @@ public class Table extends PersistentStructure<TableColumn> {
 		}
 	}
 
+	/**
+	 * Returns the i-th trigger from this table, it it exists
+	 *
+	 * @param idx the index of the trigger
+	 */
 	public Optional<Trigger> trigger(int idx) {
 		try (Result res = triggersInfo()) {
 			return res.skip(idx).mapFirstOptional(this::triggerBuilder);
