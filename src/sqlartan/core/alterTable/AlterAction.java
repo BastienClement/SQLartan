@@ -4,11 +4,8 @@ import sqlartan.core.Row;
 import sqlartan.core.Table;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.CreateTriggerStatement;
-import sqlartan.core.ast.CreateViewStatement;
-import sqlartan.core.ast.SelectStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
-import sqlartan.core.stream.IterableStream;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,34 +80,12 @@ public abstract class AlterAction
 		List<CreateTriggerStatement> definitions = new ArrayList<>();
 		Iterator<String> iterator = table.triggers().keySet().iterator();
 		while (iterator.hasNext()){
-			String createStatement = table.database().assemble("SELECT name, sql, tbl_name FROM ", table.database().name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND name = ?")
+			String createStatement = table.database().assemble("SELECT sql FROM ", table.database().name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND name = ?")
 			                                       .execute(table.name(), iterator.next())
 			                                       .mapFirst(Row::getString);
 			definitions.add(Parser.parse(createStatement, CreateTriggerStatement::parse));
 		}
 
 		return definitions;
-	}
-
-	public List<CreateViewStatement> getViewsDefinitions() throws SQLException {
-		IterableStream<String> createStatements =  table.database().assemble("SELECT sql FROM ", table.database().name(), ".sqlite_master WHERE type = 'view'")
-		                                                         .execute()
-		                                                         .map(Row::getString);
-
-		return createStatements.map(createStatement -> {
-			try {
-				return Parser.parse(createStatement, CreateViewStatement::parse);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}).filter(createViewStatement -> {
-			if(createViewStatement.as instanceof SelectStatement.Simple){
-				SelectStatement.Simple select = (SelectStatement.Simple)createViewStatement.as;
-				if(select.from.get().alias.get().equals(table.name()))
-					return true;
-			}
-			return false;
-		}).toList();
 	}
 }

@@ -239,6 +239,7 @@ public class TableTests {
 			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
 			db.execute("CREATE TABLE test_backup (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			db.execute("INSERT INTO test_backup VALUES (1, 'abc', 11)");
+			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b) VALUES (new.a, new.b); END;");
 			Table test = db.table("test").get();
 
 			AlterTable alter = test.alter();
@@ -297,6 +298,8 @@ public class TableTests {
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
 
+
+			// modify column type
 			alter.modifyColumn("b", new TableColumn(test, new TableColumn.Properties(){
 				@Override
 				public String name() {
@@ -329,6 +332,8 @@ public class TableTests {
 			assertEquals(3, count);
 			assertFalse(test.column("b").get().type().equals("TEXT"));
 
+
+			// modify primary key
 			List<TableColumn> list = new ArrayList<>();
 			list.add(test.column("d").get());
 			alter.setPrimaryKey(list);
@@ -337,6 +342,23 @@ public class TableTests {
 			test = db.table("test").get();
 			Optional<Index> pk = test.primaryKey();
 			assertTrue(pk.isPresent() && pk.get().getColumns().size() == 1 && pk.get().getColumns().get(0).equals("d"));
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// drop primary key
+			list = new ArrayList<>();
+			alter.setPrimaryKey(list);
+			alter.execute();
+
+			test = db.table("test").get();
+			pk = test.primaryKey();
+			assertFalse(pk.isPresent());
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
 		}
 	}
 
