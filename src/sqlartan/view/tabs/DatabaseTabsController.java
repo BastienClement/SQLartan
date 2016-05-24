@@ -1,5 +1,6 @@
 package sqlartan.view.tabs;
 
+import javafx.beans.property.LongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -27,7 +28,7 @@ public class DatabaseTabsController {
 	@FXML
 	private TableColumn<DatabaseStructure, String> colType;
 	@FXML
-	private TableColumn<DatabaseStructure, String> colLignes;
+	private TableColumn<DatabaseStructure, Number> colLignes;
 	@FXML
 	private TableColumn<DatabaseStructure, String> colRename;
 	@FXML

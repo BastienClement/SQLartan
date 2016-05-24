@@ -142,7 +142,7 @@ public class SqlartanController {
 					case TABLE: {
 						structure = db.table(newValue.getValue().name());
 						stackPane.getChildren().add(tableTabPane);
-						tableTabController.setTable(db.table(newValue.getValue().name()).get());
+						db.table(newValue.getValue().name()).ifPresent(t -> tableTabController.setTable(t));
 						structure.ifPresent(tableTabController::setStructure);
 						tableTabController.refresh();
 					}
@@ -165,9 +165,7 @@ public class SqlartanController {
 		// Pane for request history
 		BorderPane borderPane = new BorderPane();
 		Button clearHistory = new Button("Clear");
-		clearHistory.setOnMouseClicked(event -> {
-			requests.clear();
-		});
+		clearHistory.setOnMouseClicked(event -> requests.clear());
 
 		displayPragma.setSelected(true);
 
@@ -242,7 +240,6 @@ public class SqlartanController {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
-		AttachedChooserController attachedChooserController = null;
 
 		try {
 
@@ -250,7 +247,7 @@ public class SqlartanController {
 
 			stage.setTitle("SQLartan");
 			attachedChooser = loader.load();
-			attachedChooserController = loader.getController();
+			AttachedChooserController attachedChooserController = loader.getController();
 			attachedChooserController.setSqlartanController(this);
 			stage.initModality(Modality.APPLICATION_MODAL);
 
@@ -285,7 +282,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Import in the current opend database
+	 * Import in the current open database
 	 */
 	@FXML
 	public void importFX() {
@@ -306,7 +303,7 @@ public class SqlartanController {
 	/**
 	 * Export the database
 	 *
-	 * @throws SQLException
+	 * @throws UncheckedException
 	 */
 	@FXML
 	public void export() {
@@ -338,7 +335,6 @@ public class SqlartanController {
 	private void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
-		AttachedChooserController attachedChooserController = null;
 
 		try {
 			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
@@ -408,10 +404,8 @@ public class SqlartanController {
 
 					String resultat = readOnlyResult.query();
 
-					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
-						return;
-
-					requests.add(0, readOnlyResult.query());
+					if (!resultat.startsWith("PRAGMA") || displayPragma.isSelected())
+						requests.add(0, readOnlyResult.query());
 				});
 
 				databaseMenu.setDisable(false);
@@ -597,9 +591,7 @@ public class SqlartanController {
 		try {
 			alter.addColumn(column);
 			alter.execute();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
+		} catch (ParseException | SQLException e) {
 			e.printStackTrace();
 		}
 		refreshView();

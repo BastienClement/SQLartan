@@ -21,7 +21,7 @@ import java.io.IOException;
 public class TabsController {
 
 	@FXML
-	protected TableColumn<TableStructure, String> colNo;
+	protected TableColumn<TableStructure, Number> colNo;
 	@FXML
 	protected TableColumn<TableStructure, String> colName;
 	@FXML
