@@ -13,6 +13,7 @@ import java.util.Optional;
 public class TableColumn extends Column {
 	public interface Properties extends Column.Properties {
 		boolean unique();
+		boolean primaryKey();
 		String check();
 	}
 
@@ -47,36 +48,42 @@ public class TableColumn extends Column {
 		String check = props.check();
 		String type = props.type();
 		boolean nullable = props.nullable();
+		boolean pk = props.primaryKey();
 
-		props = new Properties() {
-			@Override
-			public boolean unique() {
-				return unique;
-			}
-			@Override
-			public String check() {
-				return check;
-			}
-			@Override
-			public String name() {
-				return name;
-			}
-			@Override
-			public String type() {
-				return type;
-			}
-			@Override
-			public boolean nullable() {
-				return nullable;
-			}
-		};
-
+		TableColumn column = new TableColumn(parentTable(), new Properties() {
+				@Override
+				public boolean unique() {
+					return unique;
+				}
+				@Override
+				public boolean primaryKey() {
+					return pk;
+				}
+				@Override
+				public String check() {
+					return check;
+				}
+				@Override
+				public String name() {
+					return name;
+				}
+				@Override
+				public String type() {
+					return type;
+				}
+				@Override
+				public boolean nullable() {
+					return nullable;
+				}
+		});
+		AlterTable alter = parentTable().alter();
 		try {
-			AlterTable alter = parentTable().alter();
-			alter.modifyColumn(name(), this);
+			alter.modifyColumn(name(), column);
 			alter.execute();
-		} catch (ParseException | SQLException e){
+		} catch (ParseException e) {
 			throw new UncheckedException(e);
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
 		}
 	}
 

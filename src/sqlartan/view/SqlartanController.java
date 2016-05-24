@@ -491,6 +491,10 @@ public class SqlartanController {
 				return false;
 			}
 			@Override
+			public boolean primaryKey() {
+				return false;
+			}
+			@Override
 			public String check() {
 				return null;
 			}

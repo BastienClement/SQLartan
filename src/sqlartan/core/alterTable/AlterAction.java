@@ -43,7 +43,7 @@ public abstract class AlterAction
 		CreateTableStatement.Def definition = getTableDefinition();
 
 		String populateTemporary = "INSERT INTO " + temporaryTable.name + " SELECT " +
-			definition.columns.stream().filter(col -> temporaryTable.columns.stream().filter(c -> c.name.equals(col.name)).findFirst().isPresent()).map(col -> col.name).collect(Collectors.joining(", ")) +
+			definition.columns.stream().filter(col -> definition.columns.indexOf(col) < temporaryTable.columns.size()).map(col -> col.name).collect(Collectors.joining(", ")) +
 			" FROM " + table.fullName();
 
 		String dropTable = "DROP TABLE " + table.fullName();

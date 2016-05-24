@@ -5,8 +5,10 @@ import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -161,14 +163,14 @@ public class TableTests {
 			Table test = db.table("test").get();
 
 			// Gets the primary key
-			Index pk = test.primaryKey();
+			Optional<Index> pk = test.primaryKey();
 			// Check that there is a primary key
-			assertNotNull(pk);
+			assertTrue(pk.isPresent());
 			// Check that the primary key has one column
-			assertNotNull(pk.getColumns());
-			assertTrue(pk.getColumns().size() == 1);
+			assertNotNull(pk.get().getColumns());
+			assertTrue(pk.get().getColumns().size() == 1);
 			// Check the primary key column
-			assertEquals(pk.getColumns().get(0), "a");
+			assertEquals(pk.get().getColumns().get(0), "a");
 		}
 	}
 
@@ -247,6 +249,10 @@ public class TableTests {
 					return false;
 				}
 				@Override
+				public boolean primaryKey() {
+					return false;
+				}
+				@Override
 				public String check() {
 					return null;
 				}
@@ -267,8 +273,6 @@ public class TableTests {
 			alter.execute();
 
 			test = db.table("test").get();
-
-			test.columns().forEach(column -> System.out.println(column.name()));
 
 			assertTrue(test.column("d").isPresent());
 			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
@@ -292,6 +296,47 @@ public class TableTests {
 			// Check if we have exactly 3 rows in the table
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
+
+			alter.modifyColumn("b", new TableColumn(test, new TableColumn.Properties(){
+				@Override
+				public String name() {
+					return "b";
+				}
+				@Override
+				public String type() {
+					return "FLOAT";
+				}
+				@Override
+				public boolean nullable() {
+					return true;
+				}
+				@Override
+				public boolean unique() {
+					return false;
+				}
+				@Override
+				public boolean primaryKey() {
+					return false;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+			}));
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+			assertFalse(test.column("b").get().type().equals("TEXT"));
+
+			List<TableColumn> list = new ArrayList<>();
+			list.add(test.column("d").get());
+			alter.setPrimaryKey(list);
+			alter.execute();
+
+			test = db.table("test").get();
+			Optional<Index> pk = test.primaryKey();
+			assertTrue(pk.isPresent() && pk.get().getColumns().size() == 1 && pk.get().getColumns().get(0).equals("d"));
 		}
 	}
 

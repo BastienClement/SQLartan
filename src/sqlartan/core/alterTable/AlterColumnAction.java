@@ -56,10 +56,10 @@ public abstract class AlterColumnAction extends AlterAction
 			definition.constraints.add(ColumnConstraint.Check.parse(context));
 		}
 
-		Index pk = column.parentTable().primaryKey();
-		if(pk.getColumns().contains(this) && pk.getColumns().size() == 1){
+		Optional<Index> pk = column.parentTable().primaryKey();
+		if(pk.isPresent() && pk.get().getColumns().contains(this) && pk.get().getColumns().size() == 1){
 			ColumnConstraint.PrimaryKey constraint = new ColumnConstraint.PrimaryKey();
-			constraint.name = Optional.of(pk.getName());
+			constraint.name = Optional.of(pk.get().getName());
 			constraint.autoincrement = false;
 			definition.constraints.add(constraint);
 		}

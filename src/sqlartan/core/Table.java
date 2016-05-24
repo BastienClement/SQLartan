@@ -1,6 +1,7 @@
 package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.ColumnConstraint;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
@@ -129,6 +130,44 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @return
 	 */
 	protected TableColumn columnBuilder(Row row) {
+		String createStatement = null;
+		try {
+			createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+			                                 .execute(name)
+			                                 .mapFirst(Row::getString);
+			CreateTableStatement create = Parser.parse(createStatement, CreateTableStatement::parse);
+
+			if(create instanceof CreateTableStatement.Def){
+				Optional<ColumnConstraint.Check> constraint = ((CreateTableStatement.Def) create).columns.stream().filter(col -> col.name.equals(row.getString("name"))).findFirst().get().constraints.stream().filter(c -> c instanceof ColumnConstraint.Check).map(c -> (ColumnConstraint.Check)c).findFirst();
+				if(constraint.isPresent()){
+					return new TableColumn(this, new TableColumn.Properties() {
+						public String name() { return row.getString("name"); }
+						public String type() { return row.getString("type"); }
+						public boolean unique() {
+							for (String key : indices.keySet()) {
+								if (indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique()) {
+									return true;
+								}
+							}
+							return false;
+						}
+						@Override
+						public boolean primaryKey() {
+							return  row.getInt("pk") != 0;
+						}
+						public String check() { return constraint.get().expression.toSQL(); }
+						public boolean nullable() { return row.getInt("notnull") == 0; }
+					});
+				}
+			}
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
+		}
+
+		// Update the create statement of the original table
+
 		return new TableColumn(this, new TableColumn.Properties() {
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
@@ -140,7 +179,11 @@ public class Table extends PersistentStructure<TableColumn> {
 				}
 				return false;
 			}
-			public String check() { throw new UnsupportedOperationException("Not implemented"); }
+			@Override
+			public boolean primaryKey() {
+				return  row.getInt("pk") != 0;
+			}
+			public String check() { return null; }
 			public boolean nullable() { return row.getInt("notnull") == 0; }
 		});
 	}
@@ -169,15 +212,15 @@ public class Table extends PersistentStructure<TableColumn> {
 	 *
 	 * @return the primary key of the table
 	 */
-	public Index primaryKey() {
+	public Optional<Index> primaryKey() {
 		// Search in the indices the one which is a primary key
 		Iterator<String> keySetIterator = indices.keySet().iterator();
 		while(keySetIterator.hasNext()){
 			String key = keySetIterator.next();
 			if(indices.get(key).isPrimaryKey())
-				return index(key);
+				return Optional.of(index(key));
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	/**
