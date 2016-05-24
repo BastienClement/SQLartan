@@ -371,6 +371,8 @@ public class SqlartanController {
 			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
 				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
 			}
+
+			treeView.getSelectionModel().select(0);
 		}
 	}
 
