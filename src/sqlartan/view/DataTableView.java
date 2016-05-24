@@ -1,5 +1,6 @@
 package sqlartan.view;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,15 +29,9 @@ public class DataTableView {
 		int i = 0;
 		for (ResultColumn c : result.columns()) {
 			final int j = i++;
-			TableColumn<ObservableList<EditBidon>, String> col = new TableColumn<>(c.name());
-			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j).string));
-			col.setCellFactory(param -> new EditCell());
-			col.setOnEditCommit(event -> {
-				ObservableList<EditBidon> eb = event.getTableView().getItems().get(event.getTablePosition().getRow());
-				eb.set(j, eb.get(j).update(event.getNewValue()));
-				eb.get(j).row.update(j, event.getNewValue());
-				// TODO execute SQL request to change the data
-			});
+			TableColumn<ObservableList<EditBidon>, EditBidon> col = new TableColumn<>(c.name());
+			col.setCellValueFactory(tc -> new SimpleObjectProperty<>(tc.getValue().get(j)));
+			col.setCellFactory(tc -> new EditCell());
 			tableView.getColumns().add(col);
 		}
 

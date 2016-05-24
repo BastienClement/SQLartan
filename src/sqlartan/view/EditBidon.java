@@ -11,16 +11,16 @@ import sqlartan.core.Row;
  */
 public class EditBidon {
 	public final Row row;
-	public String string;
 	public final ResultColumn column;
+	public String string;
 
-	public EditBidon(Row row, ResultColumn column, String string){
+	public EditBidon(Row row, ResultColumn column, String string) {
 		this.row = row;
 		this.column = column;
 		this.string = string;
 	}
 
-	public EditBidon update(String string){
+	public EditBidon update(String string) {
 		return new EditBidon(row, column, string);
 	}
 }

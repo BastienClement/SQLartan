@@ -1,6 +1,7 @@
 package sqlartan.view;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -11,12 +12,12 @@ import javafx.scene.input.KeyCode;
  * @author Adriano Ruberto
  * @version 1.0
  */
-public class EditCell extends TableCell {
+public class EditCell extends TableCell<ObservableList<EditBidon>, EditBidon> {
 	private TextField textField;
 
 	@Override
 	public void startEdit() {
-		if (!isEmpty()) {
+		if (!isEmpty() && getItem().row.isEditable(getItem().column)) {
 			super.startEdit();
 			createTextField();
 			setText(null);
@@ -29,12 +30,12 @@ public class EditCell extends TableCell {
 	@Override
 	public void cancelEdit() {
 		super.cancelEdit();
-		setText(getItem().toString());
+		setText(getItem().string);
 		setGraphic(null);
 	}
 
 	@Override
-	public void updateItem(Object item, boolean empty) {
+	public void updateItem(EditBidon item, boolean empty) {
 		super.updateItem(item, empty);
 		setText(null);
 		setGraphic(null);
@@ -54,7 +55,7 @@ public class EditCell extends TableCell {
 		textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
 		textField.setOnKeyReleased(t -> {
 			if (t.getCode() == KeyCode.ENTER) {
-				commitEdit(textField.getText());
+				commitEdit(getItem().update(textField.getText()));
 			} else if (t.getCode() == KeyCode.ESCAPE) {
 				cancelEdit();
 			}
@@ -62,7 +63,7 @@ public class EditCell extends TableCell {
 	}
 
 	private String getString() {
-		return getItem() == null ? "" : getItem().toString();
+		return getItem() == null ? "" : getItem().string;
 	}
 
 }
