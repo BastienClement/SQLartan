@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
@@ -34,7 +35,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 	}
 
 	private EventHandler<ActionEvent> openStructureDialog(Consumer<PersistentStructure<?>> dialog) {
-		return event -> SqlartanController.getDB().structure(name()).ifPresent(dialog);
+		return event -> Sqlartan.getInstance().getController().getDB().structure(name()).ifPresent(dialog);
 	}
 
 	private void duplicateDialog(PersistentStructure<?> structure) {

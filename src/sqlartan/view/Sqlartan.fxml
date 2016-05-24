@@ -16,14 +16,14 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
-                  <MenuItem mnemonicParsing="false" onAction="#createDatabase" text="Create Database..." />
-                  <MenuItem mnemonicParsing="false" onAction="#openSQLiteDatabase" text="Open Database" />
+                  <MenuItem mnemonicParsing="false" onAction="#createDatabase" text="New Database..." />
+                  <MenuItem mnemonicParsing="false" onAction="#openSQLiteDatabase" text="Open Database..." />
               <MenuItem mnemonicParsing="false" onAction="#close" text="Quit" />
             </items>
           </Menu>
             <Menu fx:id="databaseMenu" disable="true" mnemonicParsing="false" text="Database">
               <items>
-                  <MenuItem mnemonicParsing="false" onAction="#attachButton" text="Attached Database" />
+                  <MenuItem mnemonicParsing="false" onAction="#attachButton" text="Attached Database..." />
                   <Menu fx:id="detatchMenu" mnemonicParsing="false" text="Detatch Database" />
                 <MenuItem mnemonicParsing="false" text="Vacuum" />
                   <MenuItem mnemonicParsing="false" onAction="#importFX" text="Import" />
@@ -48,7 +48,7 @@
    <center>
       <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #dddddd;" BorderPane.alignment="CENTER">
          <BorderPane.margin>
-            <Insets right="15.0" />
+            <Insets />
          </BorderPane.margin></StackPane>
    </center>
    <bottom>

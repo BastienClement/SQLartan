@@ -2,6 +2,7 @@ package sqlartan.view.treeitem;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import sqlartan.Sqlartan;
 import sqlartan.view.SqlartanController;
 
 /**
@@ -16,9 +17,9 @@ public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 	public ContextMenu getMenu() {
 		MenuItem detach = new MenuItem("Detach");
 
-		detach.setOnAction(event -> SqlartanController.getDB()
-		                                              .attached(name())
-		                                              .ifPresent(db -> controller.detachDatabase(db)));
+		detach.setOnAction(event -> Sqlartan.getInstance().getController().getDB()
+		                                    .attached(name())
+		                                    .ifPresent(db -> controller.detachDatabase(db)));
 		ContextMenu res = super.getMenu();
 		res.getItems().add(detach);
 		return res;

@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import sqlartan.Sqlartan;
 import sqlartan.core.Column;
 import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
@@ -17,7 +18,7 @@ import sqlartan.view.util.Popup;
  */
 public class DataTableView {
 
-	private Database db = SqlartanController.getDB();
+	private Database db = Sqlartan.getInstance().getController().getDB();
 
 	/**
 	 * Return a table view for any result

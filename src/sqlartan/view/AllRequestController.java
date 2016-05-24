@@ -25,7 +25,7 @@ public class AllRequestController {
 	@FXML
 	StackPane userQueryView;
 	private DataTableView dataTableView = new DataTableView();
-	private Database db = SqlartanController.getDB();
+	private Database db = Sqlartan.getInstance().getController().getDB();
 
 	@FXML
 	private void initialize() {

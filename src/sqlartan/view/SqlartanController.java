@@ -74,14 +74,9 @@ public class SqlartanController {
 	private List<String> atachedDBs = new LinkedList<>();
 
 
-	/***********
-	 * METHODES*
-	 ***********/
-
-
-	static public Database getDB() {
-		return db;
-	}
+	/*****************************
+	 * METHODES called by the GUI*
+	 *****************************/
 
 
 	/**
@@ -182,9 +177,248 @@ public class SqlartanController {
 
 
 	/**
+	 * Function called by the GUI
+	 * to create a new database and open or attache it
+	 */
+	@FXML
+	private void createDatabase() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
+
+		//Show save file dialog
+		fileChooser.setTitle("Create a new database");
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+
+		if (db != null && (!db.isClosed())) {
+			attachDatabase(file, file.getName().split("\\.")[0]);
+		} else {
+			openDatabase(file);
+		}
+	}
+	
+
+	/**
+	 * Function called by the GUI
+	 * to open a database
+	 */
+	@FXML
+	private void openSQLiteDatabase() {
+		// Create the file popup
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open SQLite database");
+
+		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+
+		openDatabase(file);
+	}
+
+
+	/**
+	 * FUnction called by the GUI
+	 * to attache a database
+	 */
+	@FXML
+	private void attachButton() {
+
+		Stage stage = new Stage();
+		Pane attachedChooser;
+		AttachedChooserController attachedChooserController = null;
+
+		try {
+
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/attached/AttachedChooser.fxml"));
+
+			stage.setTitle("SQLartan");
+			attachedChooser = loader.load();
+			attachedChooserController = loader.getController();
+			attachedChooserController.setSqlartanController(this);
+			stage.initModality(Modality.APPLICATION_MODAL);
+
+			stage.setScene(new Scene(attachedChooser));
+			stage.showAndWait();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * Close the current database
+	 */
+	@FXML
+	private void closeDB() {
+		mainTreeItem.getChildren().clear();
+		stackPane.getChildren().clear();
+		db.close();
+		databaseMenu.setDisable(true);
+	}
+
+
+	/**
+	 * Close the entery application
+	 */
+	@FXML
+	private void close() {
+		Platform.exit();
+	}
+
+
+	/**
+	 * Import in the current opend database
+	 */
+	@FXML
+	public void importFX() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Import SQLite database");
+		try {
+			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+			if (f != null) {
+				db.importfromFile(f);
+			}
+		} catch (SQLException | IOException | TokenizeException e) {
+			throw new UncheckedException(e);
+		}
+		refreshView();
+	}
+
+
+	/**
+	 * Export the database
+	 *
+	 * @throws SQLException
+	 */
+	@FXML
+	public void export() {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		try {
+			//Show save file dialog
+			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+			if (file != null) {
+				FileWriter fileWriter = new FileWriter(file);
+				fileWriter.write(db.export());
+				fileWriter.close();
+			}
+		} catch (IOException | SQLException e) {
+			throw new UncheckedException(e);
+		}
+	}
+
+
+	/**
+	 * Function called by the GUI
+	 * to display the about window
+	 */
+	@FXML
+	private void displayAbout() {
+		Stage stage = new Stage();
+		Pane pane;
+		AttachedChooserController attachedChooserController = null;
+
+		try {
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
+
+			stage.setTitle("SQLartan - About");
+			pane = loader.load();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setResizable(false);
+
+			stage.setScene(new Scene(pane));
+			stage.showAndWait();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * Get the main database
+	 *
+	 * @return the main database
+	 */
+	public Database getDB() {
+		return db;
+	}
+
+
+	/**
+	 * Open de main database
+	 *
+	 * @param file: file of the database to open
+	 */
+	private void openDatabase(File file) {
+		if (db != null && (!db.isClosed()))
+			db.close();
+
+		try {
+			if (file != null) {
+				db = Database.open(file);
+
+				request.setCellFactory(e -> setCellFactoryHistory());
+
+				db.registerListener(readOnlyResult -> {
+					request.setItems(requests);
+
+					String resultat = readOnlyResult.query();
+
+					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
+						return;
+
+					requests.add(0, readOnlyResult.query());
+				});
+
+				databaseMenu.setDisable(false);
+				refreshView();
+			}
+		} catch (SQLException e) {
+			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			ButtonType buttonRetry = new ButtonType("Retry");
+			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
+			     .filter(b -> buttonRetry == b)
+			     .ifPresent(b -> openSQLiteDatabase());
+		}
+	}
+
+
+	/**
+	 * CellFactory for the history listedView
+	 *
+	 * @return the new ListCell
+	 */
+	private ListCell<String> setCellFactoryHistory(){
+		ListCell<String> cells = new ListCell<>();
+		ContextMenu menu = new ContextMenu();
+		MenuItem execute = new MenuItem();
+
+		execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+		execute.setOnAction(event -> {
+			String request = cells.itemProperty().getValue();
+			treeView.getSelectionModel().select(0);
+			databaseTabsController.selectSqlTab();
+			databaseTabsController.setSqlRequest(request);
+		});
+
+		menu.getItems().add(execute);
+
+		cells.textProperty().bind(cells.itemProperty());
+
+		cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
+			cells.setContextMenu(isNotEmpty ? null : menu);
+		});
+
+		return cells;
+	}
+
+
+	/**
 	 * Called by the mainApp to set the link to the mainApp
 	 *
-	 * @param sqlartan
+	 * @param sqlartan set the referance to the main class
 	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
@@ -248,115 +482,6 @@ public class SqlartanController {
 
 
 	/**
-	 * Open de main database
-	 *
-	 * @param file: file of the database to open
-	 */
-	@FXML
-	private void openDatabase(File file) {
-		if (db != null && (!db.isClosed()))
-			db.close();
-
-		try {
-			if (file != null) {
-				db = Database.open(file);
-
-				request.setCellFactory(lv -> {
-
-					ListCell<String> cells = new ListCell<>();
-					ContextMenu menu = new ContextMenu();
-					MenuItem execute = new MenuItem();
-
-					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
-					execute.setOnAction(event -> {
-						String request = cells.itemProperty().getValue();
-						treeView.getSelectionModel().select(0);
-						databaseTabsController.selectSqlTab();
-						databaseTabsController.setSqlRequest(request);
-					});
-
-					menu.getItems().add(execute);
-
-					cells.textProperty().bind(cells.itemProperty());
-
-					cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
-						cells.setContextMenu(isNotEmpty ? null : menu);
-					});
-
-					return cells;
-				});
-
-				db.registerListener(readOnlyResult -> {
-					request.setItems(requests);
-
-					String resultat = readOnlyResult.query();
-
-					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
-						return;
-
-					requests.add(0, readOnlyResult.query());
-				});
-
-				databaseMenu.setDisable(false);
-				refreshView();
-			}
-		} catch (SQLException e) {
-			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-			ButtonType buttonRetry = new ButtonType("Retry");
-			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
-			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> openSQLiteDatabase());
-		}
-	}
-
-
-	/**
-	 * Function called by the GUI
-	 * to open a database
-	 */
-	@FXML
-	private void openSQLiteDatabase() {
-		// Create the file popup
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLite database");
-
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-
-		openDatabase(file);
-	}
-
-
-	/**
-	 * FUnction called by the GUI
-	 * to attache a database
-	 */
-	@FXML
-	private void attachButton() {
-
-		Stage stage = new Stage();
-		Pane attachedChooser;
-		AttachedChooserController attachedChooserController = null;
-
-		try {
-
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/attached/AttachedChooser.fxml"));
-
-			stage.setTitle("SQLartan");
-			attachedChooser = loader.load();
-			attachedChooserController = loader.getController();
-			attachedChooserController.setSqlartanController(this);
-			stage.initModality(Modality.APPLICATION_MODAL);
-
-			stage.setScene(new Scene(attachedChooser));
-			stage.showAndWait();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-
-	/**
 	 * Attach a database to the main database
 	 *
 	 * @param file   : file of the database
@@ -387,27 +512,6 @@ public class SqlartanController {
 		}
 
 
-	}
-
-
-	/**
-	 * Close the current database
-	 */
-	@FXML
-	private void closeDB() {
-		mainTreeItem.getChildren().clear();
-		stackPane.getChildren().clear();
-		db.close();
-		databaseMenu.setDisable(true);
-	}
-
-
-	/**
-	 * Close the entery application
-	 */
-	@FXML
-	private void close() {
-		Platform.exit();
 	}
 
 
@@ -455,13 +559,6 @@ public class SqlartanController {
 		refreshView();
 	}
 
-	/**
-	 * Vacuum a database
-	 */
-	public void vacuumDatabase(Database db) {
-		db.vacuum();
-		refreshView();
-	}
 
 	/**
 	 * Add a column to the specified table
@@ -529,6 +626,7 @@ public class SqlartanController {
 		//refreshView();
 	}
 
+
 	/**
 	 * Detach a database from the main database
 	 *
@@ -539,104 +637,16 @@ public class SqlartanController {
 		refreshView();
 	}
 
+
+
 	/**
-	 * Executes the SQL contained in a string into the database
+	 * Set active the index element in the treeview
 	 *
-	 * @param database
-	 * @param sql
+	 * @param index to set active
 	 */
-	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
-		database.importFromString(sql);
-		refreshView();
+	public void selectTreeIndex(int index) {
+		treeView.getSelectionModel().select(index);
 	}
 
-	@FXML
-	public void importFX() {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Import SQLite database");
-		try {
-			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-			if (f != null) {
-				db.importfromFile(f);
-			}
-		} catch (SQLException | IOException | TokenizeException e) {
-			throw new UncheckedException(e);
-		}
-		refreshView();
-	}
 
-	/**
-	 * Export the database
-	 *
-	 * @throws SQLException
-	 */
-	@FXML
-	public void export() {
-		FileChooser fileChooser = new FileChooser();
-
-		//Set extension filter
-		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-		fileChooser.getExtensionFilters().add(extFilter);
-
-		try {
-			//Show save file dialog
-			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-			if (file != null) {
-				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(db.export());
-				fileWriter.close();
-			}
-		} catch (IOException | SQLException e) {
-			throw new UncheckedException(e);
-		}
-	}
-
-	/**
-	 * Function called by the GUI
-	 * to display the about window
-	 */
-	@FXML
-	private void displayAbout() {
-		Stage stage = new Stage();
-		Pane pane;
-		AttachedChooserController attachedChooserController = null;
-
-		try {
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
-
-			stage.setTitle("SQLartan - About");
-			pane = loader.load();
-			stage.initModality(Modality.APPLICATION_MODAL);
-			stage.setResizable(false);
-
-			stage.setScene(new Scene(pane));
-			stage.showAndWait();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void selectTreeIndex(int i) {
-		treeView.getSelectionModel().select(0);
-	}
-
-	/**
-	 * Function called by the GUI
-	 * to create a new database and open or attache it
-	 */
-	@FXML
-	private void createDatabase() throws SQLException {
-		FileChooser fileChooser = new FileChooser();
-
-		//Show save file dialog
-		fileChooser.setTitle("Create a new database");
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
-		if (db != null && (!db.isClosed())) {
-			attachDatabase(file, file.getName().split("\\.")[0]);
-		} else {
-			openDatabase(file);
-		}
-	}
 }
