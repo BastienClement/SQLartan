@@ -3,22 +3,28 @@ package sqlartan.view.tabs;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.DataTableView;
+import sqlartan.view.SqlartanController;
+import sqlartan.view.tabs.struct.DatabaseStructure;
+import sqlartan.view.tabs.struct.TabStructure;
 import sqlartan.view.tabs.struct.TableStructure;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 /**
  * Created by julien on 24.05.16.
  */
-public class TabsController {
+public class TabsController<T extends TabStructure> {
 
 	@FXML
 	protected TableColumn<TableStructure, Number> colNo;
@@ -32,7 +38,6 @@ public class TabsController {
 	protected TableColumn<TableStructure, String> colDefaultValue;
 	@FXML
 	protected TableColumn<TableStructure, String> colComment;
-
 
 	protected PersistentStructure<?> structure;
 
@@ -52,9 +57,6 @@ public class TabsController {
 
 	@FXML
 	protected TableView<TableStructure> structureTable;
-
-
-
 
 
 	@FXML
@@ -117,5 +119,23 @@ public class TabsController {
 
 	public void setStructure(PersistentStructure<?> structure) {
 		this.structure = structure;
+	}
+
+	protected Callback<TableColumn<T, String>, TableCell<T, String>>
+	actionButton(String label, BiConsumer<TableCell<T, String>, ActionEvent> action) {
+		return param -> new TableCell<T, String>() {
+			private Button btn = new Button(label);
+			public void updateItem(String item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+					setText(null);
+				} else {
+					btn.setOnAction(event -> action.accept(this, event));
+					setGraphic(btn);
+					setText(null);
+				}
+			}
+		};
 	}
 }

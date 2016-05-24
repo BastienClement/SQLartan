@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController extends TabsController {
+public class DatabaseTabsController extends TabsController<DatabaseStructure> {
 
 	@FXML
 	private TableColumn<DatabaseStructure, String> colName;
@@ -49,7 +49,6 @@ public class DatabaseTabsController extends TabsController {
 
 	private Database database;
 
-	private SqlartanController controller;
 
 	private ObservableList<DatabaseStructure> dbStructs = FXCollections.observableArrayList();
 
@@ -84,35 +83,17 @@ public class DatabaseTabsController extends TabsController {
 			String structName = dbStruct.nameProperty().get();
 			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
 				if (name.length() > 0 && !structName.equals(name)) {
-					database.structure(structName).ifPresent(s -> controller.renameStructure(s, name));
+					database.structure(structName).ifPresent(s -> Sqlartan.getInstance().getController().renameStructure(s, name));
 				}
 			});
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
-			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> controller.dropStructure(s));
+			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
 		}));
 
 		tabPane.getSelectionModel().clearSelection();
-	}
-
-	private Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>
-			actionButton(String label, BiConsumer<TableCell<DatabaseStructure, String>, ActionEvent> action) {
-		return param -> new TableCell<DatabaseStructure, String>() {
-			private Button btn = new Button(label);
-			public void updateItem(String item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty) {
-					setGraphic(null);
-					setText(null);
-				} else {
-					btn.setOnAction(event -> action.accept(this, event));
-					setGraphic(btn);
-					setText(null);
-				}
-			}
-		};
 	}
 
 	/**
@@ -136,14 +117,6 @@ public class DatabaseTabsController extends TabsController {
 		this.database = database;
 	}
 
-	/**
-	 * Set the controller
-	 *
-	 * @param controller
-	 */
-	public void setController(SqlartanController controller) {
-		this.controller = controller;
-	}
 
 	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();
