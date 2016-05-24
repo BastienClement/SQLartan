@@ -44,7 +44,7 @@ public class SqlartanController {
 	/***********
 	 * ATRIBUTS*
 	 ***********/
-	private static Database db = null;
+	private Database db = null;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 
@@ -194,7 +194,7 @@ public class SqlartanController {
 			openDatabase(file);
 		}
 	}
-	
+
 
 	/**
 	 * Function called by the GUI
