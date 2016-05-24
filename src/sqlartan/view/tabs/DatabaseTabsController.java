@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController {
+public class DatabaseTabsController extends TabsController {
 
 	@FXML
 	private TableColumn<DatabaseStructure, String> colName;
@@ -57,7 +57,7 @@ public class DatabaseTabsController {
 	private Pane sqlPane;
 
 	@FXML
-	private void initialize() {
+	protected void initialize() {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
 
 		try {
@@ -79,7 +79,7 @@ public class DatabaseTabsController {
 		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 
-		colDelete.setCellFactory(actionButton("Rename", (self, event) -> {
+		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
 			String structName = dbStruct.nameProperty().get();
 			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
@@ -99,8 +99,8 @@ public class DatabaseTabsController {
 
 	private Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>
 			actionButton(String label, BiConsumer<TableCell<DatabaseStructure, String>, ActionEvent> action) {
-		Button btn = new Button(label);
 		return param -> new TableCell<DatabaseStructure, String>() {
+			private Button btn = new Button(label);
 			public void updateItem(String item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty) {
@@ -118,7 +118,7 @@ public class DatabaseTabsController {
 	/**
 	 * Display the structure of the database
 	 */
-	private void displayStructure() {
+	protected void displayStructure() {
 		dbStructs.clear();
 		dbStructs.addAll(database.structures()
 		                         .sorted((a, b) -> a.name().compareTo(b.name()))
