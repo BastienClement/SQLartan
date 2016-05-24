@@ -5,9 +5,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import sqlartan.core.Column;
-import sqlartan.core.PersistentStructure;
-import sqlartan.core.Result;
+import javafx.scene.control.TextField;
+import sqlartan.core.*;
 import sqlartan.view.util.Popup;
 import java.sql.SQLException;
 
@@ -23,28 +22,28 @@ public class DataTableView {
 	 * @return the table view
 	 */
 	public TableView getTableView(Result result) {
-		TableView<ObservableList<String>> tableView = new TableView<>();
+		TableView<ObservableList<EditBidon>> tableView = new TableView<>();
 
 		// Create columns
 		int i = 0;
-		for (Column c : result.columns()) {
+		for (ResultColumn c : result.columns()) {
 			final int j = i++;
-			TableColumn<ObservableList<String>, String> col = new TableColumn<>(c.name());
-			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
+			TableColumn<ObservableList<EditBidon>, String> col = new TableColumn<>(c.name());
+			col.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j).string));
 			col.setCellFactory(param -> new EditCell());
 			col.setOnEditCommit(event -> {
-				event.getTableView().getItems().get(event.getTablePosition().getRow())
-				     .set(j, event.getNewValue());
+				ObservableList<EditBidon> eb = event.getTableView().getItems().get(event.getTablePosition().getRow());
+				eb.set(j, eb.get(j).update(event.getNewValue()));
+				eb.get(j).row.update(j, event.getNewValue());
 				// TODO execute SQL request to change the data
-
 			});
 			tableView.getColumns().add(col);
 		}
 
 		// Add datas
-		ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
+		ObservableList<ObservableList<EditBidon>> rows = FXCollections.observableArrayList();
 		result.forEach(row -> rows.add(FXCollections.observableArrayList(
-			result.columns().map(c -> row.getString()))
+			result.columns().map(c -> new EditBidon(row, c, row.getString())))
 		));
 		tableView.setEditable(true);
 		tableView.setItems(rows);
