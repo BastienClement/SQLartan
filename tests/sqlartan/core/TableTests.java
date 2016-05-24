@@ -1,10 +1,14 @@
 package sqlartan.core;
 
 import org.junit.Test;
+import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -159,14 +163,14 @@ public class TableTests {
 			Table test = db.table("test").get();
 
 			// Gets the primary key
-			Index pk = test.primaryKey();
+			Optional<Index> pk = test.primaryKey();
 			// Check that there is a primary key
-			assertNotNull(pk);
+			assertTrue(pk.isPresent());
 			// Check that the primary key has one column
-			assertNotNull(pk.getColumns());
-			assertTrue(pk.getColumns().size() == 1);
+			assertNotNull(pk.get().getColumns());
+			assertTrue(pk.get().getColumns().size() == 1);
 			// Check the primary key column
-			assertEquals(pk.getColumns().get(0), "a");
+			assertEquals(pk.get().getColumns().get(0), "a");
 		}
 	}
 
@@ -181,8 +185,8 @@ public class TableTests {
 			db.execute("CREATE TRIGGER trig  AFTER INSERT ON test BEGIN DELETE FROM test; END;");
 
 			// Check that an existing trigger can be found
-			assertNull(db.table("test").get().trigger("trigg"));
-			assertNotNull(db.table("test").get().trigger("trig"));
+			assertFalse(db.table("test").get().trigger("trigg").isPresent());
+			assertTrue(db.table("test").get().trigger("trig").isPresent());
 
 			// Rename table
 			test.rename("test2");
@@ -190,16 +194,16 @@ public class TableTests {
 			assertNotNull(db.table("test2").get().trigger("trig"));
 
 			// Rename trigger
-			db.table("test2").get().trigger("trig").rename("trigg");
+			db.table("test2").get().trigger("trig").get().rename("trigg");
 			// Check that the old trigger does not exist anymore
-			assertNull(db.table("test2").get().trigger("trig"));
+			assertFalse(db.table("test2").get().trigger("trig").isPresent());
 			// Check that the new trigger exists
-			assertNotNull(db.table("test2").get().trigger("trigg"));
+			assertTrue(db.table("test2").get().trigger("trigg").isPresent());
 
 			// Delete trigger
-			db.table("test2").get().trigger("trigg").drop();
+			db.table("test2").get().trigger("trigg").get().drop();
 			// Check that the trigger does not exist anymore
-			assertNull(db.table("test2").get().trigger("trig"));
+			assertFalse(db.table("test2").get().trigger("trigg").isPresent());
 		}
 	}
 
@@ -225,7 +229,7 @@ public class TableTests {
 		}
 	}
 
-	/*@Test
+	@Test
 	public void alterTests() throws SQLException, ParseException {
 		try (Database db = Database.createEphemeral()) {
 			// Create simple table
@@ -235,19 +239,48 @@ public class TableTests {
 			db.execute("INSERT INTO test VALUES (3, 'ghi', 13)");
 			db.execute("CREATE TABLE test_backup (a INT PRIMARY KEY, b TEXT UNIQUE, c FLOAT)");
 			db.execute("INSERT INTO test_backup VALUES (1, 'abc', 11)");
+			db.execute("CREATE TRIGGER test_trigger AFTER INSERT ON test BEGIN INSERT INTO test_backup(a, b, c) VALUES(new.a, new.b, new.c); END;");
 			Table test = db.table("test").get();
 
 			AlterTable alter = test.alter();
 			// add
-			alter.addColumn(test, new TableColumn.Properties());
-			alter.addColumn("d", "FLOAT");
+			TableColumn d = new TableColumn(test, new TableColumn.Properties() {
+				@Override
+				public boolean unique() {
+					return false;
+				}
+				@Override
+				public boolean primaryKey() {
+					return false;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+				@Override
+				public String name() {
+					return "d";
+				}
+				@Override
+				public String type() {
+					return "FLOAT";
+				}
+				@Override
+				public boolean nullable() {
+					return true;
+				}
+			});
+			alter.addColumn(d);
 			alter.execute();
+
+			test = db.table("test").get();
+
 			assertTrue(test.column("d").isPresent());
 			int count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
 
 			// drop
-			alter.dropColumn("d");
+			alter.dropColumn(d);
 			alter.execute();
 			test = db.table("test").get();
 			assertFalse(test.column("d").isPresent());
@@ -255,7 +288,7 @@ public class TableTests {
 			assertEquals(3, count);
 
 			// modify column
-			alter.modifyColumn("c", "d", "FLOAT");
+			test.column("c").get().rename("d");
 			alter.execute();
 			test = db.table("test").get();
 			assertFalse(test.column("c").isPresent());
@@ -264,9 +297,81 @@ public class TableTests {
 			// Check if we have exactly 3 rows in the table
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 			assertEquals(3, count);
+
+			// modify column type
+			alter.modifyColumn("b", new TableColumn(test, new TableColumn.Properties(){
+				@Override
+				public String name() {
+					return "b";
+				}
+				@Override
+				public String type() {
+					return "FLOAT";
+				}
+				@Override
+				public boolean nullable() {
+					return true;
+				}
+				@Override
+				public boolean unique() {
+					return false;
+				}
+				@Override
+				public boolean primaryKey() {
+					return false;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+			}));
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+			assertFalse(test.column("b").get().type().equals("TEXT"));
+
+
+			// modify primary key
+			List<TableColumn> list = new ArrayList<>();
+			list.add(test.column("d").get());
+			alter.setPrimaryKey(list);
+			alter.execute();
+
+			test = db.table("test").get();
+			Optional<Index> pk = test.primaryKey();
+			assertTrue(pk.isPresent() && pk.get().getColumns().size() == 1 && pk.get().getColumns().get(0).equals("d"));
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// drop primary key
+			list = new ArrayList<>();
+			alter.setPrimaryKey(list);
+			alter.execute();
+
+			test = db.table("test").get();
+			pk = test.primaryKey();
+			assertFalse(pk.isPresent());
+
+			alter.execute();
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// drop column b
+			alter.dropColumn(test.column("b").get());
+			alter.execute();
+			test = db.table("test").get();
+			assertFalse(test.column("b").isPresent());
+			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
+			assertEquals(3, count);
+
+			// test if trigger still exists
+			assertTrue(test.triggers().findFirst().isPresent());
 		}
 	}
-	*/
+
 	@Test
 	public void insertTests() throws SQLException {
 		try (Database db = Database.createEphemeral()) {
@@ -277,7 +382,8 @@ public class TableTests {
 			row.set(1, "a", 3.14).execute();
 			row.set(2, "b", 6.28).execute();
 
-			assertEquals(2, db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt).intValue());
+			assertEquals(2, (int)db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt));
+			db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);
 
 			List<Double> res = db.execute("SELECT * FROM test ORDER BY a").map(r -> {
 				assertEquals(Integer.class, r.getObject().getClass());

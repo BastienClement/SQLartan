@@ -7,7 +7,6 @@ import sqlartan.core.ast.TypeDefinition;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,28 +16,30 @@ import java.util.List;
  */
 public class AlterTable
 {
-	private final Table table;
+	private Table table;
 
 	// register all actions by grouped by column name
-	private HashMap<TableColumn, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
+	private HashMap<String, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
 
-	private List<AlterAction> actions = new ArrayList<>();
+	private List<AlterAction> actions = new LinkedList<>();
 
 	public AlterTable(Table table) {
 		this.table = table;
 	}
 
-	public void execute() throws ParseException {
+	public void execute() {
 		// execute all registred actions
 		for(AlterAction action : actions){
 			try {
 				action.execute();
 			} catch (SQLException e) {
 				throw new UncheckedSQLException(e);
+			} catch (ParseException e) {
+				throw new UncheckedSQLException(e);
 			}
 			actions.remove(action);
 			if(action instanceof AlterColumnAction)
-				columnsActions.remove(((AlterColumnAction) action));
+				columnsActions.get(((AlterColumnAction) action).column().name()).remove(action);
 		}
 	}
 
@@ -46,25 +47,42 @@ public class AlterTable
 		return actions;
 	}
 
-	public void addColumn(TableColumn column) throws ParseException, SQLException {
+	public void addColumn(TableColumn column) {
 		if(!((!table.column(column.name()).isPresent() && findLastAddColumnAction(column) == null) || findLastDropColumnAction(column) != null))
 			throw new UnsupportedOperationException("Column does already exist!");
-		add(column, new AddColumnAction(table, column));
-	}
-
-	public void dropColumn(TableColumn column) throws ParseException, SQLException {
-		if(findLastAddColumnAction(column) != null) {
-			add(column, new DropColumnAction(table, findLastAddColumnAction(column).column()));
+		try {
+			add(column, new AddColumnAction(table, column));
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
 		}
-		else if(table.column(column.name()).isPresent())
-			add(column, new DropColumnAction(table, column));
-		else
-			throw new UnsupportedOperationException("Column does not exist!");
 	}
 
-	public void modifyColumn(String columnName, TableColumn column) throws ParseException, SQLException {
-		if((findLastAddColumnAction(column) != null || table.column(column.name()).isPresent()) && findLastDropColumnAction(column) == null) {
-			add(column, new ModifyColumnAction(table, column, columnName));
+	public void dropColumn(TableColumn column) {
+		try {
+			if(findLastAddColumnAction(column) != null) {
+				add(column, new DropColumnAction(table, findLastAddColumnAction(column).column()));
+			}
+			else if(table.column(column.name()).isPresent()) {
+				add(column, new DropColumnAction(table, column));
+			}
+			else {
+				throw new UnsupportedOperationException("Column does not exist!");
+			}
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	public void modifyColumn(String columnName, TableColumn column) {
+		try {
+			if((findLastAddColumnAction(column) != null || table.column(columnName).isPresent()) && findLastDropColumnAction(column) == null) {
+				add(column, new ModifyColumnAction(table, column, columnName));
+			}
+			else{
+				throw new UnsupportedOperationException("Column does not exist!");
+			}
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
 		}
 	}
 
@@ -73,37 +91,38 @@ public class AlterTable
 			if(findLastDropColumnAction(column) != null || (findLastAddColumnAction(column) == null && !table.column(column.name()).isPresent()))
 				throw new UnsupportedOperationException("Column does not exist!");
 		}
+		add(new PrimaryKeyAction(table, columns));
 	}
 
 	// Add action to the stack
-	private void add(TableColumn column, AlterColumnAction action) throws ParseException, SQLException {
-		if(!columnsActions.containsKey(column))
-			columnsActions.put(column, new LinkedList<AlterColumnAction>());
-		columnsActions.get(column).push(action);
+	private void add(TableColumn column, AlterColumnAction action) {
+		if(!columnsActions.containsKey(column.name()))
+			columnsActions.put(column.name(), new LinkedList<AlterColumnAction>());
+		columnsActions.get(column.name()).push(action);
 		add(action);
 		checkColumnActions(column);
 	}
 
-	private void add(AlterAction action) throws ParseException, SQLException {
+	private void add(AlterAction action) {
 		if(!actions.contains(action))
 			actions.add(action);
 	}
 
 	// look for unnecessary actions
-	private void checkColumnActions(TableColumn column) throws ParseException, SQLException {
+	private void checkColumnActions(TableColumn column) {
 		AlterColumnAction addAction = findLastAddColumnAction(column);
 		AlterColumnAction dropAction = findLastDropColumnAction(column);
 		if(addAction != null && dropAction != null) {
-			if (columnsActions.get(column).indexOf(addAction) < columnsActions.get(column).indexOf(dropAction)) {
-				columnsActions.get(column).remove(addAction);
+			if (columnsActions.get(column.name()).indexOf(addAction) < columnsActions.get(column.name()).indexOf(dropAction)) {
+				columnsActions.get(column.name()).remove(addAction);
 				actions.remove(addAction);
-				columnsActions.get(column).remove(dropAction);
+				columnsActions.get(column.name()).remove(dropAction);
 				actions.remove(dropAction);
 			}
-			if (columnsActions.get(column).indexOf(dropAction) < columnsActions.get(column).indexOf(addAction) && table.column(column.name()).isPresent() && compare(dropAction.getColumnDefinition(), addAction.getColumnDefinition())) {
-				columnsActions.get(column).remove(addAction);
+			if (columnsActions.get(column.name()).indexOf(dropAction) < columnsActions.get(column.name()).indexOf(addAction) && table.column(column.name()).isPresent() && compare(dropAction.getColumnDefinition(), addAction.getColumnDefinition())) {
+				columnsActions.get(column.name()).remove(addAction);
 				actions.remove(addAction);
-				columnsActions.get(column).remove(dropAction);
+				columnsActions.get(column.name()).remove(dropAction);
 				actions.remove(dropAction);
 			}
 		}
@@ -111,9 +130,9 @@ public class AlterTable
 
 	// retrieve last add action in the stack
 	private AlterColumnAction findLastAddColumnAction(TableColumn column){
-		if(columnsActions.get(column) == null)
+		if(columnsActions.get(column.name()) == null)
 			return null;
-		AlterColumnAction[] addActions = columnsActions.get(column).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] addActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(addActions.length == 0)
 			return null;
 		return addActions[addActions.length - 1];
@@ -121,9 +140,9 @@ public class AlterTable
 
 	// retrieve last drop action in the stack
 	private AlterColumnAction findLastDropColumnAction(TableColumn column){
-		if(columnsActions.get(column) == null)
+		if(columnsActions.get(column.name()) == null)
 			return null;
-		AlterColumnAction[] dropActions = columnsActions.get(column).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] dropActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
 		if(dropActions.length == 0)
 			return null;
 		return dropActions[dropActions.length - 1];
@@ -131,8 +150,6 @@ public class AlterTable
 
 	// compare two columns definitions, with name, type, ...
 	private boolean compare(ColumnDefinition col1, ColumnDefinition col2){
-
-
 		if(!col1.name.equals(col2.name))
 			return false;
 

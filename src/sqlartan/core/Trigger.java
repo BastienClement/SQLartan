@@ -2,15 +2,18 @@ package sqlartan.core;
 
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Trigger
 {
-	private final Database database;
+	private final Table table;
 	private String name;
 	private String content;
+	private List<TableColumn> columns = new LinkedList<>();
 
-	public Trigger(Database database, String name, String content) {
-		this.database = database;
+	public Trigger(Table table, String name, String content) {
+		this.table = table;
 		this.name = name;
 		this.content = content;
 	}
@@ -19,7 +22,7 @@ public class Trigger
 		try {
 			// Replace the name in the trigger creation sql
 			// Execute the new sql, add the new trigger
-			database.execute(content.replaceAll(name, newName));
+			table.database().execute(content.replaceAll(name, newName));
 
 			// Delete the old trigger
 			drop();
@@ -34,7 +37,7 @@ public class Trigger
 
 	public void drop() {
 		try {
-			database.assemble("DROP TRIGGER ", database.name(), ".", name).execute();
+			table.database().assemble("DROP TRIGGER ", table.database().name(), ".", name).execute();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}

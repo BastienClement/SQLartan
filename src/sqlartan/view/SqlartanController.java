@@ -10,7 +10,10 @@ import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -18,7 +21,6 @@ import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
-import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
@@ -491,6 +493,10 @@ public class SqlartanController {
 				return false;
 			}
 			@Override
+			public boolean primaryKey() {
+				return false;
+			}
+			@Override
 			public String check() {
 				return null;
 			}
@@ -508,14 +514,8 @@ public class SqlartanController {
 			}
 		});
 		AlterTable alter = table.alter();
-		try {
-			alter.addColumn(column);
-			alter.execute();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		alter.addColumn(column);
+		alter.execute();
 		refreshView();
 	}
 
@@ -535,6 +535,7 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param table
+	 * @param name
 	 * @param newName
 	 */
 	public void renameColumn(Table table, String name, String newName) {
