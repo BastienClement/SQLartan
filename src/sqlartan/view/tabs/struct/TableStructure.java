@@ -12,7 +12,7 @@ import sqlartan.core.Column;
  *
  * Represent the structure tab for a view or a table
  */
-public class TableStructure {
+public class TableStructure extends TabStructure {
 	private static int ID = 0;
 	private StringProperty no;
 	private StringProperty name;
@@ -20,16 +20,13 @@ public class TableStructure {
 	private StringProperty nullable;
 	private StringProperty defaultValue;
 	private StringProperty comment;
-	private StringProperty action;
 
 	public TableStructure(Column column) {
+		super(column.name(), column.type());
 		this.no = new SimpleStringProperty(Integer.toString(++ID));
-		this.name = new SimpleStringProperty(column.name());
-		this.type = new SimpleStringProperty(column.type());
 		this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");
 		this.defaultValue = new SimpleStringProperty(); // TODO
 		this.comment = new SimpleStringProperty(); // TODO
-		this.action = new SimpleStringProperty(); // TODO
 
 	}
 
@@ -37,15 +34,6 @@ public class TableStructure {
 
 	public StringProperty noProperty() {
 		return no;
-	}
-	public StringProperty nameProperty() {
-		return name;
-	}
-	public StringProperty actionProperty() {
-		return action;
-	}
-	public StringProperty typeProperty() {
-		return type;
 	}
 	public StringProperty nullableProperty() {
 		return nullable;
