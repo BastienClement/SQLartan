@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import sqlartan.core.Database;
 import sqlartan.core.Table;
@@ -26,12 +26,12 @@ public class TableTabsController extends TabsController {
 	@FXML
 	private TableColumn<TableStructure, String> colDelete;
 
-	/*@FXML
+	@FXML
 	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColType;
 	@FXML
-	private TableColumn<InsertRowStructure, String> insertColValue;*/
+	private TableColumn<InsertRowStructure, String> insertColValue;
 
 
 
@@ -44,7 +44,7 @@ public class TableTabsController extends TabsController {
 
 
 	@FXML
-	private GridPane insertTable;
+	private TableView<InsertRowStructure> insertTable;
 
 
 	private Database database;
@@ -128,26 +128,19 @@ public class TableTabsController extends TabsController {
 			}
 		});
 
-
-
-
-		/*insertTable.setEditable(true);
+		insertTable.setEditable(true);
 
 		insertColName.setCellValueFactory(param -> param.getValue().name);
 		insertColType.setCellValueFactory(param -> param.getValue().type);
 		insertColValue.setCellValueFactory(param -> param.getValue().value);
-*/
-		//insertColValue.setCellFactory(TextFieldTableCell.forTableColumn()); //TODO eventuelement modifier pour toujour aficher le textfield
 
-		/*insertColValue.setOnEditCommit(event -> {
+		insertColValue.setCellFactory(TextFieldTableCell.forTableColumn()); //TODO eventuelement modifier pour toujour aficher le textfield
+
+		insertColValue.setOnEditCommit(event -> {
 			event.getTableView().getItems().get(event.getTablePosition().getRow()).setValue(event.getNewValue());
-		});*/
+		});
 
-		/*insertColValue.setEditable(true);*/
-
-
-
-
+		insertColValue.setEditable(true);
 	}
 
 	public void refresh() {
@@ -176,22 +169,13 @@ public class TableTabsController extends TabsController {
 
 		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
 
-		//insertTable.setItems(insertRows);
-
-
-
-		for (InsertRowStructure i: insertRows)
-		{
-			insertTable.add(new Label(i.name.toString()), 0, 1);
-		}
-
-
+		insertTable.setItems(insertRows);
 
 	}
 
 	@FXML
 	private void submitNewData() {
-		//ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
+		ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
 		//TODO call the insert methode on the core
 	}
 
