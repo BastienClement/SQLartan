@@ -36,13 +36,19 @@ import java.util.Optional;
 import static sqlartan.util.Matching.match;
 
 /**
- * Created by guillaume on 04.04.16.
+ * SqlartanController
  */
 public class SqlartanController {
 
+
+	/***********
+	 * ATRIBUTS*
+	 ***********/
 	private static Database db = null;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
+
+
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
 	@FXML
@@ -55,9 +61,7 @@ public class SqlartanController {
 	private DatabaseTabsController databaseTabsController;
 
 
-	/**
-	 * TextArea for the request history
-	 */
+	// TextArea for the request history
 	@FXML
 	private ListView<String> request;
 	private ObservableList<String> requests = FXCollections.observableArrayList();
@@ -69,14 +73,19 @@ public class SqlartanController {
 	private Menu databaseMenu;
 	private List<String> atachedDBs = new LinkedList<>();
 
+
 	/***********
 	 * METHODES*
 	 ***********/
+
+
 	static public Database getDB() {
 		return db;
 	}
+
+
 	/**
-	 * First methode call when loaded
+	 * First methode call when FXML loaded
 	 */
 	@FXML
 	private void initialize() {
@@ -207,7 +216,7 @@ public class SqlartanController {
 	 *
 	 * @param database the database
 	 */
-	void tree(Database database) {
+	private void tree(Database database) {
 
 		// Main
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
@@ -216,7 +225,7 @@ public class SqlartanController {
 		                                   .map(structure -> match(structure, CustomTreeItem.class)
 			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
 			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
-		                                       .orElseThrow())
+			                                   .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
 
@@ -227,11 +236,11 @@ public class SqlartanController {
 			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
 			tItems.getChildren().addAll(
 				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
-										.when(Table.class, t -> new TableTreeItem(t.name(), this))
-                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
-                                        .orElseThrow())
-				                .map(TreeItem::new)
-				                .toList());
+					.when(Table.class, t -> new TableTreeItem(t.name(), this))
+					.when(View.class, v -> new ViewTreeItem(v.name(), this))
+					.orElseThrow())
+				   .map(TreeItem::new)
+				   .toList());
 
 			mainTreeItem.getChildren().add(tItems);
 		});
@@ -572,7 +581,7 @@ public class SqlartanController {
 		try {
 			//Show save file dialog
 			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-			if(file != null){
+			if (file != null) {
 				FileWriter fileWriter = new FileWriter(file);
 				fileWriter.write(db.export());
 				fileWriter.close();

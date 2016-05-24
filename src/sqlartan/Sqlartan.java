@@ -17,13 +17,29 @@ public class Sqlartan extends Application {
 	private BorderPane mainLayout;
 	private SqlartanController controller;
 
+
+	/**
+	 * Get the instance
+	 * @return
+	 */
 	public static Sqlartan getInstance() {
 		if (instance == null) instance = new Sqlartan();
 		return instance;
 	}
+
+	/**
+	 * Main
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		launch(args);
 	}
+
+
+	/**
+	 * Return the main controler
+	 * @return SqlartanController
+	 */
 	public SqlartanController getController() {
 		return controller;
 	}
