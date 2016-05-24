@@ -1,5 +1,6 @@
 package sqlartan.view;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -10,6 +11,8 @@ import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -24,6 +27,7 @@ import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
+import sqlartan.view.tabs.ViewTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.util.Popup;
 import java.io.File;
@@ -57,8 +61,11 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+	@FXML
+	private Button reloadButton;
 
-	private DatabaseTabsController databaseTabsController;
+
+
 
 
 	// TextArea for the request history
@@ -68,6 +75,16 @@ public class SqlartanController {
 	@FXML
 	private TitledPane historyPane;
 	private CheckBox displayPragma = new CheckBox("PRAGMA");
+
+	// TablePanes
+	private TabPane databaseTabPane;
+	private TabPane tableTabPane;
+	private TabPane viewTabPane;
+
+	// TabsPaneController
+	private DatabaseTabsController databaseTabsController;
+	private TableTabsController tableTabController;
+	private ViewTabsController viewTabsController;
 
 	@FXML
 	private Menu databaseMenu;
@@ -83,64 +100,56 @@ public class SqlartanController {
 	 * First methode call when FXML loaded
 	 */
 	@FXML
-	private void initialize() {
+	private void initialize() throws IOException {
 
 		treeView.setCellFactory(param -> new CustomTreeCell(this));
 
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
+		databaseTabPane = loader.load();
+		databaseTabsController = loader.getController();
+
+		loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/TableTabs.fxml"));
+		tableTabPane = loader.load();
+		tableTabController = loader.getController();
+
+		loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/ViewTabs.fxml"));
+		viewTabPane = loader.load();
+		viewTabsController = loader.getController();
+
+		databaseTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		databaseTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+		tableTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		tableTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+		viewTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		viewTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+
+			Optional<? extends PersistentStructure<?>> structure = Optional.empty();
 			stackPane.getChildren().clear();
+
 			if (newValue != null) {
-				TabPane tabPane = null;
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
-						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
-						try {
-							tabPane = loader.load();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						databaseTabsController = loader.getController();
+						stackPane.getChildren().add(databaseTabPane);
 						databaseTabsController.setDatabase(db);
-						databaseTabsController.setController(this);
 					}
-
 					break;
-					case TABLE:
+					case TABLE: {
+						structure = db.table(newValue.getValue().name());
+						stackPane.getChildren().add(tableTabPane);
+						tableTabController.setTable(db.table(newValue.getValue().name()).get());
+						structure.ifPresent(tableTabController::setStructure);
+					}
+					break;
 					case VIEW: {
-						// Onglets
-						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/TableTabs.fxml"));
-
-						try {
-							tabPane = loader.load();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						CustomTreeItem treeItem = newValue.getValue();
-						Optional<? extends PersistentStructure<?>> structure = Optional.empty();
-						switch (treeItem.type()) {
-							case TABLE:
-								structure = db.table(treeItem.name());
-								break;
-							case VIEW:
-								structure = db.view(treeItem.name());
-								break;
-						}
-
-						TableTabsController tabsController = loader.getController();
-						tabsController.setDatabase(db);
-						tabsController.setController(this);
-						tabsController.setTable(db.table(treeItem.name()).get());
-						structure.ifPresent(tabsController::setStructure);
-
+						structure = db.view(newValue.getValue().name());
+						stackPane.getChildren().add(viewTabPane);
+						structure.ifPresent(viewTabsController::setStructure);
 					}
-					break;
 				}
-
-				stackPane.getChildren().add(tabPane);
-				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
 			}
 		});
 
@@ -160,11 +169,12 @@ public class SqlartanController {
 		displayPragma.setSelected(true);
 
 		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+		clearHistory.setFocusTraversable(false);
 		HBox leftPane = new HBox();
 		HBox rightPane = new HBox();
 		rightPane.setAlignment(Pos.CENTER);
 		leftPane.setAlignment(Pos.CENTER);
-		leftPane.setSpacing(5);
+		leftPane.setSpacing(15);
 		leftPane.getChildren().addAll(displayPragma, clearHistory);
 		rightPane.getChildren().add(new Label("History"));
 		borderPane.setLeft(rightPane);
@@ -173,6 +183,14 @@ public class SqlartanController {
 
 		historyPane.setGraphic(borderPane);
 
+		//Reload button
+		ImageView reload = new ImageView(new Image(Sqlartan.class.getResourceAsStream("assets/reload.png")));
+		reload.setPreserveRatio(false);
+		reload.setFitHeight(10);
+		reload.setFitWidth(10);
+		reloadButton.prefHeightProperty().bind(reload.yProperty().add(20));
+		reloadButton.prefWidthProperty().bind(reload.xProperty().add(35));
+		reloadButton.setGraphic(reload);
 	}
 
 
@@ -337,6 +355,27 @@ public class SqlartanController {
 
 
 	/**
+	 * To call to refresh the view of the tree
+	 */
+	@FXML
+	public void refreshView() {
+		if (db != null) {
+			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+			for (int i = 0; i < exp.length; ++i) {
+				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+			}
+
+			mainTreeItem.getChildren().clear();
+			tree(db);
+
+			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+			}
+		}
+	}
+
+
+	/**
 	 * Get the main database
 	 *
 	 * @return the main database
@@ -425,24 +464,7 @@ public class SqlartanController {
 	}
 
 
-	/**
-	 * To call to refresh the view of the tree
-	 */
-	void refreshView() {
-		if (db != null) {
-			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
-			for (int i = 0; i < exp.length; ++i) {
-				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
-			}
 
-			mainTreeItem.getChildren().clear();
-			tree(db);
-
-			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
-				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
-			}
-		}
-	}
 
 
 	/**

@@ -25,20 +25,9 @@ import java.io.IOException;
 /**
  * Created by julien on 29.04.16.
  */
-public class TableTabsController {
+public class TableTabsController extends TabsController {
 
-	@FXML
-	private TableColumn<TableStructure, String> colNo;
-	@FXML
-	private TableColumn<TableStructure, String> colName;
-	@FXML
-	private TableColumn<TableStructure, String> colType;
-	@FXML
-	private TableColumn<TableStructure, String> colNull;
-	@FXML
-	private TableColumn<TableStructure, String> colDefaultValue;
-	@FXML
-	private TableColumn<TableStructure, String> colComment;
+
 	@FXML
 	private TableColumn<TableStructure, String> colRename;
 	@FXML
@@ -52,30 +41,18 @@ public class TableTabsController {
 	private TableColumn<InsertRowStructure, String> insertColValue;
 
 
-	private PersistentStructure<?> structure;
 
-	private DataTableView dataTableView = new DataTableView();
 
 	@FXML
-	private TabPane tabPane;
+	protected Tab insertTab;
 
-	@FXML
-	private Tab displayTab;
 
-	@FXML
-	private Tab structureTab;
 
-	@FXML
-	private Tab insertTab;
 
-	@FXML
-	private Pane sqlPane;
 
 	@FXML
 	private TableView<InsertRowStructure> insertTable;
 
-	@FXML
-	private TableView<TableStructure> structureTable;
 
 	private Database database;
 
@@ -84,26 +61,10 @@ public class TableTabsController {
 	private Table table;
 
 	@FXML
-	private void initialize() {
+	protected void initialize() throws  IOException{
 
-		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
+		super.initialize();
 
-		try {
-			Pane pane = loader.load();
-			sqlPane.getChildren().add(pane);
-
-			pane.prefHeightProperty().bind(sqlPane.heightProperty());
-			pane.prefWidthProperty().bind(sqlPane.widthProperty());
-
-		} catch (IOException e) {
-
-		}
-
-
-		/**
-		 * Display the datas from the tableStructures in display tab only when he's active.
-		 * Every time a new query is done.
-		 */
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == displayTab) {
 				displayTab.setContent(dataTableView.getTableView(structure));
@@ -114,12 +75,6 @@ public class TableTabsController {
 			}
 		});
 
-		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
-		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValueProperty());
-		colName.setCellValueFactory(param -> param.getValue().nameProperty());
-		colNo.setCellValueFactory(param -> param.getValue().noProperty());
-		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
-		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 		colRename.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
 			@Override
 			public TableCell<TableStructure, String> call(final TableColumn<TableStructure, String> param) {
@@ -149,6 +104,7 @@ public class TableTabsController {
 				};
 			}
 		});
+
 		colDelete.setCellFactory(new Callback<TableColumn<TableStructure, String>, TableCell<TableStructure, String>>() {
 			@Override
 			public TableCell<TableStructure, String> call(final TableColumn<TableStructure, String> param) {
@@ -182,22 +138,18 @@ public class TableTabsController {
 		insertColValue.setCellValueFactory(param -> param.getValue().value);
 
 		insertColValue.setCellFactory(TextFieldTableCell.forTableColumn()); //TODO eventuelement modifier pour toujour aficher le textfield
+
 		insertColValue.setOnEditCommit(event -> {
 			event.getTableView().getItems().get(event.getTablePosition().getRow()).setValue(event.getNewValue());
 		});
 
 		insertColValue.setEditable(true);
-
-
-		tabPane.getSelectionModel().clearSelection();
-
 	}
 
 	private void displayInsertTab() {
 		ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
 
 		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
-
 
 		insertTable.setItems(insertRows);
 
@@ -209,31 +161,10 @@ public class TableTabsController {
 		//TODO call the insert methode on the core
 	}
 
-	public void setStructure(PersistentStructure<?> structure) {
-		this.structure = structure;
-	}
 
-	private void displayStructure() {
-		ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
 
-		TableStructure.IDReset();
-		try {
-			tableStructures.addAll(structure.columns()
-			                                .map(TableStructure::new)
-			                                .toList());
-		} catch (UncheckedSQLException e) {
-			Platform.runLater(() -> {
-				ButtonType ok = new ButtonType("Yes drop it");
-				ButtonType cancel = new ButtonType("Cancel");
-				Popup.warning("Error while display structure", e.getMessage(), ok, cancel)
-				     .filter(d -> d == ok)
-				     .ifPresent(d -> Sqlartan.getInstance().getController().dropStructure(structure));
-				Sqlartan.getInstance().getController().selectTreeIndex(0);
-			});
-		}
 
-		structureTable.setItems(tableStructures);
-	}
+
 
 	/**
 	 * Set the database
@@ -244,6 +175,7 @@ public class TableTabsController {
 		this.database = database;
 	}
 
+
 	/**
 	 * Set the controller
 	 *
@@ -252,6 +184,7 @@ public class TableTabsController {
 	public void setController(SqlartanController controller) {
 		this.controller = controller;
 	}
+
 
 	/**
 	 * Set the table

@@ -18,7 +18,6 @@ import sqlartan.view.util.Popup;
  */
 public class DataTableView {
 
-	private Database db = Sqlartan.getInstance().getController().getDB();
 
 	/**
 	 * Return a table view for any result
