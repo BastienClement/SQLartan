@@ -83,4 +83,8 @@ public class TableTreeItem extends StructureTreeItem {
 	public Type type() {
 		return Type.TABLE;
 	}
+
+	public String toString(){
+		return "T – " + super.toString();
+	}
 }

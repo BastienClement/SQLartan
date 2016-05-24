@@ -15,4 +15,8 @@ public class ViewTreeItem extends StructureTreeItem {
 	public Type type() {
 		return Type.VIEW;
 	}
+
+	public String toString(){
+		return "V – " + super.toString();
+	}
 }
