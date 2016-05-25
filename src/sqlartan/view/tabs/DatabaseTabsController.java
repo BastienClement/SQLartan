@@ -1,22 +1,20 @@
 package sqlartan.view.tabs;
 
-import javafx.beans.property.LongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
-import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.view.AllRequestController;
-import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
-import java.util.function.BiConsumer;
 
 /**
  * Created by julien on 30.04.16.

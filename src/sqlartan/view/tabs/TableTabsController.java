@@ -6,7 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.util.Callback;
 import sqlartan.core.Database;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
@@ -84,22 +83,16 @@ public class TableTabsController extends TabsController<TableStructure> {
 		insertColName.setCellValueFactory(param -> param.getValue().name);
 		insertColType.setCellValueFactory(param -> param.getValue().type);
 
-		insertColValue.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InsertRowStructure, TextField>, ObservableValue<TextField>>() {
-			@Override
-			public ObservableValue<TextField> call(TableColumn.CellDataFeatures<InsertRowStructure, TextField> param) {
-				ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
-				param.getValue().value.bindBidirectional(tf.getValue().textProperty());
-				return tf;
-			}
+		insertColValue.setCellValueFactory(param -> {
+			ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
+			param.getValue().value.bindBidirectional(tf.getValue().textProperty());
+			return tf;
 		});
 
-		insertNull.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InsertRowStructure, CheckBox>, ObservableValue<CheckBox>>() {
-			@Override
-			public ObservableValue<CheckBox> call(TableColumn.CellDataFeatures<InsertRowStructure, CheckBox> param) {
-				ObservableValue<CheckBox> cb = new SimpleObjectProperty<CheckBox>(new CheckBox());
-				param.getValue().nulle.bindBidirectional(cb.getValue().selectedProperty());
-				return cb;
-			}
+		insertNull.setCellValueFactory(param -> {
+			ObservableValue<CheckBox> cb = new SimpleObjectProperty<>(new CheckBox());
+			param.getValue().nulle.bindBidirectional(cb.getValue().selectedProperty());
+			return cb;
 		});
 
 		insertColValue.setEditable(true);
@@ -153,8 +146,6 @@ public class TableTabsController extends TabsController<TableStructure> {
 	public void setDatabase(Database database) {
 		this.database = database;
 	}
-
-
 
 
 	/**
