@@ -35,7 +35,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 	}
 
 	private EventHandler<ActionEvent> openStructureDialog(Consumer<PersistentStructure<?>> dialog) {
-		return event -> Sqlartan.getInstance().getController().getDB().structure(name()).ifPresent(dialog);
+		return event -> Sqlartan.getInstance().getController().database().structure(name()).ifPresent(dialog);
 	}
 
 	private void duplicateDialog(PersistentStructure<?> structure) {

@@ -6,11 +6,9 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.Pair;
 import sqlartan.Sqlartan;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class TableTreeItem extends StructureTreeItem {
@@ -34,7 +32,7 @@ public class TableTreeItem extends StructureTreeItem {
 	}
 
 	private EventHandler<ActionEvent> openStructureDialog(Consumer<Table> dialog) {
-		return event -> Sqlartan.getInstance().getController().getDB().table(name()).ifPresent(dialog);
+		return event -> Sqlartan.getInstance().getController().database().table(name()).ifPresent(dialog);
 	}
 
 	private void truncateDialog(Table table) {

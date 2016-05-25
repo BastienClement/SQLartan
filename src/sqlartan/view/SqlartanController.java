@@ -50,7 +50,7 @@ public class SqlartanController {
 	/***********
 	 * ATRIBUTS*
 	 ***********/
-	private Database db = null;
+	private Database database = null;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 
@@ -136,19 +136,19 @@ public class SqlartanController {
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
 						stackPane.getChildren().add(databaseTabPane);
-						databaseTabsController.setDatabase(db);
+						databaseTabsController.setDatabase(database);
 					}
 					break;
 					case TABLE: {
-						structure = db.table(newValue.getValue().name());
+						structure = database.table(newValue.getValue().name());
 						stackPane.getChildren().add(tableTabPane);
-						db.table(newValue.getValue().name()).ifPresent(t -> tableTabController.setTable(t));
+						database.table(newValue.getValue().name()).ifPresent(t -> tableTabController.setTable(t));
 						structure.ifPresent(tableTabController::setStructure);
 						tableTabController.refresh();
 					}
 					break;
 					case VIEW: {
-						structure = db.view(newValue.getValue().name());
+						structure = database.view(newValue.getValue().name());
 						stackPane.getChildren().add(viewTabPane);
 						structure.ifPresent(viewTabsController::setStructure);
 					}
@@ -207,7 +207,7 @@ public class SqlartanController {
 		fileChooser.setTitle("Create a new database");
 		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
 
-		if (db != null && (!db.isClosed())) {
+		if (database != null && (!database.isClosed())) {
 			attachDatabase(file, file.getName().split("\\.")[0]);
 		} else {
 			openDatabase(file);
@@ -267,7 +267,7 @@ public class SqlartanController {
 	private void closeDB() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
-		db.close();
+		database.close();
 		databaseMenu.setDisable(true);
 	}
 
@@ -291,7 +291,7 @@ public class SqlartanController {
 		try {
 			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 			if (f != null) {
-				db.importfromFile(f);
+				database.importfromFile(f);
 			}
 		} catch (SQLException | IOException | TokenizeException e) {
 			throw new UncheckedException(e);
@@ -318,7 +318,7 @@ public class SqlartanController {
 			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
 			if (file != null) {
 				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(db.export());
+				fileWriter.write(database.export());
 				fileWriter.close();
 			}
 		} catch (IOException | SQLException e) {
@@ -358,14 +358,14 @@ public class SqlartanController {
 	 */
 	@FXML
 	public void refreshView() {
-		if (db != null) {
+		if (database != null) {
 			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
 			for (int i = 0; i < exp.length; ++i) {
 				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
 			}
 
 			mainTreeItem.getChildren().clear();
-			tree(db);
+			tree(database);
 
 			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
 				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
@@ -381,8 +381,8 @@ public class SqlartanController {
 	 *
 	 * @return the main database
 	 */
-	public Database getDB() {
-		return db;
+	public Database database() {
+		return database;
 	}
 
 
@@ -392,16 +392,16 @@ public class SqlartanController {
 	 * @param file: file of the database to open
 	 */
 	private void openDatabase(File file) {
-		if (db != null && (!db.isClosed()))
-			db.close();
+		if (database != null && (!database.isClosed()))
+			database.close();
 
 		try {
 			if (file != null) {
-				db = Database.open(file);
+				database = Database.open(file);
 
 				request.setCellFactory(e -> setCellFactoryHistory());
 
-				db.registerListener(readOnlyResult -> {
+				database.registerListener(readOnlyResult -> {
 					request.setItems(requests);
 
 					String resultat = readOnlyResult.query();
@@ -474,8 +474,6 @@ public class SqlartanController {
 
 
 
-
-
 	/**
 	 * Create the tree for a specific database
 	 *
@@ -521,13 +519,13 @@ public class SqlartanController {
 	public void attachDatabase(File file, String dbName) {
 
 		try {
-			db.attach(file, dbName);
+			database.attach(file, dbName);
 
 			atachedDBs.add(dbName);
 
 			MenuItem newMenuItem = new MenuItem(dbName);
 			newMenuItem.setOnAction(event -> {
-				db.detach(newMenuItem.getText());
+				database.detach(newMenuItem.getText());
 				detatchMenu.getItems().removeAll(newMenuItem);
 				refreshView();
 
@@ -568,25 +566,6 @@ public class SqlartanController {
 		refreshView();
 	}
 
-	/**
-	 * Rename a view
-	 *
-	 * @param view
-	 * @param name
-	 */
-	public void renameView(View view, String name) {
-		view.rename(name);
-		refreshView();
-	}
-
-
-	/**
-	 * Vacuum a database
-	 */
-	public void vacuumDatabase(Database db) {
-		db.vacuum();
-		refreshView();
-	}
 
 	/**
 	 * Add a table to the specified database
@@ -661,7 +640,7 @@ public class SqlartanController {
 	 * @param database
 	 */
 	public void detachDatabase(Database database) {
-		db.detach(database.name());
+		this.database.detach(database.name());
 		refreshView();
 	}
 
