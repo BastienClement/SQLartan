@@ -58,7 +58,8 @@ public class TableTreeItem extends StructureTreeItem {
 		TextField nameField = new TextField();
 
 		ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
-
+		cb.getSelectionModel().selectFirst();
+		
 		grid.add(new Label("Name : "), 0, 0);
 		grid.add(nameField, 1, 0);
 		grid.add(new Label("Type : "), 0, 1);
