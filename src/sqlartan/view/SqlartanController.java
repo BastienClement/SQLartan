@@ -67,9 +67,6 @@ public class SqlartanController {
 	private Button reloadButton;
 
 
-
-
-
 	// TextArea for the request history
 	@FXML
 	private ListView<String> request;
@@ -428,17 +425,17 @@ public class SqlartanController {
 	 *
 	 * @return the new listcell
 	 */
-	private ListCell<String> setCellFactoryHistory(){
+	private ListCell<String> setCellFactoryHistory() {
 		ListCell<String> cells = new ListCell<>();
 		cells.setOnMouseClicked(event -> {
-				if(event.getButton().equals(MouseButton.PRIMARY)) {
-					if (event.getClickCount() == 2) {
-						String request = cells.itemProperty().getValue();
-						treeView.getSelectionModel().select(0);
-						databaseTabsController.selectSqlTab();
-						databaseTabsController.setSqlRequest(request);
-					}
+			if (event.getButton().equals(MouseButton.PRIMARY)) {
+				if (event.getClickCount() == 2) {
+					String request = cells.itemProperty().getValue();
+					treeView.getSelectionModel().select(0);
+					databaseTabsController.selectSqlTab();
+					databaseTabsController.setSqlRequest(request);
 				}
+			}
 		});
 		ContextMenu menu = new ContextMenu();
 		MenuItem execute = new MenuItem();
@@ -471,7 +468,6 @@ public class SqlartanController {
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
-
 
 
 	/**
@@ -513,7 +509,7 @@ public class SqlartanController {
 	/**
 	 * Attach a database to the main database
 	 *
-	 * @param file file of the database
+	 * @param file   file of the database
 	 * @param dbName name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
@@ -643,7 +639,6 @@ public class SqlartanController {
 		this.database.detach(database.name());
 		refreshView();
 	}
-
 
 
 	/**
