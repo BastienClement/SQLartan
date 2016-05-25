@@ -1,5 +1,7 @@
 package sqlartan.view.tabs;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.TextField;
@@ -12,14 +14,30 @@ public class InsertRowStructure {
 	StringProperty name;
 	StringProperty type;
 	StringProperty value;
+	BooleanProperty nulle;
 
 
 
 
 	public InsertRowStructure(Column column){
-		this.name = new SimpleStringProperty(column.name());
-		this.type = new SimpleStringProperty(column.type());
-		this.value = new SimpleStringProperty();
+		name = new SimpleStringProperty(column.name());
+		type = new SimpleStringProperty(column.type());
+		value = new SimpleStringProperty();
+		nulle = new SimpleBooleanProperty();
+		nulle.addListener((observable, oldValue, newValue) -> {
+			if (newValue)
+			{
+				value.setValue(null);
+			}
+		});
+
+		value.addListener((observable, oldValue, newValue) -> {
+			if (newValue != null)
+			{
+				nulle.setValue(false);
+			}
+		});
+
 	}
 
 

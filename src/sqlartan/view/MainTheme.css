@@ -8,14 +8,21 @@
     -fx-border-color: #dddddd;
     -fx-border-right: 2;
     -f-border-top: 0;
-
-
 }
 
+.tool-bar {
+    -fx-background-color: #42539d;
+    -fx-text-fill: #fff;
+}
+
+.button-white {
+    -fx-background-color: #fff;
+}
 
 .tree-cell:selected {
     -fx-font-weight: bold ;
     -fx-background-color: -fx-focus-color;
+    -fx-text-fill: #fff;
 }
 
 .text-area-about {

@@ -15,7 +15,7 @@
 
 <BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1135.0" styleClass="background" stylesheets="@MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.SqlartanController">
    <top>
-      <MenuBar BorderPane.alignment="CENTER">
+      <MenuBar minHeight="0.0" minWidth="0.0" BorderPane.alignment="CENTER">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
@@ -55,14 +55,14 @@
                <items>
                   <BorderPane prefHeight="18.0" prefWidth="200.0">
                      <left>
-                        <Label text="Database" BorderPane.alignment="CENTER">
+                        <Label styleClass="tool-bar" text="Database" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
                               <Insets left="5.0" />
                            </BorderPane.margin>
                         </Label>
                      </left>
                      <right>
-                        <Button fx:id="reloadButton" focusTraversable="false" mnemonicParsing="false" onAction="#refreshView" BorderPane.alignment="CENTER">
+                        <Button fx:id="reloadButton" focusTraversable="false" mnemonicParsing="false" onAction="#refreshView" styleClass="button-white" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
                               <Insets right="5.0" />
                            </BorderPane.margin>
@@ -78,13 +78,13 @@
       </BorderPane>
    </left>
    <center>
-      <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #dddddd;" BorderPane.alignment="CENTER">
+      <StackPane fx:id="stackPane" minHeight="0.0" minWidth="0.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #dddddd;" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin></StackPane>
    </center>
    <bottom>
-      <TitledPane fx:id="historyPane" focusTraversable="false" BorderPane.alignment="CENTER">
+      <TitledPane fx:id="historyPane" focusTraversable="false" minHeight="0.0" minWidth="0.0" BorderPane.alignment="CENTER">
          <content>
             <ListView fx:id="request" minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="1135.0" />
          </content>

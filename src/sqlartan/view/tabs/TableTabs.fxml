@@ -35,7 +35,7 @@
                     <columns>
                       <TableColumn fx:id="insertColName" prefWidth="75.0" text="Column" />
                       <TableColumn fx:id="insertColType" prefWidth="75.0" text="Type" />
-                        <TableColumn prefWidth="75.0" text="Null" />
+                        <TableColumn fx:id="insertNull" prefWidth="75.0" text="Null" />
                         <TableColumn fx:id="insertColValue" prefWidth="75.0" text="Value" />
                     </columns>
                   </TableView>

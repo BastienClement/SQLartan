@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Callback;
@@ -26,11 +25,12 @@ public class TableTabsController extends TabsController<TableStructure> {
 	private TableColumn<TableStructure, String> colRename;
 	@FXML
 	private TableColumn<TableStructure, String> colDelete;
-
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColType;
+	@FXML
+	private TableColumn<InsertRowStructure, CheckBox> insertNull;
 	@FXML
 	private TableColumn<InsertRowStructure, TextField> insertColValue;
 
@@ -90,6 +90,15 @@ public class TableTabsController extends TabsController<TableStructure> {
 				ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
 				param.getValue().value.bindBidirectional(tf.getValue().textProperty());
 				return tf;
+			}
+		});
+
+		insertNull.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InsertRowStructure, CheckBox>, ObservableValue<CheckBox>>() {
+			@Override
+			public ObservableValue<CheckBox> call(TableColumn.CellDataFeatures<InsertRowStructure, CheckBox> param) {
+				ObservableValue<CheckBox> cb = new SimpleObjectProperty<CheckBox>(new CheckBox());
+				param.getValue().nulle.bindBidirectional(cb.getValue().selectedProperty());
+				return cb;
 			}
 		});
 

@@ -5,29 +5,20 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fff;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.AllRequestController">
+
+<AnchorPane minHeight="0.0" minWidth="0.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.view.AllRequestController">
    <children>
-      <TextArea fx:id="SQLTextQuery" prefHeight="72.0" prefWidth="570.0">
-         <VBox.margin>
-            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-         </VBox.margin>
-      </TextArea>
-      <AnchorPane prefHeight="25.0" prefWidth="585.0">
+      <TextArea fx:id="SQLTextQuery" layoutX="4.0" layoutY="14.0" minHeight="0.0" minWidth="0.0" prefHeight="72.0" prefWidth="570.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="15.0" />
+      <AnchorPane layoutX="-7.0" layoutY="96.0" minHeight="0.0" minWidth="0.0" prefHeight="25.0" prefWidth="585.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="95.0">
          <children>
             <Button fx:id="execute" layoutX="541.0" layoutY="1.0" mnemonicParsing="false" onAction="#executeQuery" text="Submit" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
          </children>
-         <VBox.margin>
-            <Insets right="15.0" />
-         </VBox.margin>
       </AnchorPane>
-      <StackPane fx:id="userQueryView" prefHeight="150.0" prefWidth="200.0">
+      <StackPane fx:id="userQueryView" layoutX="1.0" layoutY="134.0" minHeight="0.0" minWidth="0.0" prefHeight="236.0" prefWidth="570.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="134.0">
          <opaqueInsets>
             <Insets left="15.0" right="15.0" top="15.0" />
          </opaqueInsets>
-         <VBox.margin>
-            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-         </VBox.margin></StackPane>
+      </StackPane>
    </children>
-</VBox>
+</AnchorPane>

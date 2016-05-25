@@ -76,6 +76,8 @@ public class Sqlartan extends Application {
 
 		primaryStage.setScene(new Scene(mainLayout));
 		primaryStage.getIcons().add(new Image("sqlartan/assets/icon.png"));
+		primaryStage.setMinHeight(640);
+		primaryStage.setMinWidth(1135);
 		primaryStage.show();
 
 		controller = loader.getController();
