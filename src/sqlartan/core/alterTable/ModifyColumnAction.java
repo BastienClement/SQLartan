@@ -22,7 +22,7 @@ public class ModifyColumnAction extends UpdateColumnAction{
 
 	public void executeAction() throws ParseException, SQLException {
 		List<ColumnDefinition> columns = getTableDefinition().columns;
-		ColumnDefinition definition = columns.stream().filter(col -> col.name.equals(columnDefinition.name)).findFirst().get();
+		ColumnDefinition definition = columns.stream().filter(col -> col.name.equals(originalName)).findFirst().get();
 		columns.set(columns.indexOf(definition), getColumnDefinition());
 
 		update(columns);

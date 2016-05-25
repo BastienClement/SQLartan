@@ -1,23 +1,18 @@
 package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.ast.ColumnConstraint;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
+import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
 public class Table extends PersistentStructure<TableColumn> {
-	/** Set of indices */
-	private HashMap<String, Index> indices = new HashMap<>();
-
-	/** Set of triggers */
-	private HashMap<String, Trigger> triggers = new HashMap<>();
 
 	/**
 	 * Construct a new table linked to the specified database and with the specified name.
@@ -27,36 +22,6 @@ public class Table extends PersistentStructure<TableColumn> {
 	 */
 	Table(Database database, String name) {
 		super(database, name);
-		try {
-			database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
-			        .execute().map(Row::view)
-			        .forEach(
-						row -> {
-							try {
-								Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
-								database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
-								        .execute().map(Row::view)
-								        .forEach(
-											r -> {
-												index.addColumn(r.getString("name"));
-											}
-										);
-								indices.put(row.getString("name"), index);
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
-						}
-					);
-			database.assemble("SELECT name, sql, tbl_name FROM ", database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ?")
-			        .execute(name)
-			        .forEach(
-					        row -> {
-						        triggers.put(row.getString("name"), new Trigger(database, row .getString("name"), row.getString("sql")));
-					        }
-			        );
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -130,39 +95,102 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @return
 	 */
 	protected TableColumn columnBuilder(Row row) {
+		String createStatement = null;
+		try {
+			createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+			                                 .execute(name)
+			                                 .mapFirst(Row::getString);
+			CreateTableStatement create = Parser.parse(createStatement, CreateTableStatement::parse);
+
+			if(create instanceof CreateTableStatement.Def){
+				Optional<ColumnConstraint.Check> constraint = ((CreateTableStatement.Def) create).columns.stream().filter(col -> col.name.equals(row.getString("name"))).findFirst().get().constraints.stream().filter(c -> c instanceof ColumnConstraint.Check).map(c -> (ColumnConstraint.Check)c).findFirst();
+				if(constraint.isPresent()){
+					return new TableColumn(this, new TableColumn.Properties() {
+						public String name() { return row.getString("name"); }
+						public String type() { return row.getString("type"); }
+						public boolean unique() {
+							return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
+						}
+						@Override
+						public boolean primaryKey() {
+							return  row.getInt("pk") != 0;
+						}
+						public String check() { return constraint.get().expression.toSQL(); }
+						public boolean nullable() { return row.getInt("notnull") == 0; }
+					});
+				}
+			}
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		} catch (ParseException e) {
+			throw new UncheckedSQLException(e);
+		}
+
+		// Update the create statement of the original table
+
 		return new TableColumn(this, new TableColumn.Properties() {
 			public String name() { return row.getString("name"); }
 			public String type() { return row.getString("type"); }
 			public boolean unique() {
-				for (String key : indices.keySet()) {
-					if (indices.get(key).getColumns().contains(row.getString("name")) && indices.get(key).isUnique()) {
-						return true;
-					}
-				}
-				return false;
+				return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
 			}
-			public String check() { throw new UnsupportedOperationException("Not implemented"); }
+			@Override
+			public boolean primaryKey() {
+				return  row.getInt("pk") != 0;
+			}
+			public String check() { return null; }
 			public boolean nullable() { return row.getInt("notnull") == 0; }
 		});
 	}
 
 	/**
-	 * Returns the hashmap containing every indices.
-	 *
-	 * @return the hashmap containing the indices
+	 * Returns the list of indices associated with this table.
 	 */
-	public HashMap<String, Index> indices() { return indices; }
+	public IterableStream<Index> indices() {
+		try {
+			return database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
+			               .execute()
+			               .map(row -> {
+					               Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
+					               try {
+						               database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
+						                       .execute()
+						                       .forEach(
+							                       r -> {
+								                       index.addColumn(r.getString("name"));
+							                       }
+						                       );
+					               } catch (SQLException e) {
+						               throw new UncheckedSQLException(e);
+					               }
+					               return index;
+				               }
+			               );
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
 
 	/**
-	 * Returns an index with a specific name.
+	 * Returns the index with the given name, if it exists.
 	 *
-	 * @param name
-	 * @return the index contained in the hashmap under the key name, null if it doesn't exist
+	 * @param name the name of the index
 	 */
-	public Index index(String name) {
-		if(indices.containsKey(name))
-			return indices.get(name);
-		return null;
+	public Optional<Index> index(String name) {
+		try (IterableStream<Index> indices = indices()) {
+			return indices.find(index -> index.getName().equals(name));
+		}
+	}
+
+	/**
+	 * Returns the i-th index from this table, it it exists
+	 *
+	 * @param idx the index of the index
+	 */
+	public Optional<Index> index(int idx) {
+		try (IterableStream<Index> indices = indices()) {
+			return indices.skip(idx).findFirst();
+		}
 	}
 
 	/**
@@ -170,34 +198,60 @@ public class Table extends PersistentStructure<TableColumn> {
 	 *
 	 * @return the primary key of the table
 	 */
-	public Index primaryKey() {
+	public Optional<Index> primaryKey() {
 		// Search in the indices the one which is a primary key
-		Iterator<String> keySetIterator = indices.keySet().iterator();
-		while(keySetIterator.hasNext()){
-			String key = keySetIterator.next();
-			if(indices.get(key).isPrimaryKey())
-				return index(key);
-		}
-		return null;
+		return indices().filter(index -> index.isPrimaryKey()).findFirst();
 	}
 
 	/**
-	 * Returns the hashmap containing every triggers.
+	 * build the correct trigger instance from
+	 * a row of the result set
 	 *
-	 * @return the hashmap containing the triggers
+	 * @param row
+	 * @return
 	 */
-	public HashMap<String, Trigger> triggers() { return triggers; }
+	private Trigger triggerBuilder(Row row){
+		return new Trigger(this, row .getString("name"), row.getString("sql"));
+	}
 
 	/**
-	 * Returns a trigger with a specific name.
-	 *
-	 * @param name
-	 * @return the trigger contained in the hashmap under the key name, null if it doesn't exist
+	 * Returns the triggers infos result for this table.
 	 */
-	public Trigger trigger(String name) {
-		if(triggers.containsKey(name))
-			return triggers.get(name);
-		return null;
+	private Result triggersInfo() {
+		try {
+			return database.assemble("SELECT name, sql, tbl_name FROM ", database.name(), ".sqlite_master WHERE type = 'trigger' AND tbl_name = ?").execute(name);
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	/**
+	 * Returns the list of trigggers associated with this table.
+	 */
+	public IterableStream<Trigger> triggers() {
+		return triggersInfo().map(this::triggerBuilder);
+	}
+
+	/**
+	 * Returns the trigger with the given name, if it exists.
+	 *
+	 * @param name the name of the trigger
+	 */
+	public Optional<Trigger> trigger(String name) {
+		try (Result res = triggersInfo()) {
+			return res.find(row -> row.getString("name").equals(name)).map(this::triggerBuilder);
+		}
+	}
+
+	/**
+	 * Returns the i-th trigger from this table, it it exists
+	 *
+	 * @param idx the index of the trigger
+	 */
+	public Optional<Trigger> trigger(int idx) {
+		try (Result res = triggersInfo()) {
+			return res.skip(idx).mapFirstOptional(this::triggerBuilder);
+		}
 	}
 
 	/**

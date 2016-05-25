@@ -1,9 +1,6 @@
 package sqlartan.core;
 
 import sqlartan.core.alterTable.AlterTable;
-import sqlartan.core.ast.parser.ParseException;
-import sqlartan.util.UncheckedException;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -13,6 +10,7 @@ import java.util.Optional;
 public class TableColumn extends Column {
 	public interface Properties extends Column.Properties {
 		boolean unique();
+		boolean primaryKey();
 		String check();
 	}
 
@@ -43,49 +41,50 @@ public class TableColumn extends Column {
 	 * @param name
 	 */
 	public void rename(String name) {
-		props = new Properties() {
-			@Override
-			public boolean unique() {
-				return unique();
-			}
-			@Override
-			public String check() {
-				return check();
-			}
-			@Override
-			public String name() {
-				return name;
-			}
-			@Override
-			public String type() {
-				return type();
-			}
-			@Override
-			public boolean nullable() {
-				return nullable();
-			}
-		};
+		boolean unique = props.unique();
+		String check = props.check();
+		String type = props.type();
+		boolean nullable = props.nullable();
+		boolean pk = props.primaryKey();
 
-		try {
-			AlterTable alter = parentTable().alter();
-			alter.modifyColumn(name(), this);
-			alter.execute();
-		} catch (ParseException | SQLException e){
-			throw new UncheckedException(e);
-		}
+		TableColumn column = new TableColumn(parentTable(), new Properties() {
+				@Override
+				public boolean unique() {
+					return unique;
+				}
+				@Override
+				public boolean primaryKey() {
+					return pk;
+				}
+				@Override
+				public String check() {
+					return check;
+				}
+				@Override
+				public String name() {
+					return name;
+				}
+				@Override
+				public String type() {
+					return type;
+				}
+				@Override
+				public boolean nullable() {
+					return nullable;
+				}
+		});
+		AlterTable alter = parentTable().alter();
+		alter.modifyColumn(name(), column);
+		alter.execute();
 	}
 
 	/**
 	 * Drop the column
 	 */
 	public void drop() {
-		try {
-			AlterTable alter = parentTable().alter();
-			alter.dropColumn(this);
-			alter.execute();
-		} catch (ParseException | SQLException e){
-			throw new UncheckedException(e);
-		}
+		AlterTable alter = parentTable().alter();
+		alter.dropColumn(this);
+		alter.execute();
 	}
 
 	@Override

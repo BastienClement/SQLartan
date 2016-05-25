@@ -139,7 +139,7 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	//###################################################################
-	// Structure proxy
+	// TabStructure proxy
 	//###################################################################
 
 	@Override

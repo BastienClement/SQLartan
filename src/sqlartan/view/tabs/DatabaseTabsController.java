@@ -2,35 +2,31 @@ package sqlartan.view.tabs;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
-import javafx.util.Callback;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
-import sqlartan.view.SqlartanController;
-import sqlartan.view.tabs.struct.DatabaseStructure;
-import sqlartan.view.util.Popup;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import sqlartan.core.stream.IterableStream;
 import sqlartan.view.AllRequestController;
 import sqlartan.view.tabs.struct.DatabaseStructure;
+import sqlartan.view.util.Popup;
 import java.io.IOException;
 
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController{
+public class DatabaseTabsController extends TabsController<DatabaseStructure> {
 
 	@FXML
 	private TableColumn<DatabaseStructure, String> colName;
 	@FXML
 	private TableColumn<DatabaseStructure, String> colType;
 	@FXML
-	private TableColumn<DatabaseStructure, String> colLignes;
+	private TableColumn<DatabaseStructure, Number> colLignes;
 	@FXML
 	private TableColumn<DatabaseStructure, String> colRename;
 	@FXML
@@ -51,15 +47,13 @@ public class DatabaseTabsController{
 
 	private Database database;
 
-	private SqlartanController controller;
-
 	private ObservableList<DatabaseStructure> dbStructs = FXCollections.observableArrayList();
 
 	@FXML
 	private Pane sqlPane;
 
 	@FXML
-	private void initialize() {
+	protected void initialize() {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
 
 		try {
@@ -69,10 +63,7 @@ public class DatabaseTabsController{
 			allRequestControler = loader.getController();
 			pane.prefHeightProperty().bind(sqlPane.heightProperty());
 			pane.prefWidthProperty().bind(sqlPane.widthProperty());
-
-		} catch (IOException e) {
-
-		}
+		} catch (IOException ignored) {}
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
@@ -83,92 +74,21 @@ public class DatabaseTabsController{
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
 		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
-		colRename.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell call( final TableColumn<DatabaseStructure, String> param )
-			{
-				final TableCell<DatabaseStructure, String> cell = new TableCell<DatabaseStructure, String>()
-				{
-					final Button btn = new Button( "Rename" );
 
-					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
-								switch(dbStruct.typeProperty().get()){
-									case "View" :
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameView(database.view(dbStruct.nameProperty().get()).get(), name);
-											}
-										});
-										break;
-									case "Table" :
-										Popup.input("Rename", "Rename " + dbStruct.nameProperty().get() + " into : ",  dbStruct.nameProperty().get()).ifPresent(name -> {
-											if (name.length() > 0 && ! dbStruct.nameProperty().get().equals(name)) {
-												controller.renameTable(database.table(dbStruct.nameProperty().get()).get(), name);
-											}
-										});
-										break;
-								}
-							} );
-							setGraphic( btn );
-							setText( null );
-						}
-					}
-				};
-				return cell;
-			}
-		});
-		colDelete.setCellFactory(new Callback<TableColumn<DatabaseStructure, String>, TableCell<DatabaseStructure, String>>() {
-			@Override
-			public TableCell call( final TableColumn<DatabaseStructure, String> param )
-			{
-				final TableCell<DatabaseStructure, String> cell = new TableCell<DatabaseStructure, String>()
-				{
-					final Button btn = new Button( "Drop" );
+		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			String structName = dbStruct.nameProperty().get();
+			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
+				if (name.length() > 0 && !structName.equals(name)) {
+					database.structure(structName).ifPresent(s -> Sqlartan.getInstance().getController().renameStructure(s, name));
+				}
+			});
+		}));
 
-					@Override
-					public void updateItem( String item, boolean empty )
-					{
-						super.updateItem( item, empty );
-						if ( empty )
-						{
-							setGraphic( null );
-							setText( null );
-						}
-						else
-						{
-							btn.setOnAction( ( ActionEvent event ) ->
-							{
-								DatabaseStructure dbStruct = getTableView().getItems().get( getIndex() );
-								switch(dbStruct.typeProperty().get()){
-									case "View" :
-										controller.dropView(database.view(dbStruct.nameProperty().get()).get());
-										break;
-									case "Table" :
-										controller.dropStructure(database.table(dbStruct.nameProperty().get()).get());
-										break;
-								}
-							} );
-							setGraphic( btn );
-							setText( null );
-						}
-					}
-				};
-				return cell;
-			}
-		});
+		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
+			DatabaseStructure dbStruct = self.getTableView().getItems().get(self.getIndex());
+			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
+		}));
 
 		tabPane.getSelectionModel().clearSelection();
 	}
@@ -176,13 +96,12 @@ public class DatabaseTabsController{
 	/**
 	 * Display the structure of the database
 	 */
-	private void displayStructure() {
+	protected void displayStructure() {
 		dbStructs.clear();
 		dbStructs.addAll(database.structures()
 		                         .sorted((a, b) -> a.name().compareTo(b.name()))
 		                         .map(DatabaseStructure::new)
 		                         .toList());
-
 		structureTable.setItems(dbStructs);
 	}
 
@@ -195,21 +114,13 @@ public class DatabaseTabsController{
 		this.database = database;
 	}
 
-	/**
-	 * Set the controller
-	 *
-	 * @param controller
-	 */
-	public void setController(SqlartanController controller) {
-		this.controller = controller;
-	}
 
-	public void selectSqlTab(){
+	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();
 		tabPane.getSelectionModel().selectNext();
 	}
 
-	public void setSqlRequest(String request){
+	public void setSqlRequest(String request) {
 		allRequestControler.setRequest(request);
 	}
 }
