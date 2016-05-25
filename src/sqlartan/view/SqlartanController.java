@@ -10,6 +10,9 @@ import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -26,6 +29,7 @@ import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
 import sqlartan.view.tabs.DatabaseTabsController;
 import sqlartan.view.tabs.TableTabsController;
+import sqlartan.view.tabs.ViewTabsController;
 import sqlartan.view.treeitem.*;
 import sqlartan.view.util.Popup;
 import java.io.File;
@@ -38,13 +42,19 @@ import java.util.Optional;
 import static sqlartan.util.Matching.match;
 
 /**
- * Created by guillaume on 04.04.16.
+ * SqlartanController
  */
 public class SqlartanController {
 
-	private static Database db = null;
+
+	/***********
+	 * ATRIBUTS*
+	 ***********/
+	private Database db = null;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
+
+
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
 	@FXML
@@ -53,13 +63,14 @@ public class SqlartanController {
 	private StackPane stackPane;
 	@FXML
 	private Menu detatchMenu;
+	@FXML
+	private Button reloadButton;
 
-	private DatabaseTabsController databaseTabsController;
 
 
-	/**
-	 * TextArea for the request history
-	 */
+
+
+	// TextArea for the request history
 	@FXML
 	private ListView<String> request;
 	private ObservableList<String> requests = FXCollections.observableArrayList();
@@ -67,78 +78,81 @@ public class SqlartanController {
 	private TitledPane historyPane;
 	private CheckBox displayPragma = new CheckBox("PRAGMA");
 
+	// TablePanes
+	private TabPane databaseTabPane;
+	private TabPane tableTabPane;
+	private TabPane viewTabPane;
+
+	// TabsPaneController
+	private DatabaseTabsController databaseTabsController;
+	private TableTabsController tableTabController;
+	private ViewTabsController viewTabsController;
+
 	@FXML
 	private Menu databaseMenu;
 	private List<String> atachedDBs = new LinkedList<>();
 
-	/***********
-	 * METHODES*
-	 ***********/
-	static public Database getDB() {
-		return db;
-	}
+
+	/*****************************
+	 * METHODES called by the GUI*
+	 *****************************/
+
+
 	/**
-	 * First methode call when loaded
+	 * First methode call when FXML loaded
 	 */
 	@FXML
-	private void initialize() {
+	private void initialize() throws IOException {
 
 		treeView.setCellFactory(param -> new CustomTreeCell(this));
 
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
+		databaseTabPane = loader.load();
+		databaseTabsController = loader.getController();
+
+		loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/TableTabs.fxml"));
+		tableTabPane = loader.load();
+		tableTabController = loader.getController();
+
+		loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/ViewTabs.fxml"));
+		viewTabPane = loader.load();
+		viewTabsController = loader.getController();
+
+		databaseTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		databaseTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+		tableTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		tableTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
+		viewTabPane.prefHeightProperty().bind(stackPane.heightProperty());
+		viewTabPane.prefWidthProperty().bind(stackPane.widthProperty());
+
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+
+			Optional<? extends PersistentStructure<?>> structure = Optional.empty();
 			stackPane.getChildren().clear();
+
 			if (newValue != null) {
-				TabPane tabPane = null;
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
-						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/DatabaseTabs.fxml"));
-						try {
-							tabPane = loader.load();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						databaseTabsController = loader.getController();
+						stackPane.getChildren().add(databaseTabPane);
 						databaseTabsController.setDatabase(db);
-						databaseTabsController.setController(this);
 					}
-
 					break;
-					case TABLE:
+					case TABLE: {
+						structure = db.table(newValue.getValue().name());
+						stackPane.getChildren().add(tableTabPane);
+						db.table(newValue.getValue().name()).ifPresent(t -> tableTabController.setTable(t));
+						structure.ifPresent(tableTabController::setStructure);
+						tableTabController.refresh();
+					}
+					break;
 					case VIEW: {
-						// Onglets
-						FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/TableTabs.fxml"));
-
-						try {
-							tabPane = loader.load();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						CustomTreeItem treeItem = newValue.getValue();
-						Optional<? extends PersistentStructure<?>> structure = Optional.empty();
-						switch (treeItem.type()) {
-							case TABLE:
-								structure = db.table(treeItem.name());
-								break;
-							case VIEW:
-								structure = db.view(treeItem.name());
-								break;
-						}
-
-						TableTabsController tabsController = loader.getController();
-						tabsController.setDatabase(db);
-						tabsController.setController(this);
-						tabsController.setTable(db.table(treeItem.name()).get());
-						structure.ifPresent(tabsController::setStructure);
-
+						structure = db.view(newValue.getValue().name());
+						stackPane.getChildren().add(viewTabPane);
+						structure.ifPresent(viewTabsController::setStructure);
 					}
-					break;
 				}
-
-				stackPane.getChildren().add(tabPane);
-				tabPane.prefHeightProperty().bind(stackPane.heightProperty());
-				tabPane.prefWidthProperty().bind(stackPane.widthProperty());
 			}
 		});
 
@@ -151,18 +165,17 @@ public class SqlartanController {
 		// Pane for request history
 		BorderPane borderPane = new BorderPane();
 		Button clearHistory = new Button("Clear");
-		clearHistory.setOnMouseClicked(event -> {
-			requests.clear();
-		});
+		clearHistory.setOnMouseClicked(event -> requests.clear());
 
 		displayPragma.setSelected(true);
 
 		displayPragma.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+		clearHistory.setFocusTraversable(false);
 		HBox leftPane = new HBox();
 		HBox rightPane = new HBox();
 		rightPane.setAlignment(Pos.CENTER);
 		leftPane.setAlignment(Pos.CENTER);
-		leftPane.setSpacing(5);
+		leftPane.setSpacing(15);
 		leftPane.getChildren().addAll(displayPragma, clearHistory);
 		rightPane.getChildren().add(new Label("History"));
 		borderPane.setLeft(rightPane);
@@ -171,134 +184,33 @@ public class SqlartanController {
 
 		historyPane.setGraphic(borderPane);
 
+		//Reload button
+		ImageView reload = new ImageView(new Image(Sqlartan.class.getResourceAsStream("assets/reload.png")));
+		reload.setPreserveRatio(false);
+		reload.setFitHeight(10);
+		reload.setFitWidth(10);
+		reloadButton.prefHeightProperty().bind(reload.yProperty().add(20));
+		reloadButton.prefWidthProperty().bind(reload.xProperty().add(35));
+		reloadButton.setGraphic(reload);
 	}
 
 
 	/**
-	 * Called by the mainApp to set the link to the mainApp
-	 *
-	 * @param sqlartan
-	 */
-	public void setApp(Sqlartan sqlartan) {
-		this.sqlartan = sqlartan;
-	}
-
-
-	/**
-	 * To call to refresh the view of the tree
-	 */
-	void refreshView() {
-		if (db != null) {
-			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
-			for (int i = 0; i < exp.length; ++i) {
-				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
-			}
-
-			mainTreeItem.getChildren().clear();
-			tree(db);
-
-			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
-				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
-			}
-		}
-	}
-
-
-	/**
-	 * Create the tree for a specific database
-	 *
-	 * @param database the database
-	 */
-	void tree(Database database) {
-
-		// Main
-		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
-
-		trees.getChildren().addAll(database.structures()
-		                                   .map(structure -> match(structure, CustomTreeItem.class)
-			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
-			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
-		                                       .orElseThrow())
-		                                   .map(TreeItem::new)
-		                                   .toList());
-
-		mainTreeItem.getChildren().add(trees);
-
-		// Attached database
-		database.attached().values().forEach(adb -> {
-			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
-			tItems.getChildren().addAll(
-				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
-										.when(Table.class, t -> new TableTreeItem(t.name(), this))
-                                        .when(View.class, v -> new ViewTreeItem(v.name(), this))
-                                        .orElseThrow())
-				                .map(TreeItem::new)
-				                .toList());
-
-			mainTreeItem.getChildren().add(tItems);
-		});
-	}
-
-
-	/**
-	 * Open de main database
-	 *
-	 * @param file: file of the database to open
+	 * Function called by the GUI
+	 * to create a new database and open or attache it
 	 */
 	@FXML
-	private void openDatabase(File file) {
-		if (db != null && (!db.isClosed()))
-			db.close();
+	private void createDatabase() throws SQLException {
+		FileChooser fileChooser = new FileChooser();
 
-		try {
-			if (file != null) {
-				db = Database.open(file);
+		//Show save file dialog
+		fileChooser.setTitle("Create a new database");
+		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
 
-				request.setCellFactory(lv -> {
-
-					ListCell<String> cells = new ListCell<>();
-					ContextMenu menu = new ContextMenu();
-					MenuItem execute = new MenuItem();
-
-					execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
-					execute.setOnAction(event -> {
-						String request = cells.itemProperty().getValue();
-						treeView.getSelectionModel().select(0);
-						databaseTabsController.selectSqlTab();
-						databaseTabsController.setSqlRequest(request);
-					});
-
-					menu.getItems().add(execute);
-
-					cells.textProperty().bind(cells.itemProperty());
-
-					cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
-						cells.setContextMenu(isNotEmpty ? null : menu);
-					});
-
-					return cells;
-				});
-
-				db.registerListener(readOnlyResult -> {
-					request.setItems(requests);
-
-					String resultat = readOnlyResult.query();
-
-					if (resultat.startsWith("PRAGMA") && !displayPragma.isSelected())
-						return;
-
-					requests.add(0, readOnlyResult.query());
-				});
-
-				databaseMenu.setDisable(false);
-				refreshView();
-			}
-		} catch (SQLException e) {
-			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-			ButtonType buttonRetry = new ButtonType("Retry");
-			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
-			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> openSQLiteDatabase());
+		if (db != null && (!db.isClosed())) {
+			attachDatabase(file, file.getName().split("\\.")[0]);
+		} else {
+			openDatabase(file);
 		}
 	}
 
@@ -328,7 +240,6 @@ public class SqlartanController {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
-		AttachedChooserController attachedChooserController = null;
 
 		try {
 
@@ -336,7 +247,7 @@ public class SqlartanController {
 
 			stage.setTitle("SQLartan");
 			attachedChooser = loader.load();
-			attachedChooserController = loader.getController();
+			AttachedChooserController attachedChooserController = loader.getController();
 			attachedChooserController.setSqlartanController(this);
 			stage.initModality(Modality.APPLICATION_MODAL);
 
@@ -350,10 +261,262 @@ public class SqlartanController {
 
 
 	/**
+	 * Close the current database
+	 */
+	@FXML
+	private void closeDB() {
+		mainTreeItem.getChildren().clear();
+		stackPane.getChildren().clear();
+		db.close();
+		databaseMenu.setDisable(true);
+	}
+
+
+	/**
+	 * Close the entery application
+	 */
+	@FXML
+	private void close() {
+		Platform.exit();
+	}
+
+
+	/**
+	 * Import in the current open database
+	 */
+	@FXML
+	public void importFX() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Import SQLite database");
+		try {
+			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
+			if (f != null) {
+				db.importfromFile(f);
+			}
+		} catch (SQLException | IOException | TokenizeException e) {
+			throw new UncheckedException(e);
+		}
+		refreshView();
+	}
+
+
+	/**
+	 * Export the database
+	 *
+	 * @throws UncheckedException
+	 */
+	@FXML
+	public void export() {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		try {
+			//Show save file dialog
+			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+			if (file != null) {
+				FileWriter fileWriter = new FileWriter(file);
+				fileWriter.write(db.export());
+				fileWriter.close();
+			}
+		} catch (IOException | SQLException e) {
+			throw new UncheckedException(e);
+		}
+	}
+
+
+	/**
+	 * Function called by the GUI
+	 * to display the about window
+	 */
+	@FXML
+	private void displayAbout() {
+		Stage stage = new Stage();
+		Pane pane;
+
+		try {
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
+
+			stage.setTitle("SQLartan - About");
+			pane = loader.load();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setResizable(false);
+
+			stage.setScene(new Scene(pane));
+			stage.showAndWait();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * To call to refresh the view of the tree
+	 */
+	@FXML
+	public void refreshView() {
+		if (db != null) {
+			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+			for (int i = 0; i < exp.length; ++i) {
+				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+			}
+
+			mainTreeItem.getChildren().clear();
+			tree(db);
+
+			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+			}
+
+			treeView.getSelectionModel().select(0);
+		}
+	}
+
+
+	/**
+	 * Get the main database
+	 *
+	 * @return the main database
+	 */
+	public Database getDB() {
+		return db;
+	}
+
+
+	/**
+	 * Open de main database
+	 *
+	 * @param file: file of the database to open
+	 */
+	private void openDatabase(File file) {
+		if (db != null && (!db.isClosed()))
+			db.close();
+
+		try {
+			if (file != null) {
+				db = Database.open(file);
+
+				request.setCellFactory(e -> setCellFactoryHistory());
+
+				db.registerListener(readOnlyResult -> {
+					request.setItems(requests);
+
+					String resultat = readOnlyResult.query();
+
+					if (!resultat.startsWith("PRAGMA") || displayPragma.isSelected())
+						requests.add(0, readOnlyResult.query());
+				});
+
+				databaseMenu.setDisable(false);
+				refreshView();
+			}
+		} catch (SQLException e) {
+			ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			ButtonType buttonRetry = new ButtonType("Retry");
+			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
+			     .filter(b -> buttonRetry == b)
+			     .ifPresent(b -> openSQLiteDatabase());
+		}
+	}
+
+
+	/**
+	 * CellFactory for the history listedView
+	 *
+	 * @return the new listcell
+	 */
+	private ListCell<String> setCellFactoryHistory(){
+		ListCell<String> cells = new ListCell<>();
+		cells.setOnMouseClicked(event -> {
+				if(event.getButton().equals(MouseButton.PRIMARY)) {
+					if (event.getClickCount() == 2) {
+						String request = cells.itemProperty().getValue();
+						treeView.getSelectionModel().select(0);
+						databaseTabsController.selectSqlTab();
+						databaseTabsController.setSqlRequest(request);
+					}
+				}
+		});
+		ContextMenu menu = new ContextMenu();
+		MenuItem execute = new MenuItem();
+
+		execute.textProperty().bind(Bindings.format("Execute \"%s\" ", cells.itemProperty()));
+		execute.setOnAction(event -> {
+			String request = cells.itemProperty().getValue();
+			treeView.getSelectionModel().select(0);
+			databaseTabsController.selectSqlTab();
+			databaseTabsController.setSqlRequest(request);
+		});
+
+		menu.getItems().add(execute);
+
+		cells.textProperty().bind(cells.itemProperty());
+
+		cells.emptyProperty().addListener((obs, wasEmpty, isNotEmpty) -> {
+			cells.setContextMenu(isNotEmpty ? null : menu);
+		});
+
+		return cells;
+	}
+
+
+	/**
+	 * Called by the mainApp to set the link to the mainApp
+	 *
+	 * @param sqlartan set the referance to the main class
+	 */
+	public void setApp(Sqlartan sqlartan) {
+		this.sqlartan = sqlartan;
+	}
+
+
+
+
+
+	/**
+	 * Create the tree for a specific database
+	 *
+	 * @param database the database
+	 */
+	private void tree(Database database) {
+
+		// Main
+		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
+
+		trees.getChildren().addAll(database.structures()
+		                                   .map(structure -> match(structure, CustomTreeItem.class)
+			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
+			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
+			                                   .orElseThrow())
+		                                   .map(TreeItem::new)
+		                                   .toList());
+
+		mainTreeItem.getChildren().add(trees);
+
+		// Attached database
+		database.attached().values().forEach(adb -> {
+			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
+			tItems.getChildren().addAll(
+				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
+					.when(Table.class, t -> new TableTreeItem(t.name(), this))
+					.when(View.class, v -> new ViewTreeItem(v.name(), this))
+					.orElseThrow())
+				   .map(TreeItem::new)
+				   .toList());
+
+			mainTreeItem.getChildren().add(tItems);
+		});
+	}
+
+
+	/**
 	 * Attach a database to the main database
 	 *
-	 * @param file   : file of the database
-	 * @param dbName : name that will be shown in the treeView
+	 * @param file file of the database
+	 * @param dbName name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
 
@@ -384,76 +547,23 @@ public class SqlartanController {
 
 
 	/**
-	 * Close the current database
-	 */
-	@FXML
-	private void closeDB() {
-		mainTreeItem.getChildren().clear();
-		stackPane.getChildren().clear();
-		db.close();
-		databaseMenu.setDisable(true);
-	}
-
-
-	/**
-	 * Close the entery application
-	 */
-	@FXML
-	private void close() {
-		Platform.exit();
-	}
-
-
-	/**
-	 * Truncate a table
+	 * Drop a table or a view
 	 *
-	 * @param table
-	 */
-	public void truncateTable(Table table) {
-		table.truncate();
-		refreshView();
-	}
-
-
-	/**
-	 * Drop a structure
-	 *
-	 * @param structure
+	 * @param structure structure to drop
 	 */
 	public void dropStructure(PersistentStructure<?> structure) {
 		structure.drop();
 		refreshView();
 	}
 
-	/**
-	 * Drop a view
-	 *
-	 * @param view
-	 */
-	public void dropView(View view) {
-		view.drop();
-		refreshView();
-	}
-
 
 	/**
-	 * Duplicate a table
-	 *
-	 * @param structure
-	 */
-	public void duplicateTable(PersistentStructure<?> structure, String name) {
-		structure.duplicate(name);
-		refreshView();
-	}
-
-
-	/**
-	 * Rename a table
+	 * Rename a table or a view
 	 *
 	 * @param structure
 	 * @param name
 	 */
-	public void renameTable(PersistentStructure<?> structure, String name) {
+	public void renameStructure(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
 		refreshView();
 	}
@@ -534,27 +644,16 @@ public class SqlartanController {
 
 
 	/**
-	 * Drop the specified column from the table
-	 *
-	 * @param table
-	 */
-	public void dropColumn(Table table, String name) {
-		table.column(name).ifPresent(TableColumn::drop);
-		refreshView();
-	}
-
-
-	/**
 	 * Rename the specified column from the table
 	 *
-	 * @param table
-	 * @param name
+	 * @param structure
 	 * @param newName
 	 */
-	public void renameColumn(Table table, String name, String newName) {
-		table.column(name).ifPresent(t -> t.rename(newName));
+	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name, String newName) {
+		structure.column(name).ifPresent(c -> c.rename(newName));
 		refreshView();
 	}
+
 
 	/**
 	 * Detach a database from the main database
@@ -566,104 +665,16 @@ public class SqlartanController {
 		refreshView();
 	}
 
+
+
 	/**
-	 * Executes the SQL contained in a string into the database
+	 * Set active the index element in the treeview
 	 *
-	 * @param database
-	 * @param sql
+	 * @param index to set active
 	 */
-	public void importFromString(Database database, String sql) throws SQLException, TokenizeException {
-		database.importFromString(sql);
-		refreshView();
+	public void selectTreeIndex(int index) {
+		treeView.getSelectionModel().select(index);
 	}
 
-	@FXML
-	public void importFX() {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Import SQLite database");
-		try {
-			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-			if (f != null) {
-				db.importfromFile(f);
-			}
-		} catch (SQLException | IOException | TokenizeException e) {
-			throw new UncheckedException(e);
-		}
-		refreshView();
-	}
 
-	/**
-	 * Export the database
-	 *
-	 * @throws SQLException
-	 */
-	@FXML
-	public void export() {
-		FileChooser fileChooser = new FileChooser();
-
-		//Set extension filter
-		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-		fileChooser.getExtensionFilters().add(extFilter);
-
-		try {
-			//Show save file dialog
-			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-			if(file != null){
-				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(db.export());
-				fileWriter.close();
-			}
-		} catch (IOException | SQLException e) {
-			throw new UncheckedException(e);
-		}
-	}
-
-	/**
-	 * Function called by the GUI
-	 * to display the about window
-	 */
-	@FXML
-	private void displayAbout() {
-		Stage stage = new Stage();
-		Pane pane;
-		AttachedChooserController attachedChooserController = null;
-
-		try {
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/about/About.fxml"));
-
-			stage.setTitle("SQLartan - About");
-			pane = loader.load();
-			stage.initModality(Modality.APPLICATION_MODAL);
-			stage.setResizable(false);
-
-			stage.setScene(new Scene(pane));
-			stage.showAndWait();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void selectTreeIndex(int i) {
-		treeView.getSelectionModel().select(0);
-	}
-
-	/**
-	 * Function called by the GUI
-	 * to create a new database and open or attache it
-	 */
-	@FXML
-	private void createDatabase() throws SQLException {
-		FileChooser fileChooser = new FileChooser();
-
-		//Show save file dialog
-		fileChooser.setTitle("Create a new database");
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
-		if (db != null && (!db.isClosed())) {
-			attachDatabase(file, file.getName().split("\\.")[0]);
-		} else {
-			openDatabase(file);
-		}
-	}
 }

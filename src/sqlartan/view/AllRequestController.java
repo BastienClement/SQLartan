@@ -25,7 +25,7 @@ public class AllRequestController {
 	@FXML
 	StackPane userQueryView;
 	private DataTableView dataTableView = new DataTableView();
-	private Database db = SqlartanController.getDB();
+	private Database db;
 
 	@FXML
 	private void initialize() {
@@ -36,6 +36,7 @@ public class AllRequestController {
 	 * Execute the query
 	 */
 	public void executeQuery() {
+		db = Sqlartan.getInstance().getController().getDB();
 		userQueryView.getChildren().clear();
 		try {
 			Result result = db.execute(SQLTextQuery.getText());

@@ -1,7 +1,6 @@
 package sqlartan.view.tabs.struct;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Table;
 import sqlartan.core.View;
@@ -15,32 +14,18 @@ import static sqlartan.util.Matching.match;
  *
  * Represente the structure tab for a database.
  */
-public class DatabaseStructure {
-	private StringProperty name;
-	private StringProperty type;
-	private StringProperty lignes;
-	private StringProperty actions;
+public class DatabaseStructure extends TabStructure {
+	private LongProperty lignes;
 
 	public DatabaseStructure(PersistentStructure<?> structure) {
-		this.name = new SimpleStringProperty(structure.name());
-		this.type = new SimpleStringProperty(match(structure)
-				.when(Table.class, t -> "Table")
-				.when(View.class, v -> "View")
-				.orElse("Unknown"));
-		this.lignes = new SimpleStringProperty("0"); // TODO when nbLignes is done (Bastien will have slept enough)
+		super(structure.name(), match(structure)
+			.when(Table.class, t -> "Table")
+			.when(View.class, v -> "View")
+			.orElse("Unknown"));
+		this.lignes = new SimpleLongProperty(structure.selectAll().count());
 	}
 
-	public StringProperty nameProperty() {
-		return name;
-	}
-
-	public StringProperty typeProperty() {
-		return type;
-	}
-
-	public StringProperty lignesProperty() {
+	public LongProperty lignesProperty() {
 		return lignes;
 	}
-
-	public StringProperty actionsProperty() { return actions; }
 }
