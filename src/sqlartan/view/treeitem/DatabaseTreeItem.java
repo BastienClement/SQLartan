@@ -5,7 +5,6 @@ import javafx.scene.control.MenuItem;
 import sqlartan.Sqlartan;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
-import java.sql.SQLException;
 
 public class DatabaseTreeItem extends CustomTreeItem {
 
@@ -20,13 +19,13 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		MenuItem addTable = new MenuItem("Add table");
 
 		vacuum.setOnAction(event -> {
-			Sqlartan.getInstance().getController().getDB().vacuum();
-			Popup.information("Vacuum", "The database " + Sqlartan.getInstance().getController().getDB().name() + " get vacuumed");
+			Sqlartan.getInstance().getController().database().vacuum();
+			Popup.information("Vacuum", "The database " + Sqlartan.getInstance().getController().database().name() + " get vacuumed");
 		});
 		addTable.setOnAction(event -> {
 			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
 				if (name.length() > 0) {
-					Sqlartan.getInstance().getController().addTable(Sqlartan.getInstance().getController().getDB(), name);
+					Sqlartan.getInstance().getController().addTable(Sqlartan.getInstance().getController().database(), name);
 				}
 			});
 			//controller.addColumn();

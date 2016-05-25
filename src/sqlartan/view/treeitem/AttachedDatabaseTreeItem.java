@@ -17,7 +17,7 @@ public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 	public ContextMenu getMenu() {
 		MenuItem detach = new MenuItem("Detach");
 
-		detach.setOnAction(event -> Sqlartan.getInstance().getController().getDB()
+		detach.setOnAction(event -> Sqlartan.getInstance().getController().database()
 		                                    .attached(name())
 		                                    .ifPresent(db -> controller.detachDatabase(db)));
 		ContextMenu res = super.getMenu();
