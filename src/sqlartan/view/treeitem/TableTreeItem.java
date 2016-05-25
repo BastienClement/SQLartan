@@ -9,6 +9,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class TableTreeItem extends StructureTreeItem {
@@ -40,8 +41,22 @@ public class TableTreeItem extends StructureTreeItem {
 	}
 
 	private void addColumnDialog(Table table) {
+		class AddColumnResult {
+			private String name, type;
+			private boolean unique, primary, nullable;
+
+			public AddColumnResult(String name, String type, boolean unique, boolean primary, boolean nullable) {
+				this.name = name;
+				this.type = type;
+				//this.check = check == "" ? null : check;
+				this.unique = unique;
+				this.primary = primary;
+				this.nullable = nullable;
+			}
+		}
+
 		// Create the custom dialog.
-		Dialog<Pair<String, String>> dialog = new Dialog<>();
+		Dialog<AddColumnResult> dialog = new Dialog<>();
 		dialog.setTitle("Add column");
 		dialog.setHeaderText(null);
 
@@ -55,26 +70,44 @@ public class TableTreeItem extends StructureTreeItem {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(20, 150, 10, 10));
 
-		TextField nameField = new TextField();
+		TextField name = new TextField();
 
-		ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+		ChoiceBox type = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+		type.getSelectionModel().selectFirst();
 
+		CheckBox unique = new CheckBox();
+		CheckBox primary = new CheckBox();
+		CheckBox nullable = new CheckBox();
+
+		//TextField check = new TextField();
+		
 		grid.add(new Label("Name : "), 0, 0);
-		grid.add(nameField, 1, 0);
+		grid.add(name, 1, 0);
 		grid.add(new Label("Type : "), 0, 1);
-		grid.add(cb, 1, 1);
+		grid.add(type, 1, 1);
+		grid.add(new Label("Unique : "), 0, 2);
+		grid.add(unique, 1, 2);
+		grid.add(new Label("Primary : "), 0, 3);
+		grid.add(primary, 1, 3);
+		grid.add(new Label("Nullable : "), 0, 4);
+		grid.add(nullable, 1, 4);
+		//grid.add(new Label("Check : "), 0, 5);
+		//grid.add(check, 1, 5);
 
 		dialog.getDialogPane().setContent(grid);
 
-		// Convert the result to a username-password-pair when the login button is clicked.
+
+
+		// Convert the result to a username-password-pair when the button is clicked.
 		dialog.setResultConverter(dialogButton -> {
 			if (dialogButton == okButtonType) {
-				return new Pair<>(nameField.getText(), cb.getValue().toString());
+				return new AddColumnResult(name.getText(), type.getValue().toString(), unique.isSelected(), primary.isSelected(), nullable.isSelected());
 			}
 			return null;
 		});
-
-		dialog.showAndWait().ifPresent(values -> controller.addColumn(table, values.getKey(), values.getValue()));
+		dialog.showAndWait().ifPresent(addColumnResult -> {
+			controller.addColumn(table, addColumnResult.name, addColumnResult.type, addColumnResult.unique, addColumnResult.primary, addColumnResult.nullable);
+		});
 	}
 
 	@Override
