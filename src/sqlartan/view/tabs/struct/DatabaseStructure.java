@@ -42,7 +42,5 @@ public class DatabaseStructure {
 		return lignes;
 	}
 
-	public StringProperty actionsProperty() {
-		return actions;
-	}
+	public StringProperty actionsProperty() { return actions; }
 }
