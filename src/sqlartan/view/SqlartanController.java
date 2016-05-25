@@ -478,6 +478,19 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Add a table to the specified database
+	 *
+	 * @param name
+	 */
+	public void addTable(Database db, String name) {
+		try {
+			db.addTable(name);
+			refreshView();
+		} catch (SQLException e) {
+			throw new UncheckedException(e);
+		}
+	}
 
 	/**
 	 * Add a column to the specified table
@@ -510,7 +523,7 @@ public class SqlartanController {
 			}
 			@Override
 			public boolean nullable() {
-				return false;
+				return true;
 			}
 		});
 		AlterTable alter = table.alter();
