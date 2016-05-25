@@ -11,7 +11,7 @@ import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.dispatch;
 
 /**
- * SQL Generator helper
+ * The SQL Generator helper.
  *
  * This class wraps a StringBuilder object and provides utility functions for
  * appending Node and lists. Most methods of this class returns the object
@@ -20,25 +20,25 @@ import static sqlartan.util.Matching.dispatch;
 @SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public class Builder {
 	/**
-	 * Define default spacing for the next token
-	 * Some tokens might ignore this indication in certain context
+	 * Defines default spacing for the next token.
+	 * Some tokens might ignore this indication in certain context.
 	 */
 	private enum Spacing {
 		Space, NoSpace
 	}
 
 	/**
-	 * The internal StringBuilder object
+	 * The internal StringBuilder object.
 	 */
 	private StringBuilder builder = new StringBuilder();
 
 	/**
-	 * The spacing property of the last element appended to this builder
+	 * The spacing property of the last element appended to this builder.
 	 */
 	private Spacing last = Spacing.NoSpace;
 
 	/**
-	 * Appends a single keyword
+	 * Appends a single keyword.
 	 *
 	 * @param keyword the SQL keyword to append
 	 */
@@ -50,7 +50,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends multiple keywords
+	 * Appends multiple keywords.
 	 *
 	 * @param keywords multiple keywords to append to this Builder
 	 */
@@ -60,7 +60,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a single operator
+	 * Appends a single operator.
 	 *
 	 * @param operator the operator to append
 	 */
@@ -74,7 +74,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends multiple operators
+	 * Appends multiple operators.
 	 *
 	 * @param operators multiple operators to append to this Builder
 	 */
@@ -84,7 +84,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends multiple keywords or operators
+	 * Appends multiple keywords or operators.
 	 * The runtime type of each arguments is used to dispatch the elements
 	 * between append(Operator) and append(Keyword).
 	 *
@@ -99,8 +99,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends an unary operator
-	 *
+	 * Appends an unary operator.
 	 * Unary operators follow different spacing rule than equivalent binary operators.
 	 *
 	 * @param operator the unary operator to append
@@ -112,8 +111,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a Node to the output
-	 *
+	 * Appends a Node to the output.
 	 * The toSQL method on the given node will be called with this builder as parameter.
 	 *
 	 * @param node the node to append
@@ -124,7 +122,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of elements to the output, separated by the given separator
+	 * Appends a list of elements to the output, separated by the given separator.
 	 *
 	 * The given adapter will be called on each elements of the list to convert it
 	 * to a Buildable instance.
@@ -148,7 +146,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of Buildable instances to the output, separated by the given separator
+	 * Appends a list of Buildable instances to the output, separated by the given separator.
 	 *
 	 * @param items     a list of Buildable to append
 	 * @param separator the seoarator to use between the items
@@ -158,7 +156,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of items to the output, separated by a comma
+	 * Appends a list of items to the output, separated by a comma.
 	 *
 	 * @param items   a list of items to append to the output
 	 * @param adapter an adapter that can convert an item of type T to a Buildable
@@ -169,7 +167,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of Buildable instances to the output, separated by a comma
+	 * Appends a list of Buildable instances to the output, separated by a comma.
 	 *
 	 * @param items a list of Buildable to append
 	 */
@@ -178,8 +176,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends multiple optional Buildable to the output
-	 *
+	 * Appends multiple optional Buildable to the output.
 	 * Each item will only be appended if the optional is non-empty.
 	 *
 	 * @param optionals multiple optionals to append to the output
@@ -191,8 +188,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends an identifier to the output
-	 *
+	 * Appends an identifier to the output.
 	 * The identifier will be escaped with brackets.
 	 *
 	 * @param identifier the identifier to append
@@ -205,7 +201,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of identifiers, separated by the given separator
+	 * Appends a list of identifiers, separated by the given separator.
 	 *
 	 * @param identifiers the identifiers to append
 	 * @param separator   the separator to use between identifiers
@@ -215,7 +211,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of identifiers, separated by a comma
+	 * Appends a list of identifiers, separated by a comma.
 	 *
 	 * @param identifiers the list of identifiers to append
 	 */
@@ -224,7 +220,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a raw SQL fragment
+	 * Appends a raw SQL fragment.
 	 *
 	 * @param fragment the SQL fragment to append
 	 */
@@ -236,8 +232,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a text literal to the output
-	 *
+	 * Appends a text literal to the output.
 	 * Any apostrophe in the given string will be escaped.
 	 *
 	 * @param string the string to append
@@ -250,7 +245,7 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a schema name to the output
+	 * Appends a schema name to the output.
 	 *
 	 * @param schema the schema name
 	 */
@@ -260,7 +255,7 @@ public class Builder {
 	}
 
 	/**
-	 * Optionally appends a schema, does nothing if schema is empty
+	 * Optionally appends a schema, does nothing if schema is empty.
 	 *
 	 * @param schema the schema name to append
 	 */
@@ -270,7 +265,7 @@ public class Builder {
 	}
 
 	/**
-	 * Returns the resulting SQL code from this SQLBuilder
+	 * Returns the resulting SQL code from this SQLBuilder.
 	 */
 	@Override
 	public String toString() {

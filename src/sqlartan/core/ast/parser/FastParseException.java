@@ -3,7 +3,7 @@ package sqlartan.core.ast.parser;
 import java.util.function.Supplier;
 
 /**
- * An exception without a stacktrace.
+ * An exception without a stacktrace
  *
  * Instances of this class should be constructed once and throw as many time as required.
  * This allow to skip allocation and initialization costs entirely.
@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 public abstract class FastParseException extends RuntimeException implements Supplier<FastParseException> {
 	/**
 	 * Materialize this exception to a ParseException.
+	 *
 	 * This method will be called when parsing a SQL statement fails and an exception
 	 * is thrown to the caller.
 	 *
@@ -20,6 +21,7 @@ public abstract class FastParseException extends RuntimeException implements Sup
 	 */
 	public abstract ParseException materialize(ParserContext context);
 
+	// Remove the stack trace
 	@Override
 	public Throwable fillInStackTrace() { return null; }
 
