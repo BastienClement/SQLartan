@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -370,6 +371,8 @@ public class SqlartanController {
 			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
 				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
 			}
+
+			treeView.getSelectionModel().select(0);
 		}
 	}
 
@@ -428,6 +431,16 @@ public class SqlartanController {
 	 */
 	private ListCell<String> setCellFactoryHistory(){
 		ListCell<String> cells = new ListCell<>();
+		cells.setOnMouseClicked(event -> {
+				if(event.getButton().equals(MouseButton.PRIMARY)) {
+					if (event.getClickCount() == 2) {
+						String request = cells.itemProperty().getValue();
+						treeView.getSelectionModel().select(0);
+						databaseTabsController.selectSqlTab();
+						databaseTabsController.setSqlRequest(request);
+					}
+				}
+		});
 		ContextMenu menu = new ContextMenu();
 		MenuItem execute = new MenuItem();
 

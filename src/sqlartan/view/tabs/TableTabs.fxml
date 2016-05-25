@@ -31,18 +31,17 @@
          <content>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <TableView fx:id="insertTable" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" style="-fx-focus-color: transparent;" stylesheets="@../MainTheme.css" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TableView fx:id="insertTable" focusTraversable="false" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" styleClass="table-view-insert" stylesheets="@../MainTheme.css" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columns>
                       <TableColumn fx:id="insertColName" prefWidth="75.0" text="Column" />
                       <TableColumn fx:id="insertColType" prefWidth="75.0" text="Type" />
-                        <TableColumn prefWidth="75.0" text="Function" />
                         <TableColumn prefWidth="75.0" text="Null" />
                         <TableColumn fx:id="insertColValue" prefWidth="75.0" text="Value" />
                     </columns>
                   </TableView>
                   <ButtonBar layoutX="36.0" layoutY="240.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <buttons>
-                      <Button mnemonicParsing="false" onAction="#submitNewData" text="Button" />
+                      <Button mnemonicParsing="false" onAction="#submitNewData" text="Submit" />
                     </buttons>
                   </ButtonBar>
                </children>

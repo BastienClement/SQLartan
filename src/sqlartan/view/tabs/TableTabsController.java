@@ -1,11 +1,12 @@
 package sqlartan.view.tabs;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import sqlartan.core.Database;
 import sqlartan.core.Table;
@@ -31,16 +32,11 @@ public class TableTabsController extends TabsController<TableStructure> {
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColType;
 	@FXML
-	private TableColumn<InsertRowStructure, String> insertColValue;
-
-
+	private TableColumn<InsertRowStructure, TextField> insertColValue;
 
 
 	@FXML
 	protected Tab insertTab;
-
-
-
 
 
 	@FXML
@@ -54,7 +50,7 @@ public class TableTabsController extends TabsController<TableStructure> {
 	private Table table;
 
 	@FXML
-	protected void initialize() throws  IOException{
+	protected void initialize() throws IOException {
 
 		super.initialize();
 
@@ -87,12 +83,14 @@ public class TableTabsController extends TabsController<TableStructure> {
 
 		insertColName.setCellValueFactory(param -> param.getValue().name);
 		insertColType.setCellValueFactory(param -> param.getValue().type);
-		insertColValue.setCellValueFactory(param -> param.getValue().value);
 
-		insertColValue.setCellFactory(TextFieldTableCell.forTableColumn()); //TODO eventuelement modifier pour toujour aficher le textfield
-
-		insertColValue.setOnEditCommit(event -> {
-			event.getTableView().getItems().get(event.getTablePosition().getRow()).setValue(event.getNewValue());
+		insertColValue.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InsertRowStructure, TextField>, ObservableValue<TextField>>() {
+			@Override
+			public ObservableValue<TextField> call(TableColumn.CellDataFeatures<InsertRowStructure, TextField> param) {
+				ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
+				param.getValue().value.bindBidirectional(tf.getValue().textProperty());
+				return tf;
+			}
 		});
 
 		insertColValue.setEditable(true);
@@ -101,17 +99,16 @@ public class TableTabsController extends TabsController<TableStructure> {
 	public void refresh() {
 		Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
 
-		switch (tabPane.getSelectionModel().getSelectedIndex()){
-			case 0:{
+		switch (tabPane.getSelectionModel().getSelectedIndex()) {
+			case 0: {
 				displayStructure();
 			}
 			break;
-			case 1:
-			{
+			case 1: {
 				displayTab.setContent(dataTableView.getTableView(structure));
 			}
 			break;
-			case 2:{
+			case 2: {
 				displayInsertTab();
 			}
 		}
@@ -131,12 +128,12 @@ public class TableTabsController extends TabsController<TableStructure> {
 	@FXML
 	private void submitNewData() {
 		ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
+
+		int a = 3;
+
+
 		//TODO call the insert methode on the core
 	}
-
-
-
-
 
 
 	/**
