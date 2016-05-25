@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.Table;
 import sqlartan.view.SqlartanController;
@@ -41,11 +42,6 @@ public class TableTabsController extends TabsController<TableStructure> {
 	@FXML
 	private TableView<InsertRowStructure> insertTable;
 
-
-	private Database database;
-
-	private SqlartanController controller;
-
 	private Table table;
 
 	@FXML
@@ -67,7 +63,7 @@ public class TableTabsController extends TabsController<TableStructure> {
 			TableStructure tableStruct = self.getTableView().getItems().get(self.getIndex());
 			Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
 				if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
-					controller.renameColumn(table, tableStruct.nameProperty().get(), name);
+					Sqlartan.getInstance().getController().renameColumn(table, tableStruct.nameProperty().get(), name);
 				}
 			});
 		}));
@@ -75,7 +71,7 @@ public class TableTabsController extends TabsController<TableStructure> {
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			TableStructure tableStruct = self.getTableView().getItems().get(self.getIndex());
 			table.column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
-			controller.refreshView();
+			Sqlartan.getInstance().getController().refreshView();
 		}));
 
 		insertTable.setEditable(true);
@@ -99,8 +95,6 @@ public class TableTabsController extends TabsController<TableStructure> {
 	}
 
 	public void refresh() {
-		Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
-
 		switch (tabPane.getSelectionModel().getSelectedIndex()) {
 			case 0: {
 				displayStructure();
@@ -114,8 +108,6 @@ public class TableTabsController extends TabsController<TableStructure> {
 				displayInsertTab();
 			}
 		}
-
-
 	}
 
 	private void displayInsertTab() {
@@ -136,17 +128,6 @@ public class TableTabsController extends TabsController<TableStructure> {
 
 		//TODO call the insert methode on the core
 	}
-
-
-	/**
-	 * Set the database
-	 *
-	 * @param database
-	 */
-	public void setDatabase(Database database) {
-		this.database = database;
-	}
-
 
 	/**
 	 * Set the table

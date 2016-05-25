@@ -47,7 +47,6 @@ public class DatabaseTabsController extends TabsController<DatabaseStructure> {
 
 	private Database database;
 
-
 	private ObservableList<DatabaseStructure> dbStructs = FXCollections.observableArrayList();
 
 	@FXML
