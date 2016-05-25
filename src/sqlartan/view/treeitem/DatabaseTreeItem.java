@@ -5,6 +5,7 @@ import javafx.scene.control.MenuItem;
 import sqlartan.Sqlartan;
 import sqlartan.view.SqlartanController;
 import sqlartan.view.util.Popup;
+import java.sql.SQLException;
 
 public class DatabaseTreeItem extends CustomTreeItem {
 
@@ -25,7 +26,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		addTable.setOnAction(event -> {
 			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
 				if (name.length() > 0) {
-
+					Sqlartan.getInstance().getController().addTable(Sqlartan.getInstance().getController().getDB(), name);
 				}
 			});
 			//controller.addColumn();

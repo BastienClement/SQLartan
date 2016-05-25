@@ -223,6 +223,16 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Add a new empty table
+	 *
+	 * @param name
+	 * @throws SQLException
+	 */
+	public void addTable(String name) throws SQLException {
+		assemble("CREATE TABLE ", name, "(id INTEGER PRIMARY KEY);").execute();
+	}
+
+	/**
 	 * Returns a stream of views in this database.
 	 */
 	public IterableStream<View> views() {

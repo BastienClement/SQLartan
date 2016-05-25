@@ -24,7 +24,6 @@ import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
-import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
@@ -569,6 +568,39 @@ public class SqlartanController {
 		refreshView();
 	}
 
+	/**
+	 * Rename a view
+	 *
+	 * @param view
+	 * @param name
+	 */
+	public void renameView(View view, String name) {
+		view.rename(name);
+		refreshView();
+	}
+
+
+	/**
+	 * Vacuum a database
+	 */
+	public void vacuumDatabase(Database db) {
+		db.vacuum();
+		refreshView();
+	}
+
+	/**
+	 * Add a table to the specified database
+	 *
+	 * @param name
+	 */
+	public void addTable(Database db, String name) {
+		try {
+			db.addTable(name);
+			refreshView();
+		} catch (SQLException e) {
+			throw new UncheckedException(e);
+		}
+	}
 
 	/**
 	 * Add a column to the specified table
@@ -577,11 +609,15 @@ public class SqlartanController {
 	 * @param name
 	 * @param type
 	 */
-	public void addColumn(Table table, String name, String type) {
+	public void addColumn(Table table, String name, String type, boolean unique, boolean primaryKey, boolean nullable) {
 		TableColumn column = new TableColumn(table, new TableColumn.Properties() {
 			@Override
 			public boolean unique() {
-				return false;
+				return unique;
+			}
+			@Override
+			public boolean primaryKey() {
+				return primaryKey;
 			}
 			@Override
 			public String check() {
@@ -597,16 +633,12 @@ public class SqlartanController {
 			}
 			@Override
 			public boolean nullable() {
-				return false;
+				return nullable;
 			}
 		});
 		AlterTable alter = table.alter();
-		try {
-			alter.addColumn(column);
-			alter.execute();
-		} catch (ParseException | SQLException e) {
-			e.printStackTrace();
-		}
+		alter.addColumn(column);
+		alter.execute();
 		refreshView();
 	}
 
@@ -617,10 +649,9 @@ public class SqlartanController {
 	 * @param structure
 	 * @param newName
 	 */
-	public void renameColumn(PersistentStructure<?> structure, String name, String newName) {
-		throw new RuntimeException("not implemented");
-		// structure.column(name).ifPresent(c -> c.rename(newName)); // TODO
-		//refreshView();
+	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name, String newName) {
+		structure.column(name).ifPresent(c -> c.rename(newName));
+		refreshView();
 	}
 
 
