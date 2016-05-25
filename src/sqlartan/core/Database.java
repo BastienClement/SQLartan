@@ -589,7 +589,7 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public String exportTablesData() throws SQLException{
-		return createSQLTransaction(getTablesSQL());
+		return createSQLTransaction(getTablesDataSQL());
 	}
 
 	/**

@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -628,9 +629,19 @@ public class SqlartanController {
 
 	@FXML
 	public void export() {
+		class Result{
+			private boolean structure, data, structureAndData;
+
+			public Result(boolean structure, boolean data, boolean structureAndData) {
+				this.structure = structure;
+				this.data = data;
+				this.structureAndData = structureAndData;
+			}
+		}
+
 		// Create the custom dialog.
-		Dialog<Pair<String, String>> dialog = new Dialog<>();
-		dialog.setTitle("Add column");
+		Dialog<Result> dialog = new Dialog<>();
+		dialog.setTitle("Choose option for export");
 		dialog.setHeaderText(null);
 
 		// Set the button types.
@@ -643,26 +654,35 @@ public class SqlartanController {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(20, 150, 10, 10));
 
-		TextField nameField = new TextField();
+		final ToggleGroup group = new ToggleGroup();
 
-		ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+		RadioButton rb1 = new RadioButton("Structure");
+		rb1.setToggleGroup(group);
+		rb1.setSelected(true);
 
-		grid.add(new Label("Name : "), 0, 0);
-		grid.add(nameField, 1, 0);
-		grid.add(new Label("Type : "), 0, 1);
-		grid.add(cb, 1, 1);
+		RadioButton rb2 = new RadioButton("Data");
+		rb2.setToggleGroup(group);
+
+		RadioButton rb3 = new RadioButton("Structure and data");
+		rb3.setToggleGroup(group);
+
+		grid.add(new Label("Choose one option : "), 0, 0);
+		grid.add(rb1, 0, 1);
+		grid.add(rb2, 0, 2);
+		grid.add(rb3, 0, 3);
 
 		dialog.getDialogPane().setContent(grid);
 
 		// Convert the result to a username-password-pair when the login button is clicked.
 		dialog.setResultConverter(dialogButton -> {
 			if (dialogButton == okButtonType) {
-				return new Pair<>(nameField.getText(), cb.getValue().toString());
+				Boolean wtf = rb1.isSelected();
+				return new Result(rb1.isSelected(), rb2.isSelected(), rb3.isSelected());
 			}
 			return null;
 		});
 
-		dialog.showAndWait().ifPresent(values -> {
+		dialog.showAndWait().ifPresent(result -> {
 			FileChooser fileChooser = new FileChooser();
 
 			//Set extension filter
@@ -674,7 +694,13 @@ public class SqlartanController {
 				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
 				if(file != null){
 					FileWriter fileWriter = new FileWriter(file);
-					fileWriter.write(db.export());
+					if(result.structure){
+						fileWriter.write(db.exportStructure());
+					} else if (result.data){
+						fileWriter.write(db.exportTablesData());
+					} else if (result.structureAndData){
+						fileWriter.write(db.export());
+					}
 					fileWriter.close();
 				}
 			} catch (IOException | SQLException e) {
