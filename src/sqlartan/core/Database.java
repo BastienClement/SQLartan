@@ -571,64 +571,119 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export SQL to a String
+	 * Export db to SQL
 	 *
 	 * @return
 	 * @throws SQLException
 	 * @throws IOException
 	 */
 	public String export() throws SQLException{
-		// Disable foreign_keys check and begin transaction
-		String sql = "PRAGMA foreign_keys=OFF;\n" +
-			         "BEGIN TRANSACTION;\n";
+		return createSQLTransaction(getTablesSQL() + getTablesDataSQL() + getViewsSQL() + getTriggersSQL());
+	}
 
-		// Get every tables
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
+	/**
+	 * Export Tables data to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String exportTablesData() throws SQLException{
+		return createSQLTransaction(getTablesSQL());
+	}
+
+	/**
+	 * Export structure to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String exportStructure() throws SQLException{
+		return createSQLTransaction(getTablesSQL() + getViewsSQL() + getTriggersSQL());
+	}
+
+	private String createSQLTransaction(String sql) {
+		return "PRAGMA foreign_keys=OFF;\n" +
+			   "BEGIN TRANSACTION;\n" +
+				sql +
+				"COMMIT;";
+	}
+
+	/**
+	 * Export table to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTablesSQL() throws SQLException{
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export views to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getViewsSQL() throws SQLException{
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export triggers to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTriggersSQL() throws SQLException{
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export tables data to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTablesDataSQL() throws SQLException{
+		String sql = "";
 
 		// Get every values from tables
 		for(Table table : tables()){
 			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
 				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
 				insertSQL += assemble("SELECT * FROM ", table.fullName())
-						.execute()
-						.map(row -> {
-							String s = "(";
-							for (int i = 1; i <= row.size(); i++) {
-								if(i != 1) s += ", ";
-								s += match(row.getObject(i))
-									.when(String.class, str -> "'" + str.replace("'", "''") + "'")
-									.when(Number.class, n -> n.toString())
-									.orElse(() -> {
-										return "NULL";
-									});
-								// TODO Manage byte array
-							}
-							return s + ")";
-						})
-						.collect(Collectors.joining(", "));
+					.execute()
+					.map(row -> {
+						String s = "(";
+						for (int i = 1; i <= row.size(); i++) {
+							if(i != 1) s += ", ";
+							s += match(row.getObject(i))
+								.when(String.class, str -> "'" + str.replace("'", "''") + "'")
+								.when(Number.class, n -> n.toString())
+								.orElse(() -> {
+									return "NULL";
+								});
+							// TODO Manage byte array
+						}
+						return s + ")";
+					})
+					.collect(Collectors.joining(", "));
 
 				sql += insertSQL + ";\n";
 			}
-		};
+		}
 
-		// Get every views
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
-
-		// Get every triggers
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
-			.execute()
-			.map(Row::getString)
-			.collect(Collectors.joining(";\n"));
-		sql += ";\n";
-
-		return sql + "COMMIT;";
+		return sql;
 	}
 }

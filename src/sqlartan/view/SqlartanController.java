@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,9 +18,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
@@ -295,34 +298,6 @@ public class SqlartanController {
 		}
 		refreshView();
 	}
-
-
-	/**
-	 * Export the database
-	 *
-	 * @throws UncheckedException
-	 */
-	@FXML
-	public void export() {
-		FileChooser fileChooser = new FileChooser();
-
-		//Set extension filter
-		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-		fileChooser.getExtensionFilters().add(extFilter);
-
-		try {
-			//Show save file dialog
-			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-			if (file != null) {
-				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(database.export());
-				fileWriter.close();
-			}
-		} catch (IOException | SQLException e) {
-			throw new UncheckedException(e);
-		}
-	}
-
 
 	/**
 	 * Function called by the GUI
@@ -648,6 +623,64 @@ public class SqlartanController {
 	 */
 	public void selectTreeIndex(int index) {
 		treeView.getSelectionModel().select(index);
+	}
+
+
+	@FXML
+	public void export() {
+		// Create the custom dialog.
+		Dialog<Pair<String, String>> dialog = new Dialog<>();
+		dialog.setTitle("Add column");
+		dialog.setHeaderText(null);
+
+		// Set the button types.
+		ButtonType okButtonType = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		// Create the two labels and fields
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+
+		TextField nameField = new TextField();
+
+		ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+
+		grid.add(new Label("Name : "), 0, 0);
+		grid.add(nameField, 1, 0);
+		grid.add(new Label("Type : "), 0, 1);
+		grid.add(cb, 1, 1);
+
+		dialog.getDialogPane().setContent(grid);
+
+		// Convert the result to a username-password-pair when the login button is clicked.
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButtonType) {
+				return new Pair<>(nameField.getText(), cb.getValue().toString());
+			}
+			return null;
+		});
+
+		dialog.showAndWait().ifPresent(values -> {
+			FileChooser fileChooser = new FileChooser();
+
+			//Set extension filter
+			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+			fileChooser.getExtensionFilters().add(extFilter);
+
+			try {
+				//Show save file dialog
+				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+				if(file != null){
+					FileWriter fileWriter = new FileWriter(file);
+					fileWriter.write(db.export());
+					fileWriter.close();
+				}
+			} catch (IOException | SQLException e) {
+				throw new UncheckedException(e);
+			}
+		});
 	}
 
 
