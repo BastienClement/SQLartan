@@ -13,8 +13,8 @@ import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.DataTableView;
-import sqlartan.view.tabs.struct.TabStructure;
-import sqlartan.view.tabs.struct.TableStructure;
+import sqlartan.view.tabs.structureTab.StructureTab;
+import sqlartan.view.tabs.structureTab.TableStructureTab;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import java.util.function.BiConsumer;
@@ -22,20 +22,20 @@ import java.util.function.BiConsumer;
 /**
  * Created by julien on 24.05.16.
  */
-public abstract class TabsController<T extends TabStructure> {
+public abstract class TabsController {
 
 	@FXML
-	protected TableColumn<TableStructure, Number> colNo;
+	protected TableColumn<TableStructureTab, Number> colNo;
 	@FXML
-	protected TableColumn<TableStructure, String> colName;
+	protected TableColumn<TableStructureTab, String> colName;
 	@FXML
-	protected TableColumn<TableStructure, String> colType;
+	protected TableColumn<TableStructureTab, String> colType;
 	@FXML
-	protected TableColumn<TableStructure, String> colNull;
+	protected TableColumn<TableStructureTab, String> colNull;
 	@FXML
-	protected TableColumn<TableStructure, String> colDefaultValue;
+	protected TableColumn<TableStructureTab, String> colDefaultValue;
 	@FXML
-	protected TableColumn<TableStructure, String> colComment;
+	protected TableColumn<TableStructureTab, String> colComment;
 
 	protected PersistentStructure<?> structure;
 
@@ -54,7 +54,7 @@ public abstract class TabsController<T extends TabStructure> {
 	protected Pane sqlPane;
 
 	@FXML
-	protected TableView<TableStructure> structureTable;
+	protected TableView<TableStructureTab> structureTable;
 
 
 	@FXML
@@ -92,12 +92,12 @@ public abstract class TabsController<T extends TabStructure> {
 	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
 	 */
 	protected void displayStructure() {
-		ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
+		ObservableList<TableStructureTab> tableStructures = FXCollections.observableArrayList();
 
-		TableStructure.IDReset();
+		TableStructureTab.IDReset();
 		try {
 			tableStructures.addAll(structure.columns()
-			                                .map(TableStructure::new)
+			                                .map(TableStructureTab::new)
 			                                .toList());
 		} catch (UncheckedSQLException e) {
 			Platform.runLater(() -> {
@@ -125,21 +125,4 @@ public abstract class TabsController<T extends TabStructure> {
 		this.structure = structure;
 	}
 
-	protected Callback<TableColumn<T, String>, TableCell<T, String>>
-	actionButton(String label, BiConsumer<TableCell<T, String>, ActionEvent> action) {
-		return param -> new TableCell<T, String>() {
-			private Button btn = new Button(label);
-			public void updateItem(String item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty) {
-					setGraphic(null);
-					setText(null);
-				} else {
-					btn.setOnAction(event -> action.accept(this, event));
-					setGraphic(btn);
-					setText(null);
-				}
-			}
-		};
-	}
 }

@@ -65,7 +65,7 @@ public class Row implements Structure<GeneratedColumn> {
 	}
 
 	//###################################################################
-	// TabStructure proxy
+	// StructureTab proxy
 	//###################################################################
 
 	@Override

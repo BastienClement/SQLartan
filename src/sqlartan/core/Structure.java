@@ -4,7 +4,7 @@ import sqlartan.core.stream.IterableStream;
 import java.util.Optional;
 
 /**
- * A TabStructure is a database object that possess a table-like shape
+ * A StructureTab is a database object that possess a table-like shape
  * with columns and rows.
  *
  * @param <T> the actual type of the columns of this structure

@@ -9,22 +9,23 @@ import javafx.scene.control.*;
 import sqlartan.Sqlartan;
 import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
-import sqlartan.view.tabs.struct.TableStructure;
+import sqlartan.view.tabs.structureTab.TableStructureTab;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import java.sql.SQLException;
+import static sqlartan.view.util.ActionButtons.actionButton;
 
 
 /**
  * Created by julien on 29.04.16.
  */
-public class TableTabsController extends TabsController<TableStructure> {
+public class TableTabsController extends TabsController {
 
 
 	@FXML
-	private TableColumn<TableStructure, String> colRename;
+	private TableColumn<TableStructureTab, String> colRename;
 	@FXML
-	private TableColumn<TableStructure, String> colDelete;
+	private TableColumn<TableStructureTab, String> colDelete;
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
@@ -60,7 +61,7 @@ public class TableTabsController extends TabsController<TableStructure> {
 		});
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
-			TableStructure tableStruct = self.getTableView().getItems().get(self.getIndex());
+			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
 			Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
 				if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
 					Sqlartan.getInstance().getController().renameColumn(table, tableStruct.nameProperty().get(), name);
@@ -69,7 +70,7 @@ public class TableTabsController extends TabsController<TableStructure> {
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
-			TableStructure tableStruct = self.getTableView().getItems().get(self.getIndex());
+			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
 			table.column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
 			Sqlartan.getInstance().getController().refreshView();
 		}));

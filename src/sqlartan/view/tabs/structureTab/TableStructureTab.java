@@ -1,4 +1,4 @@
-package sqlartan.view.tabs.struct;
+package sqlartan.view.tabs.structureTab;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -14,14 +14,14 @@ import sqlartan.core.Column;
  *
  * Represent the structure tab for a view or a table
  */
-public class TableStructure extends TabStructure {
+public class TableStructureTab extends StructureTab {
 	private static int ID = 0;
 	private IntegerProperty no;
 	private StringProperty nullable;
 	private StringProperty defaultValue;
 	private StringProperty comment;
 
-	public TableStructure(Column column) {
+	public TableStructureTab(Column column) {
 		super(column.name(), column.type());
 		this.no = new SimpleIntegerProperty(++ID);
 		this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");

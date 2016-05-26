@@ -1,4 +1,4 @@
-package sqlartan.view.tabs.struct;
+package sqlartan.view.tabs.structureTab;
 
 import javafx.beans.property.*;
 import sqlartan.core.PersistentStructure;
@@ -14,10 +14,10 @@ import static sqlartan.util.Matching.match;
  *
  * Represente the structure tab for a database.
  */
-public class DatabaseStructure extends TabStructure {
+public class DatabaseStructureTab extends StructureTab {
 	private LongProperty lignes;
 
-	public DatabaseStructure(PersistentStructure<?> structure) {
+	public DatabaseStructureTab(PersistentStructure<?> structure) {
 		super(structure.name(), match(structure)
 			.when(Table.class, t -> "Table")
 			.when(View.class, v -> "View")

@@ -1,4 +1,4 @@
-package sqlartan.view.tabs.struct;
+package sqlartan.view.tabs.structureTab;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -9,12 +9,12 @@ import javafx.beans.property.StringProperty;
  *
  * @author Adriano Ruberto
  */
-public abstract class TabStructure {
+public abstract class StructureTab {
 
 	private StringProperty name;
 	private StringProperty type;
 
-	public TabStructure(String name, String type){
+	public StructureTab(String name, String type){
 		this.name = new SimpleStringProperty(name);
 		this.type = new SimpleStringProperty(type);
 	}
