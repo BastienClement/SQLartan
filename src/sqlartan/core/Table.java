@@ -74,7 +74,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * Does not duplicate associated triggers.
 	 *
 	 * @param target the name
-	 * @return this object
+	 * @return the new table
 	 */
 	@Override
 	public Table duplicate(String target) {
@@ -271,23 +271,20 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	/**
-	 * Add a new column to the table
+	 * Inserts new data in this table.
 	 *
-	 * @param name
-	 * @param affinity
-	 */
-	@Deprecated
-	public void addColumn(String name, Affinity affinity) {
-		// TODO
-	}
-
-	/**
-	 * Inserts a new row in this table
+	 * @return a instance of InsertRow allowing to add data in this table
 	 */
 	public InsertRow insert() {
 		return new InsertRow(this);
 	}
 
+	/**
+	 * Two tables are equals if they both have the same parent database and
+	 * the same name.
+	 *
+	 * @param obj the object to test for equality
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -300,8 +297,14 @@ public class Table extends PersistentStructure<TableColumn> {
 		}
 	}
 
+	/**
+	 * Generates a hash code for this table.
+	 * Since tables can be renamed, we can not use its name for hash code
+	 * computation. This means that every table in the same database will
+	 * have the same hashcode and make very bad keys in hash structures.
+	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(database, name);
+		return Objects.hash(database, Table.class);
 	}
 }
