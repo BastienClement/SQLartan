@@ -87,13 +87,17 @@ public class TableTabsController extends TabsController<TableStructure> {
 
 		insertNull.setCellValueFactory(param -> {
 			ObservableValue<CheckBox> cb = new SimpleObjectProperty<>(new CheckBox());
-			param.getValue().nulleProperty().bindBidirectional(cb.getValue().selectedProperty());
+			param.getValue().nullableProperty().bindBidirectional(cb.getValue().selectedProperty());
 			return cb;
 		});
 
 		insertColValue.setEditable(true);
 	}
 
+
+	/**
+	 * TODO
+	 */
 	public void refresh() {
 		switch (tabPane.getSelectionModel().getSelectedIndex()) {
 			case 0: {
@@ -110,6 +114,9 @@ public class TableTabsController extends TabsController<TableStructure> {
 		}
 	}
 
+	/**
+	 * TODO
+	 */
 	private void displayInsertTab() {
 		ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
 
@@ -119,10 +126,15 @@ public class TableTabsController extends TabsController<TableStructure> {
 
 	}
 
+
+	/**
+	 * TODO
+	 * @throws SQLException
+	 */
 	@FXML
-	private void submitNewData() throws SQLException{
+	private void submitNewData() throws SQLException {
 		try {
-			Object objects[] = InsertRowStructure.getAsArray(insertTable.getItems());
+			Object objects[] = InsertRowStructure.toArray(insertTable.getItems());
 			InsertRow insertRow = table.insert();
 
 			insertRow.set(objects);
@@ -132,7 +144,8 @@ public class TableTabsController extends TabsController<TableStructure> {
 		} catch (Exception e) {
 			Popup.error("Error while inserting data", e.getMessage());
 		}
- 	}
+	}
+
 
 	/**
 	 * Set the table

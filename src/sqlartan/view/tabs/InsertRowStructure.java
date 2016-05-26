@@ -17,42 +17,39 @@ public class InsertRowStructure {
 	private StringProperty name;
 	private StringProperty type;
 	private StringProperty value;
-	private BooleanProperty nulle;
-	private Type typeT;
+	private BooleanProperty nullable;
+	private Type typed;
 
 
-
-
-	public InsertRowStructure(Column column){
+	public InsertRowStructure(Column column) {
 
 		name = new SimpleStringProperty(column.name());
 		type = new SimpleStringProperty(column.type());
 		value = new SimpleStringProperty();
-		nulle = new SimpleBooleanProperty();
-		typeT = column.affinity().type;
+		nullable = new SimpleBooleanProperty();
+		typed = column.affinity().type;
 
 
-		nulle.addListener((observable, oldValue, newValue) -> {
-			if (newValue)
-			{
+		nullable.addListener((observable, oldValue, newValue) -> {
+			if (newValue) {
 				value.setValue(null);
 			}
 		});
 
 		value.addListener((observable, oldValue, newValue) -> {
-			if (newValue != null)
-			{
-				nulle.setValue(false);
+			if (newValue != null) {
+				nullable.setValue(false);
 			}
 		});
 	}
+
 
 	/**
 	 * Value property getter
 	 *
 	 * @return property
 	 */
-	public StringProperty valueProperty(){
+	public StringProperty valueProperty() {
 		return value;
 	}
 
@@ -62,16 +59,17 @@ public class InsertRowStructure {
 	 *
 	 * @return property
 	 */
-	public StringProperty nameProperty(){
+	public StringProperty nameProperty() {
 		return name;
 	}
+
 
 	/**
 	 * Type property getter
 	 *
 	 * @return property
 	 */
-	public StringProperty typeProperty(){
+	public StringProperty typeProperty() {
 		return type;
 	}
 
@@ -81,41 +79,33 @@ public class InsertRowStructure {
 	 *
 	 * @return property
 	 */
-	public BooleanProperty nulleProperty(){
-		return nulle;
+	public BooleanProperty nullableProperty() {
+		return nullable;
 	}
-
-
-
-
 
 
 	/**
 	 * Make an object table with the good typs for the sql insertion
 	 *
 	 * @param liste
-	 * @return  the object table
+	 * @return the object table
 	 * @throws Exception
 	 */
-	public static Object[] getAsArray(ObservableList<InsertRowStructure> liste) throws Exception{
+	public static Object[] toArray(ObservableList<InsertRowStructure> liste) throws Exception {
 		List<Object> lk = new LinkedList<>();
 
-		for (InsertRowStructure irs: liste){
+		for (InsertRowStructure irs : liste) {
 			Object obj;
 
-			switch (irs.typeT){
-
+			switch (irs.typed) {
 				case Integer:
 					obj = new Integer(irs.value.getValue());
 					break;
 				case Real:
 					obj = new Double(irs.value.getValue());
 					break;
-				case Text:
-					obj = irs.value.getValue();
-					break;
 				default:
-					obj = "NULL";
+					obj = irs.value.getValue();
 					break;
 			}
 
