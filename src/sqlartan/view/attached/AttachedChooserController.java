@@ -1,7 +1,6 @@
 package sqlartan.view.attached;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
@@ -35,7 +34,7 @@ public class AttachedChooserController {
 	private TextField dbName;
 
 
-	private SqlartanController sqlartanController;
+	private SqlartanController controller;
 
 	File file = null;
 
@@ -51,9 +50,9 @@ public class AttachedChooserController {
 		((Stage)attachedPane.getScene().getWindow()).close();
 	}
 
-	public void setSqlartanController(SqlartanController controller)
+	public void setController(SqlartanController controller)
 	{
-		sqlartanController = controller;
+		this.controller = controller;
 	}
 
 	@FXML
@@ -62,12 +61,12 @@ public class AttachedChooserController {
 		file = new File(path.getText());
 
 		if (!file.getPath().isEmpty() && !dbName.getText().isEmpty()) {
-			sqlartanController.attachDatabase(file, dbName.getText());
+			controller.attachDatabase(file, dbName.getText());
 			close();
 		}
 		else
 		{
-			Popup.error("Invalid Entry","The informations for the path and/or the db name are empty");
+			Popup.error("Invalid Entry","The informations for the path and/or the database name are empty");
 		}
 
 	}

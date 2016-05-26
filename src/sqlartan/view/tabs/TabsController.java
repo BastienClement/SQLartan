@@ -13,8 +13,6 @@ import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.view.DataTableView;
-import sqlartan.view.SqlartanController;
-import sqlartan.view.tabs.struct.DatabaseStructure;
 import sqlartan.view.tabs.struct.TabStructure;
 import sqlartan.view.tabs.struct.TableStructure;
 import sqlartan.view.util.Popup;
@@ -24,7 +22,7 @@ import java.util.function.BiConsumer;
 /**
  * Created by julien on 24.05.16.
  */
-public class TabsController<T extends TabStructure> {
+public abstract class TabsController<T extends TabStructure> {
 
 	@FXML
 	protected TableColumn<TableStructure, Number> colNo;
@@ -90,6 +88,9 @@ public class TabsController<T extends TabStructure> {
 	}
 
 
+	/**
+	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
+	 */
 	protected void displayStructure() {
 		ObservableList<TableStructure> tableStructures = FXCollections.observableArrayList();
 
@@ -112,7 +113,10 @@ public class TabsController<T extends TabStructure> {
 		structureTable.setItems(tableStructures);
 	}
 
-	protected void displayDataTable(){
+	/**
+	 * Display the data table
+	 */
+	protected void displayDataTable() {
 		displayTab.setContent(dataTableView.getTableView(structure));
 
 	}

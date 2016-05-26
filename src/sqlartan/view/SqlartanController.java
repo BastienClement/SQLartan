@@ -245,7 +245,7 @@ public class SqlartanController {
 			stage.setTitle("SQLartan");
 			attachedChooser = loader.load();
 			AttachedChooserController attachedChooserController = loader.getController();
-			attachedChooserController.setSqlartanController(this);
+			attachedChooserController.setController(this);
 			stage.initModality(Modality.APPLICATION_MODAL);
 
 			stage.setScene(new Scene(attachedChooser));
@@ -345,7 +345,7 @@ public class SqlartanController {
 			stage.showAndWait();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new UncheckedException(e);
 		}
 	}
 

@@ -34,12 +34,6 @@ public class DatabaseTabsController extends TabsController<DatabaseStructure> {
 	@FXML
 	private TabPane tabPane;
 
-	@FXML
-	private Tab structureTab;
-
-	@FXML
-	private Tab sqlTab;
-
 	private AllRequestController allRequestControler;
 
 	@FXML
