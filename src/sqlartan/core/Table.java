@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.alter.AlterTable;
 import sqlartan.core.ast.ColumnConstraint;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;

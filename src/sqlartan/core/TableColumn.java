@@ -1,6 +1,6 @@
 package sqlartan.core;
 
-import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.alter.AlterTable;
 import java.util.Objects;
 import java.util.Optional;
 

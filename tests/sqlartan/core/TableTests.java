@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 import org.junit.Test;
-import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.alter.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.stream.ImmutableList;
 import java.sql.SQLException;

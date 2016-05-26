@@ -1,4 +1,4 @@
-package sqlartan.core.alterTable;
+package sqlartan.core.alter;
 
 import sqlartan.core.Table;
 import sqlartan.core.TableColumn;

@@ -1,4 +1,4 @@
-package sqlartan.core.alterTable;
+package sqlartan.core.alter;
 
 import sqlartan.core.Index;
 import sqlartan.core.Table;
@@ -12,27 +12,42 @@ import sqlartan.core.ast.token.TokenizeException;
 import java.util.Optional;
 
 /**
- * Created by matthieu.villard on 23.05.2016.
+ * TODO
  */
-public abstract class AlterColumnAction extends AlterAction
-{
+public abstract class AlterColumnAction extends AlterAction {
 	private final TableColumn column;
 	protected final ColumnDefinition columnDefinition;
 
+	/**
+	 * @param table
+	 * @param column
+	 * @throws TokenizeException
+	 */
 	public AlterColumnAction(Table table, TableColumn column) throws TokenizeException {
 		super(table);
 		this.column = column;
 		columnDefinition = createDefinition();
 	}
 
-	public TableColumn column(){
+	/**
+	 * TODO
+	 */
+	public TableColumn column() {
 		return column;
 	}
 
-	public ColumnDefinition getColumnDefinition(){
+	/**
+	 * TODO
+	 */
+	public ColumnDefinition getColumnDefinition() {
 		return columnDefinition;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @throws TokenizeException
+	 */
 	private ColumnDefinition createDefinition() throws TokenizeException {
 		ColumnDefinition definition = new ColumnDefinition();
 		definition.name = column.name();
@@ -42,22 +57,22 @@ public abstract class AlterColumnAction extends AlterAction
 
 		definition.type = Optional.of(type);
 
-		if(column.unique()){
+		if (column.unique()) {
 			definition.constraints.add(new ColumnConstraint.Unique());
 		}
 
-		if(!column.nullable()){
+		if (!column.nullable()) {
 			definition.constraints.add(new ColumnConstraint.NotNull());
 		}
 
-		if(column.check().isPresent()){
+		if (column.check().isPresent()) {
 			TokenSource source = TokenSource.from(column.check().get());
 			ParserContext context = new ParserContext(source);
 			definition.constraints.add(ColumnConstraint.Check.parse(context));
 		}
 
 		Optional<Index> pk = column.parentTable().primaryKey();
-		if(pk.isPresent() && pk.get().getColumns().contains(this) && pk.get().getColumns().size() == 1){
+		if (pk.isPresent() && pk.get().getColumns().contains(this) && pk.get().getColumns().size() == 1) {
 			ColumnConstraint.PrimaryKey constraint = new ColumnConstraint.PrimaryKey();
 			constraint.name = Optional.of(pk.get().getName());
 			constraint.autoincrement = false;

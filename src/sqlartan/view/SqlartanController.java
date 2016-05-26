@@ -23,7 +23,7 @@ import javafx.stage.Stage;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
-import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.alter.AlterTable;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.util.UncheckedException;
 import sqlartan.view.attached.AttachedChooserController;
