@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
@@ -13,7 +12,6 @@ import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Table;
 import sqlartan.core.View;
-import sqlartan.view.tabs.structureTab.StructureTab;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import static sqlartan.util.Matching.match;
@@ -41,6 +39,8 @@ public class DatabaseTabsController extends TabsController {
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
 				displayStructure();
+			} else if(newTab == sqlTab){
+
 			}
 		});
 
@@ -86,7 +86,7 @@ public class DatabaseTabsController extends TabsController {
 	/**
 	 * Represent the structure tab of a database
 	 */
-	public class DatabaseStructureTab extends StructureTab {
+	private class DatabaseStructureTab extends StructureTab {
 		private LongProperty lignes;
 
 		private DatabaseStructureTab(PersistentStructure<?> structure) {

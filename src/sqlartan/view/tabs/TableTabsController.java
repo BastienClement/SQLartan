@@ -9,7 +9,6 @@ import javafx.scene.control.*;
 import sqlartan.Sqlartan;
 import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
-import sqlartan.view.tabs.structureTab.TableStructureTab;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,9 +23,9 @@ public class TableTabsController extends PersistentStructureTabsController {
 	@FXML
 	protected Tab insertTab;
 	@FXML
-	private TableColumn<TableStructureTab, String> colRename;
+	private TableColumn<PersistentStructureTab, String> colRename;
 	@FXML
-	private TableColumn<TableStructureTab, String> colDelete;
+	private TableColumn<PersistentStructureTab, String> colDelete;
 	@FXML
 	private TableColumn<InsertRowStructure, String> insertColName;
 	@FXML
@@ -53,7 +52,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 		});
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
-			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
+			StructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
 			Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
 				if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
 					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.nameProperty().get(), name);
@@ -62,7 +61,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
-			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
+			StructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
 			((Table) structure).column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
 			Sqlartan.getInstance().getController().refreshView();
 		}));

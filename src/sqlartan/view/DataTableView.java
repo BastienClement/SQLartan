@@ -6,23 +6,20 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.core.Column;
-import sqlartan.core.PersistentStructure;
 import sqlartan.core.Result;
-import sqlartan.core.util.UncheckedSQLException;
-import sqlartan.view.util.Popup;
 
 /**
  * Created by julien on 29.04.16.
  */
 public class DataTableView {
 
-
 	/**
 	 * Return a table view for any result
+	 *
 	 * @param result the result
 	 * @return the table view
 	 */
-	public TableView getTableView(Result result) {
+	public static TableView getTableView(Result result) {
 		TableView<ObservableList<String>> tableView = new TableView<>();
 
 		// Create columns
@@ -37,25 +34,11 @@ public class DataTableView {
 		// Add datas
 		ObservableList<ObservableList<String>> rows = FXCollections.observableArrayList();
 		result.forEach(row -> rows.add(FXCollections.observableArrayList(
-				result.columns().map(c -> row.getString()))
+			result.columns().map(c -> row.getString()))
 		));
 		tableView.setItems(rows);
 
 		return tableView;
-	}
-
-	/**
-	 * Return a table view for any type of structure
-	 * @param structure the structure
-	 * @return the table view
-	 */
-	public TableView getTableView(PersistentStructure<?> structure) {
-		try {
-			return getTableView(structure.selectAll());
-		} catch (UncheckedSQLException e) {
-			Popup.error("Bad Request", e.getMessage());
-			return new TableView();
-		}
 	}
 }
 

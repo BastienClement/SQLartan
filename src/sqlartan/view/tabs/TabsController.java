@@ -1,16 +1,15 @@
 package sqlartan.view.tabs;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.view.SqlTab;
-import sqlartan.view.tabs.structureTab.StructureTab;
-import sqlartan.view.tabs.structureTab.TableStructureTab;
 import java.io.IOException;
 
 /**
@@ -29,8 +28,6 @@ public abstract class TabsController {
 	protected Tab structureTab;
 	@FXML
 	protected Pane sqlPane;
-	@FXML
-	protected TableView<TableStructureTab> structureTable;
 	@FXML
 	protected Tab sqlTab;
 	@FXML
@@ -76,7 +73,28 @@ public abstract class TabsController {
 	 * TODO
 	 */
 	public void selectSqlTab() {
-		tabPane.getSelectionModel().select(sqlTab);
+		tabPane.getSelectionModel().selectFirst();
+		tabPane.getSelectionModel().selectLast();
 	}
 
+	/**
+	 * TODO
+	 */
+	public abstract static class StructureTab {
+
+		private StringProperty name;
+		private StringProperty type;
+
+		public StructureTab(String name, String type) {
+			this.name = new SimpleStringProperty(name);
+			this.type = new SimpleStringProperty(type);
+		}
+
+		public StringProperty nameProperty() {
+			return name;
+		}
+		private StringProperty typeProperty() {
+			return type;
+		}
+	}
 }
