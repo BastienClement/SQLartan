@@ -338,12 +338,5 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			throw new UnsupportedOperationException();
 		}
 	}
-
-	/**
-	 * Checks if at least one row is available in the Result.
-	 */
-	public boolean exists() {
-		return findFirst().isPresent();
-	}
 }
 

@@ -49,7 +49,7 @@ public class Index {
 	/**
 	 * The set of columns composing this index
 	 */
-	private ImmutableList<TableColumn> columns;
+	private ImmutableList<String> columns;
 
 	/**
 	 * Constructs a new index from a result row.
@@ -68,7 +68,7 @@ public class Index {
 			Database database = table.database();
 			columns = database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
 			                  .execute()
-			                  .map(r -> table.column(r.getString("name")).orElseThrow(IllegalStateException::new))
+			                  .map(r -> r.getString("name"))
 			                  .toList();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
@@ -116,7 +116,7 @@ public class Index {
 	 *
 	 * @return an unmodifiable set of columns composing this index
 	 */
-	public ImmutableList<TableColumn> columns() {
+	public ImmutableList<String> columns() {
 		return columns;
 	}
 }

@@ -80,6 +80,22 @@ public interface StreamableAdapter<T> extends Streamable<T>, IterableStream<T> {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	default boolean exists(Predicate<? super T> predicate) {
+		return find(predicate).isPresent();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	default boolean exists() {
+		return findAny().isPresent();
+	}
+
 	//
 	// Stream methods
 	//

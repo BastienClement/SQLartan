@@ -133,6 +133,7 @@ public class Table extends PersistentStructure<TableColumn> {
 				boolean columnNullable = row.getInt("notnull") == 0;
 
 				return def.columns.stream().filter(c -> c.name.equals(columnName)).findFirst().map(col -> {
+					// The check constraint on this column
 					Optional<ColumnConstraint.Check> check =
 						col.constraints.stream()
 						               .filter(c -> c instanceof ColumnConstraint.Check)
@@ -140,21 +141,24 @@ public class Table extends PersistentStructure<TableColumn> {
 
 					String columnCheck = check.map(c -> c.expression.toSQL()).orElse(null);
 
-					Lazy<Boolean> columnUnique = new Lazy<Boolean>(() -> {
-						TableColumn self = column(columnName).orElseThrow(IllegalStateException::new);
-						return indices().filter(i -> i.columns().contains(self))
-						                .filter(Index::unique)
-						                .findAny()
-						                .isPresent();
-					});
+					// Whether this column is unique or not
+					Lazy<Boolean> columnUnique = new Lazy<>(
+						() -> indices().filter(i -> i.unique() && i.columns().contains(columnName)).exists()
+					);
 
 					return new TableColumn(this, new TableColumn.Properties() {
-						@Override public String name() { return columnName; }
-						@Override public String type() { return columnType; }
-						@Override public boolean unique() { return columnUnique.get(); }
-						@Override public boolean primaryKey() { return columnPrimaryKey; }
-						@Override public String check() { return columnCheck; }
-						@Override public boolean nullable() { return columnNullable;}
+						@Override
+						public String name() { return columnName; }
+						@Override
+						public String type() { return columnType; }
+						@Override
+						public boolean unique() { return columnUnique.get(); }
+						@Override
+						public boolean primaryKey() { return columnPrimaryKey; }
+						@Override
+						public String check() { return columnCheck; }
+						@Override
+						public boolean nullable() { return columnNullable;}
 					});
 				}).orElseThrow(IllegalStateException::new);
 			}).orElseThrow(UnsupportedOperationException::new);

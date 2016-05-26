@@ -179,6 +179,21 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 */
 	Optional<T> find(Predicate<? super T> predicate);
 
+	/**
+	 * Tests whether a predicate holds for some of the elements of this stream.
+	 *
+	 * @param predicate a predicate function
+	 * @return true if the predicate holds for at least one element
+	 */
+	boolean exists(Predicate<? super T> predicate);
+
+	/**
+	 * Tests whether there is at least one element in this stream.
+	 *
+	 * @return true if there is at least one elements
+	 */
+	boolean exists();
+
 	//
 	// Stream methods
 	//
