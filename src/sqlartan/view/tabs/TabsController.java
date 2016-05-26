@@ -46,8 +46,8 @@ public abstract class TabsController {
 
 		sqlTab = allRequestControler;
 
-		colName.setCellValueFactory(param -> param.getValue().nameProperty());
-		colType.setCellValueFactory(param -> param.getValue().typeProperty());
+		colName.setCellValueFactory(param -> param.getValue().name);
+		colType.setCellValueFactory(param -> param.getValue().type);
 
 		tabPane.getSelectionModel().clearSelection();
 	}
@@ -81,20 +81,12 @@ public abstract class TabsController {
 	 * TODO
 	 */
 	public abstract static class StructureTab {
-
-		private StringProperty name;
-		private StringProperty type;
+		public final StringProperty name;
+		public final StringProperty type;
 
 		public StructureTab(String name, String type) {
 			this.name = new SimpleStringProperty(name);
 			this.type = new SimpleStringProperty(type);
-		}
-
-		public StringProperty nameProperty() {
-			return name;
-		}
-		private StringProperty typeProperty() {
-			return type;
 		}
 	}
 }

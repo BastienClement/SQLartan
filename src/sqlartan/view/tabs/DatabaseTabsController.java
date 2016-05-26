@@ -39,16 +39,16 @@ public class DatabaseTabsController extends TabsController {
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == structureTab) {
 				displayStructure();
-			} else if(newTab == sqlTab){
+			} else if (newTab == sqlTab) {
 
 			}
 		});
 
-		colLignes.setCellValueFactory(param -> param.getValue().lignesProperty());
+		colLignes.setCellValueFactory(param -> param.getValue().lignes);
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			DatabaseStructureTab dbStruct = self.getTableView().getItems().get(self.getIndex());
-			String structName = dbStruct.nameProperty().get();
+			String structName = dbStruct.name.get();
 			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
 				if (name.length() > 0 && !structName.equals(name)) {
 					database.structure(structName).ifPresent(s -> Sqlartan.getInstance().getController().renameStructure(s, name));
@@ -58,7 +58,7 @@ public class DatabaseTabsController extends TabsController {
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			DatabaseStructureTab dbStruct = self.getTableView().getItems().get(self.getIndex());
-			database.structure(dbStruct.nameProperty().get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
+			database.structure(dbStruct.name.get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
 		}));
 
 		tabPane.getSelectionModel().clearSelection();
@@ -87,7 +87,7 @@ public class DatabaseTabsController extends TabsController {
 	 * Represent the structure tab of a database
 	 */
 	private class DatabaseStructureTab extends StructureTab {
-		private LongProperty lignes;
+		private final LongProperty lignes;
 
 		private DatabaseStructureTab(PersistentStructure<?> structure) {
 			super(structure.name(), match(structure)
@@ -95,10 +95,6 @@ public class DatabaseTabsController extends TabsController {
 				.when(View.class, v -> "View")
 				.orElse("Unknown"));
 			this.lignes = new SimpleLongProperty(structure.selectAll().count());
-		}
-
-		private LongProperty lignesProperty() {
-			return lignes;
 		}
 	}
 }

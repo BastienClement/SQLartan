@@ -1,17 +1,21 @@
 package sqlartan.view.tabs;
 
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import sqlartan.Sqlartan;
+import sqlartan.core.Column;
 import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
+import sqlartan.core.Type;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import static sqlartan.view.util.ActionButtons.actionButton;
 
 
@@ -53,33 +57,33 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			StructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
-			Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
-				if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
-					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.nameProperty().get(), name);
+			Popup.input("Rename", "Rename " + tableStruct.name.get() + " into : ", tableStruct.name.get()).ifPresent(name -> {
+				if (name.length() > 0 && !tableStruct.name.get().equals(name)) {
+					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.name.get(), name);
 				}
 			});
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			StructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
-			((Table) structure).column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
+			((Table) structure).column(tableStruct.name.get()).ifPresent(sqlartan.core.TableColumn::drop);
 			Sqlartan.getInstance().getController().refreshView();
 		}));
 
 		insertTable.setEditable(true);
 
-		insertColName.setCellValueFactory(param -> param.getValue().nameProperty());
-		insertColType.setCellValueFactory(param -> param.getValue().typeProperty());
+		insertColName.setCellValueFactory(param -> param.getValue().name);
+		insertColType.setCellValueFactory(param -> param.getValue().type);
 
 		insertColValue.setCellValueFactory(param -> {
 			ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
-			param.getValue().valueProperty().bindBidirectional(tf.getValue().textProperty());
+			param.getValue().value.bindBidirectional(tf.getValue().textProperty());
 			return tf;
 		});
 
 		insertNull.setCellValueFactory(param -> {
 			ObservableValue<CheckBox> cb = new SimpleObjectProperty<>(new CheckBox());
-			param.getValue().nullableProperty().bindBidirectional(cb.getValue().selectedProperty());
+			param.getValue().nullable.bindBidirectional(cb.getValue().selectedProperty());
 			return cb;
 		});
 
@@ -135,6 +139,65 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 		} catch (Exception e) {
 			Popup.error("Error while inserting data", e.getMessage());
+		}
+	}
+	/**
+	 * Created by julien on 21.05.16.
+	 */
+	private static class InsertRowStructure {
+		private final StringProperty name;
+		private final StringProperty type;
+		private final StringProperty value;
+		private final BooleanProperty nullable;
+		private final Type typed;
+
+		private InsertRowStructure(Column column) {
+			name = new SimpleStringProperty(column.name());
+			type = new SimpleStringProperty(column.type());
+			value = new SimpleStringProperty();
+			nullable = new SimpleBooleanProperty();
+			typed = column.affinity().type;
+
+			nullable.addListener((observable, oldValue, newValue) -> {
+				if (newValue) {
+					value.setValue(null);
+				}
+			});
+
+			value.addListener((observable, oldValue, newValue) -> {
+				if (newValue != null) {
+					nullable.setValue(false);
+				}
+			});
+		}
+		/**
+		 * Make an object table with the good typs for the sql insertion
+		 *
+		 * @param liste
+		 * @return the object table
+		 * @throws Exception
+		 */
+		private static Object[] toArray(ObservableList<InsertRowStructure> liste) throws Exception {
+			List<Object> lk = new LinkedList<>();
+
+			for (InsertRowStructure irs : liste) {
+				Object obj;
+
+				switch (irs.typed) {
+					case Integer:
+						obj = new Integer(irs.value.getValue());
+						break;
+					case Real:
+						obj = new Double(irs.value.getValue());
+						break;
+					default:
+						obj = irs.value.getValue();
+						break;
+				}
+
+				lk.add(obj);
+			}
+			return lk.toArray();
 		}
 	}
 }

@@ -43,10 +43,10 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	protected void initialize() throws IOException {
 		super.initialize();
 
-		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
-		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValueProperty());
-		colNo.setCellValueFactory(param -> param.getValue().noProperty());
-		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
+		colComment.setCellValueFactory(param -> param.getValue().comment);
+		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValue);
+		colNo.setCellValueFactory(param -> param.getValue().no);
+		colNull.setCellValueFactory(param -> param.getValue().nullable);
 	}
 	/**
 	 * {@inheritDoc}
@@ -91,10 +91,10 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	 * Represent the structure tab for a view or a table
 	 */
 	protected class PersistentStructureTab extends TabsController.StructureTab {
-		private IntegerProperty no;
-		private StringProperty nullable;
-		private StringProperty defaultValue;
-		private StringProperty comment;
+		private final IntegerProperty no;
+		private final StringProperty nullable;
+		private final StringProperty defaultValue;
+		private final StringProperty comment;
 
 		private PersistentStructureTab(Column column, int ID) {
 			super(column.name(), column.type());
@@ -102,20 +102,6 @@ public abstract class PersistentStructureTabsController extends TabsController {
 			this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");
 			this.defaultValue = new SimpleStringProperty(); // TODO
 			this.comment = new SimpleStringProperty(); // TODO
-
-		}
-
-		private IntegerProperty noProperty() {
-			return no;
-		}
-		private StringProperty nullableProperty() {
-			return nullable;
-		}
-		private StringProperty defaultValueProperty() {
-			return defaultValue;
-		}
-		private StringProperty commentProperty() {
-			return comment;
 		}
 	}
 }
