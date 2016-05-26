@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TableColumn;
 import sqlartan.Sqlartan;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
@@ -18,18 +19,32 @@ import sqlartan.view.util.Popup;
  *
  * @author Adriano Ruberto
  */
-public abstract class PersistentStructureTabsController extends TabsController {
+public abstract class PersistentStructureTabsController extends TabsController<TableStructureTab> {
 
 	@FXML
 	protected Tab displayTab;
 
 	protected PersistentStructure<?> structure;
 
+
+	@FXML
+	protected TableColumn<TableStructureTab, String> colNull;
+	@FXML
+	protected TableColumn<TableStructureTab, String> colDefaultValue;
+	@FXML
+	protected TableColumn<TableStructureTab, String> colComment;
+
 	/**
 	 * {@inheritDoc}
 	 */
 	protected void displayStructure() {
 		ObservableList<TableStructureTab> tableStructures = FXCollections.observableArrayList();
+
+		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
+		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValueProperty());
+		colNo.setCellValueFactory(param -> param.getValue().noProperty());
+		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
+
 
 		TableStructureTab.IDReset();
 		try {

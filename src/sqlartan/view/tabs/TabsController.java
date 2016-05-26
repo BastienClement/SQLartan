@@ -8,27 +8,23 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
+import sqlartan.view.AllRequestController;
 import sqlartan.view.DataTableView;
+import sqlartan.view.tabs.structureTab.StructureTab;
 import sqlartan.view.tabs.structureTab.TableStructureTab;
 import java.io.IOException;
 
 /**
  * Created by julien on 24.05.16.
  */
-public abstract class TabsController {
+public abstract class TabsController<T extends StructureTab> {
 
 	@FXML
 	protected TableColumn<TableStructureTab, Number> colNo;
 	@FXML
-	protected TableColumn<TableStructureTab, String> colName;
+	protected TableColumn<T, String> colName;
 	@FXML
-	protected TableColumn<TableStructureTab, String> colType;
-	@FXML
-	protected TableColumn<TableStructureTab, String> colNull;
-	@FXML
-	protected TableColumn<TableStructureTab, String> colDefaultValue;
-	@FXML
-	protected TableColumn<TableStructureTab, String> colComment;
+	protected TableColumn<T, String> colType;
 
 	protected DataTableView dataTableView = new DataTableView();
 
@@ -39,37 +35,33 @@ public abstract class TabsController {
 	protected Tab structureTab;
 
 	@FXML
+	private Tab sqlTab;
+
+	@FXML
 	protected Pane sqlPane;
 
 	@FXML
 	protected TableView<TableStructureTab> structureTable;
+	@FXML
+	private AllRequestController allRequestControler;
 
 
 	@FXML
 	protected void initialize() throws IOException {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
 
-		Pane pane = loader.load();
-		sqlPane.getChildren().add(pane);
+		try {
+			Pane pane = loader.load();
+			sqlPane.getChildren().add(pane);
+			allRequestControler = loader.getController();
+			pane.prefHeightProperty().bind(sqlPane.heightProperty());
+			pane.prefWidthProperty().bind(sqlPane.widthProperty());
+		} catch (IOException ignored) {}
 
-		pane.prefHeightProperty().bind(sqlPane.heightProperty());
-		pane.prefWidthProperty().bind(sqlPane.widthProperty());
-
-		/**
-		 * Display the datas from the tableStructures in display tab only when he's active.
-		 * Every time a new query is done.
-		 */
-
-
-		colComment.setCellValueFactory(param -> param.getValue().commentProperty());
-		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValueProperty());
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
-		colNo.setCellValueFactory(param -> param.getValue().noProperty());
-		colNull.setCellValueFactory(param -> param.getValue().nullableProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
 
 		tabPane.getSelectionModel().clearSelection();
-
 	}
 
 
@@ -77,5 +69,24 @@ public abstract class TabsController {
 	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
 	 */
 	protected abstract void displayStructure();
+
+
+	/**
+	 * TODO
+	 *
+	 * @param request
+	 */
+	public void setSqlRequest(String request) {
+		allRequestControler.setRequest(request);
+	}
+
+
+	/**
+	 * TODO
+	 */
+	public void selectSqlTab() {
+		tabPane.getSelectionModel().selectFirst();
+		tabPane.getSelectionModel().selectNext();
+	}
 
 }

@@ -40,7 +40,6 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 	@FXML
 	protected void initialize() throws IOException {
-
 		super.initialize();
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
