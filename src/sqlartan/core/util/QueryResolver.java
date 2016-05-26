@@ -16,10 +16,18 @@ import java.util.stream.Stream;
 import static sqlartan.util.Matching.match;
 
 /**
- *
+ * Utility class for resolving query columns.
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public abstract class QueryResolver {
+	/**
+	 * Checks that columns of a simple select statement are valid for
+	 * resolution. Columns are valid if they are all either wildcard (*)
+	 * or expression composed of column references.
+	 *
+	 * @param select the simple select statement
+	 * @return true if all columns are valid
+	 */
 	private static boolean columnsAreValid(SelectStatement.Simple select) {
 		return select.columns.stream().allMatch(col ->
 			match(col).when(ResultColumn.Wildcard.class, wc -> true)
@@ -28,24 +36,52 @@ public abstract class QueryResolver {
 		);
 	}
 
-	private static Optional<Table> resolveTable(Database database, QualifiedTableName source) {
-		return source.schema.filter(n -> !n.equals("main"))
-		                    .map(n -> database.attached(n).map(db -> (Database) db))
-		                    .orElseGet(() -> Optional.of(database))
-		                    .flatMap(db -> db.table(source.name));
+	/**
+	 * Resolves a qualified table name to a Table object.
+	 *
+	 * @param database the source database
+	 * @param table    the qualified table name
+	 * @return the corresponding Table object, if it exists
+	 */
+	private static Optional<Table> resolveTable(Database database, QualifiedTableName table) {
+		return table.schema.filter(n -> !n.equals("main"))
+		                   .map(n -> database.attached(n).map(db -> (Database) db))
+		                   .orElseGet(() -> Optional.of(database))
+		                   .flatMap(db -> db.table(table.name));
 	}
 
+	/**
+	 * Transforms a column reference expression to a stream of one TableColumn.
+	 *
+	 * @param table the source table
+	 * @param expr  the column reference expression
+	 * @return a stream of one table column
+	 */
 	private static Stream<TableColumn> columnAsStream(Table table, Expression expr) {
 		Expression.ColumnReference ref = (Expression.ColumnReference) expr;
 		return Stream.of(table.column(ref.column).get());
 	}
 
+	/**
+	 * Creates a adapter function transforming ResultColumn to a stream of
+	 * TableColumm.
+	 *
+	 * @param table the source table
+	 * @return a function transforming ResultColumn to a stream of TableColumn
+	 */
 	private static Function<ResultColumn, Stream<TableColumn>> columnAdapter(Table table) {
 		return col -> match(col).when(ResultColumn.Expr.class, e -> columnAsStream(table, e.expression))
 		                        .when(ResultColumn.Wildcard.class, wc -> table.columns())
 		                        .orElseThrow();
 	}
 
+	/**
+	 * Given a database, creates an adapter function that transform the a
+	 * simple select statement to an optional immutable list of TableColumn.
+	 *
+	 * @param database the source database
+	 * @return an adapter function that extracts columns from a select
+	 */
 	private static Function<SelectStatement.Simple, Optional<ImmutableList<TableColumn>>> injectColumns(Database database) {
 		return select -> {
 			try {
@@ -58,6 +94,22 @@ public abstract class QueryResolver {
 		};
 	}
 
+	/**
+	 * Resolves references to TableColumns from a select statement.
+	 *
+	 * This can only be done if the select is a simple select statement,
+	 * with no compound operators and exactly one source table. In addition,
+	 * the query must use only non-scoped wildcards ('*') and simple
+	 * column references.
+	 *
+	 * It is not possible to resolve columns of a select statement using
+	 * the sqlite_master table. Allowing this would create an infinite
+	 * loop since this function needs to query the table structure.
+	 *
+	 * @param database the source database on which the query is executed
+	 * @param sql      the query SQL source
+	 * @return a list of table columns, if the operation is successful
+	 */
 	public static Optional<ImmutableList<TableColumn>> resolveColumns(Database database, String sql) {
 		return Parser.tryParse(sql, SelectStatement::parse)
 		             .filter(s -> s instanceof SelectStatement.Simple)
