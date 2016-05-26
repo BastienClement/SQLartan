@@ -301,7 +301,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * Generates a hash code for this table.
 	 * Since tables can be renamed, we can not use its name for hash code
 	 * computation. This means that every table in the same database will
-	 * have the same hashcode and make very bad keys in hash structures.
+	 * have the same hashcode and are very bad keys in hash structures.
 	 */
 	@Override
 	public int hashCode() {

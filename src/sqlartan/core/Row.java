@@ -35,7 +35,7 @@ public class Row implements Structure<ResultColumn> {
 	/**
 	 * TODO
 	 */
-	public boolean isEditable(Set<ResultColumn> updateKeys) {
+	private boolean isEditable(Set<ResultColumn> updateKeys) {
 		return !updateKeys.isEmpty() && updateKeys.stream().allMatch(
 			col -> getObject(col.index()) != null && col.sourceColumn().isPresent());
 	}

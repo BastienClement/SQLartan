@@ -8,11 +8,10 @@ import sqlartan.core.ast.QualifiedTableName;
 import sqlartan.core.ast.ResultColumn;
 import sqlartan.core.ast.SelectStatement;
 import sqlartan.core.ast.parser.Parser;
-import java.util.List;
+import sqlartan.core.stream.ImmutableList;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static sqlartan.util.Matching.match;
 
@@ -47,13 +46,11 @@ public abstract class QueryResolver {
 		                        .orElseThrow();
 	}
 
-	private static Function<SelectStatement.Simple, Optional<List<TableColumn>>> injectColumns(Database database) {
+	private static Function<SelectStatement.Simple, Optional<ImmutableList<TableColumn>>> injectColumns(Database database) {
 		return select -> {
 			try {
 				return resolveTable(database, (QualifiedTableName) select.from.get()).map(t ->
-					select.columns.stream()
-					              .flatMap(columnAdapter(t))
-					              .collect(Collectors.toList())
+					ImmutableList.from(select.columns.stream().flatMap(columnAdapter(t)))
 				);
 			} catch (NoSuchElementException ignored) {
 				return Optional.empty();
@@ -61,7 +58,7 @@ public abstract class QueryResolver {
 		};
 	}
 
-	public static Optional<List<TableColumn>> resolveColumns(Database database, String sql) {
+	public static Optional<ImmutableList<TableColumn>> resolveColumns(Database database, String sql) {
 		return Parser.tryParse(sql, SelectStatement::parse)
 		             .filter(s -> s instanceof SelectStatement.Simple)
 		             .map(s -> (SelectStatement.Simple) s)
