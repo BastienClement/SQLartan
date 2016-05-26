@@ -1,5 +1,7 @@
 package sqlartan.view.tabs;
 
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -10,10 +12,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
+import sqlartan.core.PersistentStructure;
+import sqlartan.core.Table;
+import sqlartan.core.View;
 import sqlartan.view.AllRequestController;
-import sqlartan.view.tabs.structureTab.DatabaseStructureTab;
+import sqlartan.view.tabs.structureTab.StructureTab;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
+import static sqlartan.util.Matching.match;
 import static sqlartan.view.util.ActionButtons.actionButton;
 
 /**
@@ -33,19 +39,13 @@ public class DatabaseTabsController extends TabsController {
 	private TableColumn<DatabaseStructureTab, String> colDelete;
 	@FXML
 	private TabPane tabPane;
-
 	private AllRequestController allRequestControler;
-
 	@FXML
 	private TableView<DatabaseStructureTab> structureTable;
-
 	private Database database;
-
 	private ObservableList<DatabaseStructureTab> dbStructs = FXCollections.observableArrayList();
-
 	@FXML
 	private Pane sqlPane;
-
 	@FXML
 	protected void initialize() {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
@@ -86,7 +86,6 @@ public class DatabaseTabsController extends TabsController {
 
 		tabPane.getSelectionModel().clearSelection();
 	}
-
 	/**
 	 * Display the structure of the database
 	 */
@@ -98,7 +97,6 @@ public class DatabaseTabsController extends TabsController {
 		                         .toList());
 		structureTable.setItems(dbStructs);
 	}
-
 	/**
 	 * Set the database
 	 *
@@ -108,13 +106,39 @@ public class DatabaseTabsController extends TabsController {
 		this.database = database;
 	}
 
-
+	/**
+	 * TODO
+	 */
 	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();
 		tabPane.getSelectionModel().selectNext();
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param request
+	 */
 	public void setSqlRequest(String request) {
 		allRequestControler.setRequest(request);
+	}
+
+	/**
+	 * Represent the structure tab of a database
+	 */
+	private class DatabaseStructureTab extends StructureTab {
+		private LongProperty lignes;
+
+		private DatabaseStructureTab(PersistentStructure<?> structure) {
+			super(structure.name(), match(structure)
+				.when(Table.class, t -> "Table")
+				.when(View.class, v -> "View")
+				.orElse("Unknown"));
+			this.lignes = new SimpleLongProperty(structure.selectAll().count());
+		}
+
+		private LongProperty lignesProperty() {
+			return lignes;
+		}
 	}
 }

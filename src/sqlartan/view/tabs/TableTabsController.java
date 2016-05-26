@@ -19,9 +19,10 @@ import static sqlartan.view.util.ActionButtons.actionButton;
 /**
  * Created by julien on 29.04.16.
  */
-public class TableTabsController extends TabsController {
+public class TableTabsController extends PersistentStructureTabsController {
 
-
+	@FXML
+	protected Tab insertTab;
 	@FXML
 	private TableColumn<TableStructureTab, String> colRename;
 	@FXML
@@ -34,16 +35,8 @@ public class TableTabsController extends TabsController {
 	private TableColumn<InsertRowStructure, CheckBox> insertNull;
 	@FXML
 	private TableColumn<InsertRowStructure, TextField> insertColValue;
-
-
-	@FXML
-	protected Tab insertTab;
-
-
 	@FXML
 	private TableView<InsertRowStructure> insertTable;
-
-	private Table table;
 
 	@FXML
 	protected void initialize() throws IOException {
@@ -64,14 +57,14 @@ public class TableTabsController extends TabsController {
 			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
 			Popup.input("Rename", "Rename " + tableStruct.nameProperty().get() + " into : ", tableStruct.nameProperty().get()).ifPresent(name -> {
 				if (name.length() > 0 && !tableStruct.nameProperty().get().equals(name)) {
-					Sqlartan.getInstance().getController().renameColumn(table, tableStruct.nameProperty().get(), name);
+					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.nameProperty().get(), name);
 				}
 			});
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			TableStructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
-			table.column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
+			((Table) structure).column(tableStruct.nameProperty().get()).ifPresent(sqlartan.core.TableColumn::drop);
 			Sqlartan.getInstance().getController().refreshView();
 		}));
 
@@ -124,19 +117,19 @@ public class TableTabsController extends TabsController {
 		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
 
 		insertTable.setItems(insertRows);
-
 	}
 
 
 	/**
 	 * TODO
+	 *
 	 * @throws SQLException
 	 */
 	@FXML
 	private void submitNewData() throws SQLException {
 		try {
 			Object objects[] = InsertRowStructure.toArray(insertTable.getItems());
-			InsertRow insertRow = table.insert();
+			InsertRow insertRow = ((Table) structure).insert();
 
 			insertRow.set(objects);
 
@@ -145,15 +138,5 @@ public class TableTabsController extends TabsController {
 		} catch (Exception e) {
 			Popup.error("Error while inserting data", e.getMessage());
 		}
-	}
-
-
-	/**
-	 * Set the table
-	 *
-	 * @param table
-	 */
-	public void setTable(Table table) {
-		this.table = table;
 	}
 }

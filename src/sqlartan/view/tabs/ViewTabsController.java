@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * Created by julien on 24.05.16.
  */
-public class ViewTabsController extends TabsController {
+public class ViewTabsController extends PersistentStructureTabsController {
 
 	protected void initialize() throws IOException {
 		super.initialize();

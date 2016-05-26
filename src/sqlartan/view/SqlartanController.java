@@ -139,7 +139,6 @@ public class SqlartanController {
 					case TABLE: {
 						structure = database.table(newValue.getValue().name());
 						stackPane.getChildren().add(tableTabPane);
-						database.table(newValue.getValue().name()).ifPresent(t -> tableTabController.setTable(t));
 						structure.ifPresent(tableTabController::setStructure);
 						tableTabController.refresh();
 					}

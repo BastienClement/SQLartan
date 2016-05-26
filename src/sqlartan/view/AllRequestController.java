@@ -7,6 +7,7 @@ package sqlartan.view;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
@@ -16,7 +17,7 @@ import sqlartan.core.Database;
 import sqlartan.core.Result;
 import java.sql.SQLException;
 
-public class AllRequestController {
+public class AllRequestController extends Tab {
 
 	@FXML
 	Button execute;
@@ -50,7 +51,7 @@ public class AllRequestController {
 		}
 	}
 
-	public void setRequest(String request){
+	public void setRequest(String request) {
 		SQLTextQuery.setText(request);
 	}
 
