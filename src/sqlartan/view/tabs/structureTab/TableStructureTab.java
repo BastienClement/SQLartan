@@ -12,25 +12,22 @@ import sqlartan.core.Column;
  *
  * @author Adriano Ruberto
  *
- * Represent the structure tab for a view or a table
+ *         Represent the structure tab for a view or a table
  */
 public class TableStructureTab extends StructureTab {
-	private static int ID = 0;
 	private IntegerProperty no;
 	private StringProperty nullable;
 	private StringProperty defaultValue;
 	private StringProperty comment;
 
-	public TableStructureTab(Column column) {
+	public TableStructureTab(Column column, int ID) {
 		super(column.name(), column.type());
-		this.no = new SimpleIntegerProperty(++ID);
+		this.no = new SimpleIntegerProperty(ID);
 		this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");
 		this.defaultValue = new SimpleStringProperty(); // TODO
 		this.comment = new SimpleStringProperty(); // TODO
 
 	}
-
-	public static void IDReset() {ID = 0;}
 
 	public IntegerProperty noProperty() {
 		return no;

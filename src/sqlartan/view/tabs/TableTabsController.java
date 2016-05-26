@@ -44,7 +44,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == displayTab) {
-				displayTab.setContent(dataTableView.getTableView(structure));
+				displayData();
 			} else if (newTab == structureTab) {
 				displayStructure();
 			} else if (newTab == insertTab) {
@@ -98,7 +98,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 			}
 			break;
 			case 1: {
-				displayTab.setContent(dataTableView.getTableView(structure));
+				displayData();
 			}
 			break;
 			case 2: {

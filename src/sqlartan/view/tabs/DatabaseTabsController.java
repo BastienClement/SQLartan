@@ -22,7 +22,7 @@ import static sqlartan.view.util.ActionButtons.actionButton;
 /**
  * Created by julien on 30.04.16.
  */
-public class DatabaseTabsController extends TabsController<DatabaseTabsController.DatabaseStructureTab> {
+public class DatabaseTabsController extends TabsController {
 
 	@FXML
 	private TableColumn<DatabaseStructureTab, Number> colLignes;

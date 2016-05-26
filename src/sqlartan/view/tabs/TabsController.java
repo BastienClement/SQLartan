@@ -9,7 +9,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
 import sqlartan.view.SqlTab;
-import sqlartan.view.DataTableView;
 import sqlartan.view.tabs.structureTab.StructureTab;
 import sqlartan.view.tabs.structureTab.TableStructureTab;
 import java.io.IOException;
@@ -17,14 +16,12 @@ import java.io.IOException;
 /**
  * Created by julien on 24.05.16.
  */
-public abstract class TabsController<T extends StructureTab> {
+public abstract class TabsController {
 
 	@FXML
-	protected TableColumn<T, String> colName;
+	protected TableColumn<StructureTab, String> colName;
 	@FXML
-	protected TableColumn<T, String> colType;
-
-	protected DataTableView dataTableView = new DataTableView();
+	protected TableColumn<StructureTab, String> colType;
 
 	@FXML
 	protected TabPane tabPane;

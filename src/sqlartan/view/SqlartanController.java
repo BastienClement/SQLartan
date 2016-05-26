@@ -355,6 +355,8 @@ public class SqlartanController {
 	@FXML
 	public void refreshView() {
 		if (database != null) {
+			int selected = treeView.getSelectionModel().getSelectedIndex();
+
 			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
 			for (int i = 0; i < exp.length; ++i) {
 				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
@@ -367,7 +369,7 @@ public class SqlartanController {
 				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
 			}
 
-			treeView.getSelectionModel().select(0);
+			treeView.getSelectionModel().select(selected);
 		}
 	}
 

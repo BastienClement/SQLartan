@@ -12,7 +12,7 @@ public class ViewTabsController extends PersistentStructureTabsController {
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			if (newTab == displayTab) {
-				displayDataTable();
+				displayData();
 			} else if (newTab == structureTab) {
 				displayStructure();
 			}
