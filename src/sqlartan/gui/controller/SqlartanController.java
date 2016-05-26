@@ -456,12 +456,12 @@ public class SqlartanController {
 	private void tree(Database database) {
 
 		// Main
-		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this));
+		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this, database));
 
 		trees.getChildren().addAll(database.structures()
 		                                   .map(structure -> match(structure, CustomTreeItem.class)
-			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this))
-			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this))
+			                                   .when(Table.class, t -> new TableTreeItem(t.name(), this, database))
+			                                   .when(View.class, v -> new ViewTreeItem(v.name(), this, database))
 			                                   .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
@@ -470,11 +470,11 @@ public class SqlartanController {
 
 		// Attached database
 		database.attached().values().forEach(adb -> {
-			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this));
+			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this, adb));
 			tItems.getChildren().addAll(
 				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
-					.when(Table.class, t -> new TableTreeItem(t.name(), this))
-					.when(View.class, v -> new ViewTreeItem(v.name(), this))
+					.when(Table.class, t -> new TableTreeItem(t.name(), this, adb))
+					.when(View.class, v -> new ViewTreeItem(v.name(), this, adb))
 					.orElseThrow())
 				   .map(TreeItem::new)
 				   .toList());
@@ -629,6 +629,7 @@ public class SqlartanController {
 	}
 
 
+
 	@FXML
 	public void export() {
 		class Result{
@@ -710,5 +711,9 @@ public class SqlartanController {
 		});
 	}
 
+	public void vacuum(Database database) {
+		database.vacuum();
+		Popup.information("Vacuum", "The database " + Sqlartan.getInstance().getController().database().name() + " get vacuumed");
+	}
 
 }

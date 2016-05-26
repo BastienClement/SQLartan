@@ -7,14 +7,15 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import sqlartan.Sqlartan;
+import sqlartan.core.Database;
 import sqlartan.core.Table;
 import sqlartan.gui.controller.SqlartanController;
 import java.util.function.Consumer;
 
 public class TableTreeItem extends StructureTreeItem {
 
-	public TableTreeItem(String name, SqlartanController controller) {
-		super(name, controller);
+	public TableTreeItem(String name, SqlartanController controller, Database database) {
+		super(name, controller, database);
 	}
 
 	@Override
@@ -32,7 +33,7 @@ public class TableTreeItem extends StructureTreeItem {
 	}
 
 	private EventHandler<ActionEvent> openStructureDialog(Consumer<Table> dialog) {
-		return event -> Sqlartan.getInstance().getController().database().table(name()).ifPresent(dialog);
+		return event -> database.table(name()).ifPresent(dialog);
 	}
 
 	private void truncateDialog(Table table) {
@@ -80,7 +81,7 @@ public class TableTreeItem extends StructureTreeItem {
 		CheckBox nullable = new CheckBox();
 
 		//TextField check = new TextField();
-		
+
 		grid.add(new Label("Name : "), 0, 0);
 		grid.add(name, 1, 0);
 		grid.add(new Label("Type : "), 0, 1);
@@ -95,7 +96,6 @@ public class TableTreeItem extends StructureTreeItem {
 		//grid.add(check, 1, 5);
 
 		dialog.getDialogPane().setContent(grid);
-
 
 
 		// Convert the result to a username-password-pair when the button is clicked.
@@ -115,7 +115,7 @@ public class TableTreeItem extends StructureTreeItem {
 		return Type.TABLE;
 	}
 
-	public String toString(){
+	public String toString() {
 		return "T – " + super.toString();
 	}
 }

@@ -3,16 +3,18 @@ package sqlartan.gui.controller.treeitem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TreeItem;
 import sqlartan.gui.controller.SqlartanController;
+import sqlartan.core.Database;
 
 public abstract class CustomTreeItem extends TreeItem {
 
 	private String name;
 	protected SqlartanController controller;
+	protected Database database;
 
-	public CustomTreeItem(String name, SqlartanController controller) {
+	public CustomTreeItem(String name, SqlartanController controller, Database database) {
 		this.name = name;
 		this.controller = controller;
-
+		this.database = database;
 	}
 
 	/**
