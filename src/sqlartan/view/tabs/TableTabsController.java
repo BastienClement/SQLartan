@@ -7,12 +7,12 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import sqlartan.Sqlartan;
-import sqlartan.core.Database;
+import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
-import sqlartan.view.SqlartanController;
 import sqlartan.view.tabs.struct.TableStructure;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
+import java.sql.SQLException;
 
 
 /**
@@ -76,18 +76,18 @@ public class TableTabsController extends TabsController<TableStructure> {
 
 		insertTable.setEditable(true);
 
-		insertColName.setCellValueFactory(param -> param.getValue().name);
-		insertColType.setCellValueFactory(param -> param.getValue().type);
+		insertColName.setCellValueFactory(param -> param.getValue().nameProperty());
+		insertColType.setCellValueFactory(param -> param.getValue().typeProperty());
 
 		insertColValue.setCellValueFactory(param -> {
 			ObservableValue<TextField> tf = new SimpleObjectProperty<>(new TextField());
-			param.getValue().value.bindBidirectional(tf.getValue().textProperty());
+			param.getValue().valueProperty().bindBidirectional(tf.getValue().textProperty());
 			return tf;
 		});
 
 		insertNull.setCellValueFactory(param -> {
 			ObservableValue<CheckBox> cb = new SimpleObjectProperty<>(new CheckBox());
-			param.getValue().nulle.bindBidirectional(cb.getValue().selectedProperty());
+			param.getValue().nulleProperty().bindBidirectional(cb.getValue().selectedProperty());
 			return cb;
 		});
 
@@ -120,14 +120,19 @@ public class TableTabsController extends TabsController<TableStructure> {
 	}
 
 	@FXML
-	private void submitNewData() {
-		ObservableList<InsertRowStructure> insertRows = insertTable.getItems();
+	private void submitNewData() throws SQLException{
+		try {
+			Object objects[] = InsertRowStructure.getAsArray(insertTable.getItems());
+			InsertRow insertRow = table.insert();
 
-		int a = 3;
+			insertRow.set(objects);
 
+			insertRow.execute();
 
-		//TODO call the insert methode on the core
-	}
+		} catch (Exception e) {
+			Popup.error("Error while inserting data", e.getMessage());
+		}
+ 	}
 
 	/**
 	 * Set the table
