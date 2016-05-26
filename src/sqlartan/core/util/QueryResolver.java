@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static sqlartan.util.Matching.match;
 
+/**
+ *
+ */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public abstract class QueryResolver {
 	private static boolean columnsAreValid(SelectStatement.Simple select) {

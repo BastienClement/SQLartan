@@ -72,9 +72,9 @@ public abstract class AlterColumnAction extends AlterAction {
 		}
 
 		Optional<Index> pk = column.parentTable().primaryKey();
-		if (pk.isPresent() && pk.get().getColumns().contains(this) && pk.get().getColumns().size() == 1) {
+		if (pk.isPresent() && pk.get().columns().contains(this) && pk.get().columns().size() == 1) {
 			ColumnConstraint.PrimaryKey constraint = new ColumnConstraint.PrimaryKey();
-			constraint.name = Optional.of(pk.get().getName());
+			constraint.name = Optional.of(pk.get().name());
 			constraint.autoincrement = false;
 			definition.constraints.add(constraint);
 		}

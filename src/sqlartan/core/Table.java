@@ -5,76 +5,100 @@ import sqlartan.core.ast.ColumnConstraint;
 import sqlartan.core.ast.CreateTableStatement;
 import sqlartan.core.ast.parser.ParseException;
 import sqlartan.core.ast.parser.Parser;
+import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.stream.IterableStream;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.Lazy;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
+import static sqlartan.util.Matching.match;
 
+/**
+ * A table in a database
+ */
 public class Table extends PersistentStructure<TableColumn> {
-
 	/**
-	 * Construct a new table linked to the specified database and with the specified name.
+	 * Constructs a new table linked to the specified database and with
+	 * the specified name.
 	 *
-	 * @param database
-	 * @param name
+	 * @param database the parent database
+	 * @param name     the name of this table
 	 */
 	Table(Database database, String name) {
 		super(database, name);
 	}
 
 	/**
-	 * Rename the table to the specified name.
+	 * The CREATE TABLE statement corresponding to this table
+	 */
+	private Lazy<String> createStatement = new Lazy<>(() -> {
+		try {
+			return database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
+			               .execute(this.name)
+			               .mapFirst(Row::getString);
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	});
+
+	/**
+	 * The parsed CREATE TABLE statement corresponding to this table
+	 */
+	private Lazy<CreateTableStatement> createStatementParsed = new Lazy<>(() -> {
+		try {
+			return Parser.parse(createStatement.get(), CreateTableStatement::parse);
+		} catch (ParseException e) {
+			throw new UncheckedException(e);
+		}
+	});
+
+	/**
+	 * Renames the table to the specified name.
 	 *
-	 * @param newName
+	 * @param target the new name of the table
 	 */
 	@Override
-	public void rename(String newName) {
+	public void rename(String target) {
 		try {
-			database.assemble("ALTER TABLE ", fullName(), " RENAME TO ", newName).execute();
-			name = newName;
+			database.assemble("ALTER TABLE ", fullName(), " RENAME TO ", target).execute();
+			name = target;
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
 	}
 
 	/**
-	 * Duplicate the table to a new table with the specified name.
-	 * Doesn't duplicate the triggers.
+	 * Duplicates the table to a new table with the specified name.
+	 * Does not duplicate associated triggers.
 	 *
-	 * @param newName
+	 * @param target the name
+	 * @return this object
 	 */
 	@Override
-	public Table duplicate(String newName) {
+	public Table duplicate(String target) {
 		try {
-			// Get the SQL command to create the table
-			String createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
-			                                 .execute(name)
-			                                 .mapFirst(Row::getString);
-
 			// Update the create statement of the original table
-			CreateTableStatement create = Parser.parse(createStatement, CreateTableStatement::parse);
-			create.name = newName;
+			CreateTableStatement create = createStatementParsed.gen();
+			create.name = target;
 			create.schema = Optional.of(database.name());
 
 			// Create the duplicated table
 			database.execute(create.toSQL());
 
 			// Insert the data in the table
-			database.assemble("INSERT INTO ", database.name(), ".", newName, " SELECT * FROM ", fullName()).execute();
+			database.assemble("INSERT INTO ", database.name(), ".", target, " SELECT * FROM ", fullName()).execute();
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
-		} catch (ParseException e) {
-			throw new UncheckedException(e);
 		}
 
 		// noinspection OptionalGetWithoutIsPresent
-		return database.table(newName).get();
+		return database.table(target).get();
 	}
 
 	/**
-	 * Drop the table
+	 * Drops the table.
 	 */
 	@Override
 	public void drop() {
@@ -85,122 +109,98 @@ public class Table extends PersistentStructure<TableColumn> {
 		}
 	}
 
-	public AlterTable alter(){
+	/**
+	 * Constructs an AlterTable object to alter the structure of this table.
+	 *
+	 * @return a new AlterTable object bound to this table
+	 */
+	public AlterTable alter() {
 		return new AlterTable(this);
 	}
 
 	/**
+	 * Builds a TableColumn for a given Row of the table_info PRAGMA result.
 	 *
-	 * @param row
-	 * @return
+	 * @param row a row from a PRAGMA table_info query
+	 * @return a TableColumn representing the column described by the row
 	 */
 	protected TableColumn columnBuilder(Row row) {
-		String createStatement = null;
-		try {
-			createStatement = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
-			                                 .execute(name)
-			                                 .mapFirst(Row::getString);
-			CreateTableStatement create = Parser.parse(createStatement, CreateTableStatement::parse);
+		return match(createStatementParsed.get())
+			.when(CreateTableStatement.Def.class, def -> {
+				String columnName = row.getString("name");
+				String columnType = row.getString("type");
+				boolean columnPrimaryKey = row.getInt("pk") != 0;
+				boolean columnNullable = row.getInt("notnull") == 0;
 
-			if(create instanceof CreateTableStatement.Def){
-				Optional<ColumnConstraint.Check> constraint = ((CreateTableStatement.Def) create).columns.stream().filter(col -> col.name.equals(row.getString("name"))).findFirst().get().constraints.stream().filter(c -> c instanceof ColumnConstraint.Check).map(c -> (ColumnConstraint.Check)c).findFirst();
-				if(constraint.isPresent()){
-					return new TableColumn(this, new TableColumn.Properties() {
-						public String name() { return row.getString("name"); }
-						public String type() { return row.getString("type"); }
-						public boolean unique() {
-							return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
-						}
-						@Override
-						public boolean primaryKey() {
-							return  row.getInt("pk") != 0;
-						}
-						public String check() { return constraint.get().expression.toSQL(); }
-						public boolean nullable() { return row.getInt("notnull") == 0; }
+				return def.columns.stream().filter(c -> c.name.equals(columnName)).findFirst().map(col -> {
+					Optional<ColumnConstraint.Check> check =
+						col.constraints.stream()
+						               .filter(c -> c instanceof ColumnConstraint.Check)
+						               .map(c -> (ColumnConstraint.Check) c).findFirst();
+
+					String columnCheck = check.map(c -> c.expression.toSQL()).orElse(null);
+
+					Lazy<Boolean> columnUnique = new Lazy<Boolean>(() -> {
+						TableColumn self = column(columnName).orElseThrow(IllegalStateException::new);
+						return indices().filter(i -> i.columns().contains(self))
+						                .filter(Index::unique)
+						                .findAny()
+						                .isPresent();
 					});
-				}
-			}
-		} catch (SQLException e) {
-			throw new UncheckedSQLException(e);
-		} catch (ParseException e) {
-			throw new UncheckedSQLException(e);
-		}
 
-		// Update the create statement of the original table
-
-		return new TableColumn(this, new TableColumn.Properties() {
-			public String name() { return row.getString("name"); }
-			public String type() { return row.getString("type"); }
-			public boolean unique() {
-				return indices().filter(index -> index.getColumns().stream().filter(name -> name.equals(row.getString("name"))).findFirst().isPresent() && index.isUnique()).findFirst().isPresent();
-			}
-			@Override
-			public boolean primaryKey() {
-				return  row.getInt("pk") != 0;
-			}
-			public String check() { return null; }
-			public boolean nullable() { return row.getInt("notnull") == 0; }
-		});
+					return new TableColumn(this, new TableColumn.Properties() {
+						@Override public String name() { return columnName; }
+						@Override public String type() { return columnType; }
+						@Override public boolean unique() { return columnUnique.get(); }
+						@Override public boolean primaryKey() { return columnPrimaryKey; }
+						@Override public String check() { return columnCheck; }
+						@Override public boolean nullable() { return columnNullable;}
+					});
+				}).orElseThrow(IllegalStateException::new);
+			}).orElseThrow(UnsupportedOperationException::new);
 	}
+
+	/**
+	 * The indices defined for this table
+	 */
+	private Lazy<ImmutableList<Index>> indices = new Lazy<>(() -> Index.indicesForTable(this));
 
 	/**
 	 * Returns the list of indices associated with this table.
+	 *
+	 * @return the list of indices for this table
 	 */
-	public IterableStream<Index> indices() {
-		try {
-			return database.assemble("PRAGMA ", database.name(), ".index_list(", name(), ")")
-			               .execute()
-			               .map(row -> {
-					               Index index = new Index(row.getString("name"), row.getInt("unique") == 1, row.getString(4).equals("pk"));
-					               try {
-						               database.assemble("PRAGMA ", database.name(), ".index_info(", row.getString("name"), ")")
-						                       .execute()
-						                       .forEach(
-							                       r -> {
-								                       index.addColumn(r.getString("name"));
-							                       }
-						                       );
-					               } catch (SQLException e) {
-						               throw new UncheckedSQLException(e);
-					               }
-					               return index;
-				               }
-			               );
-		} catch (SQLException e) {
-			throw new UncheckedSQLException(e);
-		}
+	public ImmutableList<Index> indices() {
+		return indices.get();
 	}
 
 	/**
-	 * Returns the index with the given name, if it exists.
+	 * Returns the index with the given name.
 	 *
 	 * @param name the name of the index
+	 * @return the index with the given name, if it exists
 	 */
 	public Optional<Index> index(String name) {
-		try (IterableStream<Index> indices = indices()) {
-			return indices.find(index -> index.getName().equals(name));
-		}
+		return indices().find(index -> index.name().equals(name));
 	}
 
 	/**
-	 * Returns the i-th index from this table, it it exists
+	 * Returns the i-th index for this table.
 	 *
 	 * @param idx the index of the index
+	 * @return the i-th index for this table, if it exists
 	 */
 	public Optional<Index> index(int idx) {
-		try (IterableStream<Index> indices = indices()) {
-			return indices.skip(idx).findFirst();
-		}
+		return indices().skip(idx).findFirst();
 	}
 
 	/**
-	 * Find and return the primaryKey from the indices.
+	 * Returns the primary key index for this table.
 	 *
-	 * @return the primary key of the table
+	 * @return the primary key index of the table
 	 */
 	public Optional<Index> primaryKey() {
-		// Search in the indices the one which is a primary key
-		return indices().filter(index -> index.isPrimaryKey()).findFirst();
+		return indices().find(Index::primaryKey);
 	}
 
 	/**
@@ -210,8 +210,8 @@ public class Table extends PersistentStructure<TableColumn> {
 	 * @param row
 	 * @return
 	 */
-	private Trigger triggerBuilder(Row row){
-		return new Trigger(this, row .getString("name"), row.getString("sql"));
+	private Trigger triggerBuilder(Row row) {
+		return new Trigger(this, row.getString("name"), row.getString("sql"));
 	}
 
 	/**

@@ -167,10 +167,10 @@ public class TableTests {
 			// Check that there is a primary key
 			assertTrue(pk.isPresent());
 			// Check that the primary key has one column
-			assertNotNull(pk.get().getColumns());
-			assertTrue(pk.get().getColumns().size() == 1);
+			assertNotNull(pk.get().columns());
+			assertTrue(pk.get().columns().size() == 1);
 			// Check the primary key column
-			assertEquals(pk.get().getColumns().get(0), "a");
+			assertEquals(pk.get().columns().get(0), "a");
 		}
 	}
 
@@ -340,7 +340,7 @@ public class TableTests {
 
 			test = db.table("test").get();
 			Optional<Index> pk = test.primaryKey();
-			assertTrue(pk.isPresent() && pk.get().getColumns().size() == 1 && pk.get().getColumns().get(0).equals("d"));
+			assertTrue(pk.isPresent() && pk.get().columns().size() == 1 && pk.get().columns().get(0).equals("d"));
 
 			alter.execute();
 			count = db.execute("SELECT COUNT(*) FROM test").mapFirst(Row::getInt);

@@ -58,7 +58,7 @@ public class ResultColumn extends GeneratedColumn {
 			      .distinct()
 			      .forEach(table -> {
 				      try {
-					      table.primaryKey().get().getColumns().stream()
+					      table.primaryKey().get().columns().stream()
 					           .map(seen::get)
 					           .peek(col -> {
 						           if (col == null) throw new NoSuchElementException();
