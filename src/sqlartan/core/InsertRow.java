@@ -19,7 +19,7 @@ public class InsertRow {
 	}
 
 	public InsertRow set(int index, Object value) {
-		while (data.size() <= index) {
+		while (data.size() < index) {
 			data.add(null);
 		}
 		data.add(index, value);

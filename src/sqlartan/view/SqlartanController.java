@@ -559,7 +559,7 @@ public class SqlartanController {
 	 */
 	public void renameStructure(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
-		refreshView();
+		//refreshView();
 	}
 
 
