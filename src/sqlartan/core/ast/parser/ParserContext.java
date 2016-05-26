@@ -13,8 +13,11 @@ import static sqlartan.core.ast.Operator.COMMA;
 import static sqlartan.core.ast.Operator.DOT;
 
 /**
- * A parsing context
- * Keep state between parsers functions
+ * A parsing context, keeping state between parsers functions.
+ *
+ * An instance of this class is used as the unique parameter to Parser::parse
+ * functions. It provides everything required to parse the input in a single
+ * object.
  */
 public class ParserContext {
 	/**
@@ -23,7 +26,7 @@ public class ParserContext {
 	private final TokenSource source;
 
 	/**
-	 * Constructs a new parsing context using the given token source
+	 * Constructs a new parsing context using the given token source.
 	 *
 	 * @param source the token source to use
 	 */
@@ -32,7 +35,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Checks if a token matches the requested class
+	 * Checks if a token matches the requested class.
 	 *
 	 * @param token      the token to test
 	 * @param tokenClass the class to check
@@ -42,7 +45,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Checks if a token matches another one
+	 * Checks if a token matches another one.
 	 *
 	 * @param token the token to test
 	 * @param other the other token to test
@@ -52,14 +55,14 @@ public class ParserContext {
 	}
 
 	/**
-	 * Returns the current token
+	 * Returns the current token.
 	 */
 	public Token current() {
 		return source.current();
 	}
 
 	/**
-	 * Checks if the current token matches the given class
+	 * Checks if the current token matches the given class.
 	 *
 	 * @param token the token class to check
 	 */
@@ -68,7 +71,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Checks if the current token matches the given token
+	 * Checks if the current token matches the given token.
 	 *
 	 * @param token the token to check
 	 */
@@ -77,14 +80,14 @@ public class ParserContext {
 	}
 
 	/**
-	 * Returns the next token
+	 * Returns the next token.
 	 */
 	public Token next() {
 		return source.next();
 	}
 
 	/**
-	 * Checks if the next token matches the given class
+	 * Checks if the next token matches the given class.
 	 *
 	 * @param token the token class to check
 	 */
@@ -93,7 +96,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Checks if the next token matches the given token
+	 * Checks if the next token matches the given token.
 	 *
 	 * @param token the token to check
 	 */
@@ -102,15 +105,23 @@ public class ParserContext {
 	}
 
 	/**
-	 * Begin a transactional consumption of the token source
-	 * The current state of the source will be saved and can be later restored
+	 * Begin a transactional consumption of the token source.
+	 * The current state of the source will be saved and can be later restored.
+	 *
+	 * This is used when disambiguating between multiple cases cannot be done
+	 * at the branching location. In this case, the actual branch must be
+	 * guessed and in case of failure, the source is reverted back to the state
+	 * before the consumption started to attempt the alternative choice.
+	 *
+	 * Each begin() must be followed by a commit() or rollback(). It is an
+	 * error to have a modified stack at the end of a parsing function.
 	 */
 	public void begin() {
 		source.begin();
 	}
 
 	/**
-	 * Commits the current consumption of the token source
+	 * Commits the current consumption of the token source.
 	 * Remove the marker created by begin()
 	 */
 	public void commit() {
@@ -118,14 +129,19 @@ public class ParserContext {
 	}
 
 	/**
-	 * Rollbacks the token source to the last marker created with begin()
+	 * Rollbacks the token source to the last marker created with begin().
 	 */
 	public void rollback() {
 		source.rollback();
 	}
 
 	/**
-	 * Resets the current transaction by moving the restore point to the current position
+	 * Resets the current transaction by moving the restore point to the
+	 * current position.
+	 *
+	 * It does not close nor open a new translation, the markers stack if left
+	 * with the same number of elements, with the last one now moved to the
+	 * current location.
 	 */
 	public void reset() {
 		source.commit();
@@ -133,8 +149,9 @@ public class ParserContext {
 	}
 
 	/**
-	 * Consumes a token and cast it to the requested type
-	 * This operation is unsafe and the actual type of the token is not checked
+	 * Consumes a token and cast it to the requested type.
+	 * This operation is unsafe and the actual type of the token is not
+	 * checked.
 	 *
 	 * @param <T> the type of the token to return
 	 */
@@ -146,14 +163,14 @@ public class ParserContext {
 	}
 
 	/**
-	 * Unconditionally consumes a token
+	 * Unconditionally consumes a token.
 	 */
 	public void consume() {
 		source.consume();
 	}
 
 	/**
-	 * Consumes a token of the given class
+	 * Consumes a token of the given class.
 	 *
 	 * @param token the class of the token to consume
 	 * @param <T>   the type of the token to consume
@@ -164,7 +181,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Consumes a token equals to the given token
+	 * Consumes a token equals to the given token.
 	 *
 	 * @param token the token to consume
 	 * @param <T>   the type of the token to consume
@@ -175,7 +192,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Consumes a chain of tokens
+	 * Consumes a chain of tokens.
 	 *
 	 * @param tokens the tokens to consume
 	 */
@@ -184,23 +201,27 @@ public class ParserContext {
 	}
 
 	/**
-	 * Consumes an identifier token
-	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
+	 * Consumes an identifier token.
+	 *
+	 * If a Literal.Text token is encountered instead, it will be transformed
+	 * to an identifier
 	 */
 	public String consumeIdentifier() {
 		return optConsumeIdentifier().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
 	/**
-	 * Consumes a string literal token
-	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
+	 * Consumes a string literal token.
+	 *
+	 * If an Identifier token is encountered instead, it will be transformed to
+	 * a Literal.Text
 	 */
 	public String consumeTextLiteral() {
 		return optConsumeTextLiteral().orElseThrow(ParseException.UnexpectedCurrentToken);
 	}
 
 	/**
-	 * Attempts to consume a token of the given class
+	 * Attempts to consume a token of the given class.
 	 *
 	 * @param token the class of the token to consume
 	 * @param <T>   the type of the token to consume
@@ -211,7 +232,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Attempts to consume a token equals to the given token
+	 * Attempts to consume a token equals to the given token.
 	 *
 	 * @param token the token to consume
 	 * @return true if a matching token was consumed, false otherwise
@@ -223,25 +244,27 @@ public class ParserContext {
 	/**
 	 * Attempts to consume a chain of tokens.
 	 *
-	 * If the first token is a match, then every following tokens must also be a match
-	 * and tryConsume() returns true.
+	 * If the first token is a match, then every following tokens must also be
+	 * a match and tryConsume() returns true.
 	 *
-	 * If the first token is not a match, the next tokens are not consumed and tryConsume()
-	 * returns false.
+	 * If the first token is not a match, the next tokens are not consumed and
+	 * tryConsume() returns false.
 	 *
 	 * @param first the first token to consume
-	 * @param nexts the tokens to consume if the first was a match
-	 * @return true if a matching token was consumed, false otherwise
+	 * @param nexts the tokens to consume if the first one was a match
+	 * @return true if matching tokens were consumed, false otherwise
 	 */
 	public boolean tryConsume(Tokenizable<?> first, Tokenizable<?>... nexts) {
-		if (!optConsume(first).isPresent()) return false;
+		if (!tryConsume(first)) return false;
 		for (Tokenizable<?> token : nexts) consume(token);
 		return true;
 	}
 
 	/**
-	 * Attempts to consume an identifier
-	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
+	 * Attempts to consume an identifier.
+	 *
+	 * If a Literal.Text token is encountered instead, it will be transformed
+	 * to an identifier
 	 *
 	 * @return true if an identifier was consumed, false otherwise
 	 */
@@ -250,8 +273,10 @@ public class ParserContext {
 	}
 
 	/**
-	 * Attempts to consume a string literal
-	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
+	 * Attempts to consume a string literal.
+	 *
+	 * If an Identifier token is encountered instead, it will be transformed to
+	 * a Literal.Text
 	 *
 	 * @return true if a string literal was consumed, false otherwise
 	 */
@@ -260,7 +285,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Optionally consumes a token of the given class
+	 * Optionally consumes a token of the given class.
 	 *
 	 * @param token the class of the token to consume
 	 * @param <T>   the type of the token to consume
@@ -275,7 +300,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Optionally consumes a token equals to the given token
+	 * Optionally consumes a token equals to the given token.
 	 *
 	 * @param token the token to consume
 	 * @param <T>   the type of the token to consume
@@ -290,8 +315,10 @@ public class ParserContext {
 	}
 
 	/**
-	 * Optionally consumes an identifier
-	 * If a Literal.Text token is encountered instead, it will be transformed to a identifier
+	 * Optionally consumes an identifier.
+	 *
+	 * If a Literal.Text token is encountered instead, it will be transformed
+	 * to an identifier
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
@@ -306,8 +333,10 @@ public class ParserContext {
 	}
 
 	/**
-	 * Optionally consumes a string literal
-	 * If an Identifier token is encountered instead, it will be transformed to a Literal.Text
+	 * Optionally consumes a string literal.
+	 *
+	 * If an Identifier token is encountered instead, it will be transformed to
+	 * a Literal.Text
 	 *
 	 * @return an optional containing a matching token, if any
 	 */
@@ -322,7 +351,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Optionally consumes schema name prefix
+	 * Optionally consumes schema name prefix.
 	 */
 	public Optional<String> optConsumeSchema() {
 		if (next(DOT)) {
@@ -335,22 +364,23 @@ public class ParserContext {
 	}
 
 	/**
-	 * Attempts to execute another parser procedure
+	 * Attempts to execute another parser procedure.
 	 *
 	 * @param parser the parser procedure to execute
 	 * @param <N>    the type of node produced by the parser
-	 * @return an optional containing the produced node, an empty optional in case of failure
+	 * @return an optional containing the produced node, an empty optional in
+	 * case of failure
 	 */
 	public <N> Optional<N> optParse(Parser<N> parser) {
 		return transactionally(() -> parser.parse(this));
 	}
 
 	/**
-	 * Parses a list of nodes
+	 * Parses a list of nodes.
 	 *
 	 * @param separator the separator between nodes
 	 * @param parser    the parser producing list items
-	 * @param <N>       the type of node produced by the parser
+	 * @param <N>       the type of nodes produced by the parser
 	 * @return a list of nodes produced by the parser
 	 */
 	public <N> List<N> parseList(Tokenizable<?> separator, Parser<N> parser) {
@@ -361,20 +391,27 @@ public class ParserContext {
 		return list;
 	}
 
+	/**
+	 * Parses a list of nodes, using a comma as separator.
+	 *
+	 * @param parser the parser producing list items
+	 * @param <N>    the type of nodes produced by the parser
+	 */
 	public <N> List<N> parseList(Parser<N> parser) {
 		return parseList(COMMA, parser);
 	}
 
 	/**
-	 * Parses a list of nodes in the given list
+	 * Parses a list of nodes in the given list.
 	 *
 	 * @param list      the list to put the nodes in
 	 * @param separator the separator between nodes
-	 * @param parser    the parser producing list item
-	 * @param <N>       the type of node produced by the parser
-	 * @return true if at least one node was produced, false if the resulting list is empty
+	 * @param parser    the parser producing list items
+	 * @param <N>       the type of nodes produced by the parser
+	 * @return true if at least one node was produced, false otherwise
 	 */
 	public <N> boolean parseList(List<N> list, Tokenizable<?> separator, Parser<N> parser) {
+		int initial_size = list.size();
 		try {
 			begin();
 			do {
@@ -389,15 +426,23 @@ public class ParserContext {
 		} finally {
 			rollback();
 		}
-		return !list.isEmpty();
+		return initial_size != list.size();
 	}
 
+	/**
+	 * Parses a list of nodes in the given list, using a comma as separator.
+	 *
+	 * @param list the list to put the nodes in
+	 * @param parser the parser producing list items
+	 * @param <N> the type of nodes produced by the parser
+	 * @return true if at least one node was produced, false otherwise
+	 */
 	public <N> boolean parseList(List<N> list, Parser<N> parser) {
 		return parseList(list, COMMA, parser);
 	}
 
 	/**
-	 * Selects the first match from the supplied list of cases
+	 * Selects the first match from the supplied list of cases.
 	 *
 	 * @param cases a list of suppliers of cases
 	 * @param <T>   the type of the selected value
@@ -414,7 +459,7 @@ public class ParserContext {
 	}
 
 	/**
-	 * Selects the first match from the supplied list of parsers
+	 * Selects the first match from the supplied list of parsers.
 	 *
 	 * @param cases a list of parsers
 	 * @param <T>   the type of the returned value
@@ -431,9 +476,9 @@ public class ParserContext {
 	}
 
 	/**
-	 * Transactionally executes a supplier function
-	 * If a FastParseException occurs while executing the block, the token source will be rolled back
-	 * to its state at the beginning of the block.
+	 * Transactionally executes a supplier function.
+	 * If a FastParseException occurs while executing the block, the token
+	 * source will be rolled back to its state at the beginning of the block.
 	 *
 	 * @param block the function to execute
 	 * @param <T>   the return type of the function
@@ -453,14 +498,14 @@ public class ParserContext {
 		}
 	}
 
-
 	/**
 	 * Binds a Parser to this ParserContext.
-	 * Each call of the returned Supplier object will execute the parser on this
-	 * context and return the result.
 	 *
-	 * @param parser  the parser to bind
-	 * @param <T>     the type of elements returned by the parser
+	 * Each call of the returned Supplier object will execute the parser on
+	 * this context and return the result.
+	 *
+	 * @param parser the parser to bind
+	 * @param <T>    the type of elements returned by the parser
 	 */
 	public <T> Supplier<T> bind(Parser<T> parser) {
 		return () -> parser.parse(this);

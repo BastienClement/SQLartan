@@ -5,7 +5,16 @@ import sqlartan.core.ast.Operator;
 import static sqlartan.core.ast.token.Tokenizer.NumericState.*;
 import static sqlartan.core.ast.token.Tokenizer.State.*;
 
+/**
+ * SQL tokenizer.
+ *
+ * This class is responsible for turning an SQL query String to a TokenSource
+ * consumable by the parser function to parse the SQL language.
+ */
 public class Tokenizer {
+	/**
+	 * State of the tokenizer
+	 */
 	enum State {
 		WHITESPACE,
 		NUM_PLACEHOLDER,
@@ -19,6 +28,9 @@ public class Tokenizer {
 		C_COMMENT,
 	}
 
+	/**
+	 * State of the sub tokenizer handling numeric literals
+	 */
 	enum NumericState {
 		INTEGER,
 		DECIMAL,
@@ -26,20 +38,43 @@ public class Tokenizer {
 		EXPONENT
 	}
 
+	/**
+	 * Returns a slice of the input char array as a String.
+	 *
+	 * @param input the char array to use as a source for the String content
+	 * @param start the index of the first char to include in the result
+	 * @param end   the index of the char after the last one to include in
+	 *              the result.
+	 */
 	private static String slice(char[] input, int start, int end) {
 		return String.valueOf(input, start, end - start);
 	}
 
+	/**
+	 * Transforms the given SQL query to a TokenSource.
+	 *
+	 * @param sql the SQL query to tokenize
+	 * @throws TokenizeException if the source is invalid
+	 */
 	@SuppressWarnings({ "StatementWithEmptyBody", "ConstantConditions" })
 	public static TokenSource tokenize(String sql) throws TokenizeException {
+		// The TokenSource builder to use
 		TokenSource.Builder builder = TokenSource.builder();
 
+		// Convert input stream to a char array
 		char[] input = (sql + " ").toCharArray();
 		int length = input.length;
+
+		// Current lexer state
 		State state = WHITESPACE;
 
+		// The highest placeholder index encountered
 		int highest_placeholder = 0;
+
+		// The currently active quote char
 		char quote_char = '\0';
+
+		// The start index of the current token
 		int token_start = 0;
 
 		outer:
