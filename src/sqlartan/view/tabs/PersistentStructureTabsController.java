@@ -28,6 +28,8 @@ public abstract class PersistentStructureTabsController extends TabsController<T
 
 
 	@FXML
+	protected TableColumn<TableStructureTab, Number> colNo;
+	@FXML
 	protected TableColumn<TableStructureTab, String> colNull;
 	@FXML
 	protected TableColumn<TableStructureTab, String> colDefaultValue;

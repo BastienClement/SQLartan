@@ -31,8 +31,6 @@ public class DatabaseTabsController extends TabsController<DatabaseTabsControlle
 	@FXML
 	private TableColumn<DatabaseStructureTab, String> colDelete;
 	@FXML
-	private TabPane tabPane;
-	@FXML
 	private TableView<DatabaseStructureTab> structureTable;
 	private Database database;
 	private ObservableList<DatabaseStructureTab> dbStructs = FXCollections.observableArrayList();

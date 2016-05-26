@@ -8,7 +8,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
-import sqlartan.view.AllRequestController;
+import sqlartan.view.SqlTab;
 import sqlartan.view.DataTableView;
 import sqlartan.view.tabs.structureTab.StructureTab;
 import sqlartan.view.tabs.structureTab.TableStructureTab;
@@ -20,8 +20,6 @@ import java.io.IOException;
 public abstract class TabsController<T extends StructureTab> {
 
 	@FXML
-	protected TableColumn<TableStructureTab, Number> colNo;
-	@FXML
 	protected TableColumn<T, String> colName;
 	@FXML
 	protected TableColumn<T, String> colType;
@@ -30,33 +28,29 @@ public abstract class TabsController<T extends StructureTab> {
 
 	@FXML
 	protected TabPane tabPane;
-
 	@FXML
 	protected Tab structureTab;
-
-	@FXML
-	private Tab sqlTab;
-
 	@FXML
 	protected Pane sqlPane;
-
 	@FXML
 	protected TableView<TableStructureTab> structureTable;
 	@FXML
-	private AllRequestController allRequestControler;
-
+	protected Tab sqlTab;
+	@FXML
+	private SqlTab allRequestControler;
 
 	@FXML
 	protected void initialize() throws IOException {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
 
-		try {
-			Pane pane = loader.load();
-			sqlPane.getChildren().add(pane);
-			allRequestControler = loader.getController();
-			pane.prefHeightProperty().bind(sqlPane.heightProperty());
-			pane.prefWidthProperty().bind(sqlPane.widthProperty());
-		} catch (IOException ignored) {}
+		Pane pane = loader.load();
+
+		sqlPane.getChildren().add(pane);
+		allRequestControler = loader.getController();
+		pane.prefHeightProperty().bind(sqlPane.heightProperty());
+		pane.prefWidthProperty().bind(sqlPane.widthProperty());
+
+		sqlTab = allRequestControler;
 
 		colName.setCellValueFactory(param -> param.getValue().nameProperty());
 		colType.setCellValueFactory(param -> param.getValue().typeProperty());
@@ -85,8 +79,7 @@ public abstract class TabsController<T extends StructureTab> {
 	 * TODO
 	 */
 	public void selectSqlTab() {
-		tabPane.getSelectionModel().selectFirst();
-		tabPane.getSelectionModel().selectNext();
+		tabPane.getSelectionModel().select(sqlTab);
 	}
 
 }

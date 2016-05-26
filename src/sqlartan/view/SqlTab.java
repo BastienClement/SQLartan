@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import sqlartan.Sqlartan;
@@ -17,7 +18,7 @@ import sqlartan.core.Database;
 import sqlartan.core.Result;
 import java.sql.SQLException;
 
-public class AllRequestController extends Tab {
+public class SqlTab extends Tab {
 
 	@FXML
 	Button execute;
