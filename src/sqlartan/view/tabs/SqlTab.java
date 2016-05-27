@@ -1,4 +1,4 @@
-package sqlartan.view;
+package sqlartan.view.tabs;
 /*
  * Projet : SQLartan
  * Créé le 29.04.2016.
@@ -10,12 +10,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.Result;
+import sqlartan.view.DataTableView;
 import java.sql.SQLException;
 
 public class SqlTab extends Tab {
@@ -26,7 +26,6 @@ public class SqlTab extends Tab {
 	TextArea SQLTextQuery;
 	@FXML
 	StackPane userQueryView;
-	private DataTableView dataTableView = new DataTableView();
 
 	@FXML
 	private void initialize() {
@@ -42,7 +41,7 @@ public class SqlTab extends Tab {
 		try {
 			Result result = db.execute(SQLTextQuery.getText());
 			if (result.isQueryResult()) {
-				userQueryView.getChildren().add(dataTableView.getTableView(result));
+				userQueryView.getChildren().add(DataTableView.getTableView(result));
 			} else {
 				userQueryView.getChildren().add(new Text(Long.toString(result.updateCount()) + " row(s) updated"));
 				Sqlartan.getInstance().getController().refreshView();

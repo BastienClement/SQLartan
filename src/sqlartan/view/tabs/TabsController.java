@@ -9,7 +9,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
-import sqlartan.view.SqlTab;
 import java.io.IOException;
 
 /**
@@ -35,7 +34,7 @@ public abstract class TabsController {
 
 	@FXML
 	protected void initialize() throws IOException {
-		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/AllRequest.fxml"));
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/sqlTab.fxml"));
 
 		Pane pane = loader.load();
 
