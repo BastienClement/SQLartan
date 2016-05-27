@@ -676,7 +676,6 @@ public class SqlartanController {
 		// Convert the result to a username-password-pair when the login button is clicked.
 		dialog.setResultConverter(dialogButton -> {
 			if (dialogButton == okButtonType) {
-				Boolean wtf = rb1.isSelected();
 				return new Result(rb1.isSelected(), rb2.isSelected(), rb3.isSelected());
 			}
 			return null;
