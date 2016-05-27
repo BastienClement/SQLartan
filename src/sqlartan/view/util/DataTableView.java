@@ -1,4 +1,4 @@
-package sqlartan.view;
+package sqlartan.view.util;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -12,6 +12,7 @@ import sqlartan.core.Result;
  * Created by julien on 29.04.16.
  */
 public class DataTableView {
+
 
 	/**
 	 * Return a table view for any result

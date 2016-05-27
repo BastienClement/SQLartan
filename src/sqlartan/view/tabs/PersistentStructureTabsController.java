@@ -16,7 +16,7 @@ import sqlartan.Sqlartan;
 import sqlartan.core.Column;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
-import sqlartan.view.DataTableView;
+import sqlartan.view.util.DataTableView;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 

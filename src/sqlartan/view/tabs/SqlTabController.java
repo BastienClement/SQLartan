@@ -15,7 +15,7 @@ import javafx.scene.text.Text;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.core.Result;
-import sqlartan.view.DataTableView;
+import sqlartan.view.util.DataTableView;
 import java.sql.SQLException;
 
 public class SqlTabController extends Tab {
