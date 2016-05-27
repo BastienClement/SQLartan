@@ -32,7 +32,7 @@ public class Row implements Structure<GeneratedColumn> {
 	}
 
 	/**
-	 * Returns a new gui of this row with an independent currentColumn counter.
+	 * Returns a new view of this row with an independent currentColumn counter.
 	 * Both Rows are backed by the same data object.
 	 *
 	 * @return
