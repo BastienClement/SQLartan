@@ -695,11 +695,11 @@ public class SqlartanController {
 				if(file != null){
 					FileWriter fileWriter = new FileWriter(file);
 					if(result.structure){
-						fileWriter.write(db.exportStructure());
+						fileWriter.write(database.exportStructure());
 					} else if (result.data){
-						fileWriter.write(db.exportTablesData());
+						fileWriter.write(database.exportTablesData());
 					} else if (result.structureAndData){
-						fileWriter.write(db.export());
+						fileWriter.write(database.export());
 					}
 					fileWriter.close();
 				}
