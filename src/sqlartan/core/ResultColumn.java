@@ -71,6 +71,12 @@ public class ResultColumn extends GeneratedColumn {
 		return updateKeys;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param obj
+	 * @return
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof ResultColumn) {
@@ -80,6 +86,11 @@ public class ResultColumn extends GeneratedColumn {
 		return false;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	@Override
 	public int hashCode() {
 		return sourceColumn().map(col -> Objects.hash(ResultColumn.class, col.hashCode()))

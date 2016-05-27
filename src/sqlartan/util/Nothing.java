@@ -5,5 +5,8 @@ package sqlartan.util;
  * Used when no type parameter makes sense since Java does not have a bottom type.
  */
 public final class Nothing {
+	/**
+	 * Does nothing
+	 */
 	private Nothing() {}
 }

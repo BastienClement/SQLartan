@@ -8,11 +8,26 @@ import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/**
+ * Defines the view of a table
+ */
 public class View extends PersistentStructure<GeneratedColumn> implements Structure<GeneratedColumn> {
+	/**
+	 * Constructs a new view on the given database and with the given name.
+	 *
+	 * @param database
+	 * @param name
+	 */
 	protected View(Database database, String name) {
 		super(database, name);
 	}
 
+	/**
+	 * Duplicates the view.
+	 *
+	 * @param newName
+	 * @return
+	 */
 	@Override
 	public View duplicate(String newName) {
 		try {
@@ -39,6 +54,9 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 		return database.view(newName).get();
 	}
 
+	/**
+	 * Drop the view.
+	 */
 	@Override
 	public void drop() {
 		try {
@@ -48,6 +66,12 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 		}
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param row the row from table_info()
+	 * @return
+	 */
 	@Override
 	protected GeneratedColumn columnBuilder(Row row) {
 		// TODO: implements sources

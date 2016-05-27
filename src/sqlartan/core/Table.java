@@ -17,7 +17,7 @@ import static sqlartan.util.Lazy.lazy;
 import static sqlartan.util.Matching.match;
 
 /**
- * A table in a database
+ * Defines a table in a database
  */
 public class Table extends PersistentStructure<TableColumn> {
 	/**

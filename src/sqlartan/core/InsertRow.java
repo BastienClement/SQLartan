@@ -5,19 +5,48 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * TODO
+ */
 public class InsertRow {
+	/**
+	 * TODO
+	 */
 	private Table table;
+
+	/**
+	 * TODO
+	 */
 	private List<Object> data = new ArrayList<>();
 
+	/**
+	 * TODO
+	 *
+	 * @param table
+	 */
 	InsertRow(Table table) {
 		this.table = table;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param value
+	 * @return
+	 */
 	public InsertRow set(Object value) {
 		data.add(value);
 		return this;
 	}
 
+
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @param value
+	 * @return
+	 */
 	public InsertRow set(int index, Object value) {
 		while (data.size() < index) {
 			data.add(null);
@@ -26,11 +55,23 @@ public class InsertRow {
 		return this;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param values
+	 * @return
+	 */
 	public InsertRow set(Object... values) {
 		for (Object value : values) set(value);
 		return this;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
 	public Result execute() throws SQLException {
 		int cardinality = data.size();
 

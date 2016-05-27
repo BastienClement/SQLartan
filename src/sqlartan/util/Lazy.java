@@ -4,10 +4,13 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
+ * TODO
+ *
  * @param <T>
  */
 public abstract class Lazy<T> {
 	/**
+	 * TODO
 	 *
 	 * @param generator
 	 * @param <U>
@@ -18,22 +21,24 @@ public abstract class Lazy<T> {
 	}
 
 	/**
-	 *
+	 * TODO
 	 */
 	private boolean generated = false;
 
 	/**
-	 *
+	 * TODO
 	 */
 	private T value;
 
 	/**
+	 * TODO
 	 *
 	 * @return
 	 */
 	public abstract T gen();
 
 	/**
+	 * TODO
 	 *
 	 * @return
 	 */
@@ -46,6 +51,7 @@ public abstract class Lazy<T> {
 	}
 
 	/**
+	 * TODO
 	 *
 	 * @return
 	 */
@@ -54,15 +60,18 @@ public abstract class Lazy<T> {
 	}
 
 	/**
+	 * TODO
+	 *
 	 * @param <T>
 	 */
 	private static class OfGenerator<T> extends Lazy<T> {
 		/**
-		 *
+		 * TODO
 		 */
 		private Supplier<T> generator;
 
 		/**
+		 * TODO
 		 *
 		 * @param generator
 		 */

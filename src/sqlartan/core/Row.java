@@ -14,15 +14,38 @@ import java.util.function.Function;
  * A results row.
  */
 public class Row implements Structure<ResultColumn> {
+	/**
+	 * TODO
+	 */
 	private Result.QueryResult res;
+
+	/**
+	 * TODO
+	 */
 	private RowData data;
+
+	/**
+	 * TODO
+	 */
 	private int currentColumn = 1;
 
+	/**
+	 * TODO
+	 *
+	 * @param res
+	 * @param rs
+	 */
 	Row(Result.QueryResult res, ResultSet rs) {
 		this.res = res;
 		this.data = new RowData(res, rs);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param res
+	 * @param rd
+	 */
 	private Row(Result.QueryResult res, RowData rd) {
 		this.res = res;
 		this.data = rd;
@@ -36,6 +59,8 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
+	 * TODO
+	 *
 	 * @param columns
 	 * @return
 	 */
@@ -56,6 +81,8 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * TODO
+	 *
+	 * @return
 	 */
 	private Optional<ImmutableList<ResultColumn>> updateKeys() {
 		return res.uniqueColumns()
@@ -69,6 +96,8 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * TODO
+	 *
+	 * @return
 	 */
 	public boolean editable() {
 		return updateKeys().map(l -> !l.isEmpty()).orElse(false);
@@ -140,11 +169,18 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * Returns the number of columns of this row.
+	 *
+	 * @return
 	 */
 	public int size() {
 		return data.values.length;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	@Override
 	public String toString() {
 		List<ResultColumn> columns = res.columns();
@@ -165,16 +201,33 @@ public class Row implements Structure<ResultColumn> {
 	// Column proxy
 	//###################################################################
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	@Override
 	public ImmutableList<ResultColumn> columns() {
 		return res.columns();
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param name the name of the column
+	 * @return
+	 */
 	@Override
 	public Optional<ResultColumn> column(String name) {
 		return res.column(name);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param idx the index of the column
+	 * @return
+	 */
 	@Override
 	public Optional<ResultColumn> column(int idx) {
 		return res.column(idx);
@@ -184,30 +237,74 @@ public class Row implements Structure<ResultColumn> {
 	// Label access
 	//###################################################################
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public Object getObject(String label) {
 		return data.valuesIndex.get(label);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @param tClass
+	 * @param <T>
+	 * @return
+	 */
 	public <T> T getObject(String label, Class<T> tClass) {
 		return DataConverter.convert(getObject(label), tClass);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public Integer getInt(String label) {
 		return getObject(label, Integer.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public Long getLong(String label) {
 		return getObject(label, Long.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public Double getDouble(String label) {
 		return getObject(label, Double.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public String getString(String label) {
 		return getObject(label, String.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @return
+	 */
 	public byte[] getBytes(String label) {
 		throw new UnsupportedOperationException();
 	}
@@ -216,30 +313,74 @@ public class Row implements Structure<ResultColumn> {
 	// Index access
 	//###################################################################
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public Object getObject(int index) {
 		return (index > 0 && index <= data.values.length) ? data.values[index - 1] : null;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @param tClass
+	 * @param <T>
+	 * @return
+	 */
 	public <T> T getObject(int index, Class<T> tClass) {
 		return DataConverter.convert(getObject(index), tClass);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public Integer getInt(int index) {
 		return getObject(index, Integer.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public Long getLong(int index) {
 		return getObject(index, Long.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public Double getDouble(int index) {
 		return getObject(index, Double.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public String getString(int index) {
 		return getObject(index, String.class);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @return
+	 */
 	public byte[] getBytes(int index) {
 		throw new UnsupportedOperationException();
 	}
@@ -248,30 +389,67 @@ public class Row implements Structure<ResultColumn> {
 	// Sequential access
 	//###################################################################
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Object getObject() {
 		return getObject(currentColumn++);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param tClass
+	 * @param <T>
+	 * @return
+	 */
 	public <T> T getObject(Class<T> tClass) {
 		return getObject(currentColumn++, tClass);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Integer getInt() {
 		return getInt(currentColumn++);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Long getLong() {
 		return getLong(currentColumn++);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Double getDouble() {
 		return getDouble(currentColumn++);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public String getString() {
 		return getString(currentColumn++);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public byte[] getBytes() {
 		return getBytes(currentColumn++);
 	}
@@ -280,10 +458,26 @@ public class Row implements Structure<ResultColumn> {
 	// Data storage
 	//###################################################################
 
+	/**
+	 * TODO
+	 */
 	private class RowData {
+		/**
+		 * TODO
+		 */
 		private Object[] values;
+
+		/**
+		 * TODO
+		 */
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
+		/**
+		 * TODO
+		 *
+		 * @param res
+		 * @param rs
+		 */
 		private RowData(Result.QueryResult res, ResultSet rs) {
 			List<ResultColumn> columns = res.columns();
 			values = new Object[columns.size()];

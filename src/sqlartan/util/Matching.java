@@ -54,18 +54,41 @@ public class Matching<T> {
 		return new Matching<>(value).new Void();
 	}
 
+	/**
+	 * TODO
+	 */
 	private final T value;
+	/**
+	 * TODO
+	 */
 	private final Class<?> valueClass;
 
+	/**
+	 * TODO
+	 *
+	 * @param value
+	 */
 	private Matching(T value) {
 		this.value = value;
 		this.valueClass = value != null ? value.getClass() : null;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param matchClass
+	 * @return
+	 */
 	private boolean isMatch(Class<?> matchClass) {
 		return valueClass != null && matchClass.isAssignableFrom(valueClass);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param o
+	 * @return
+	 */
 	private boolean isEqual(Object o) {
 		return value == o || (value != null && value.equals(o));
 	}
@@ -85,14 +108,39 @@ public class Matching<T> {
 		return when(matchClass, truth, expr);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param matchClass
+	 * @param predicate
+	 * @param expr
+	 * @param <M>
+	 * @param <R>
+	 * @return
+	 */
 	public <M, R> Returning<R> when(Class<M> matchClass, Predicate<? super M> predicate, Function<? super M, ? extends R> expr) {
 		return new Returning<R>().when(matchClass, predicate, expr);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param matchValue
+	 * @param expr
+	 * @param <U>
+	 * @param <R>
+	 * @return
+	 */
 	public <U, R> Returning<R> when(U matchValue, Supplier<? extends R> expr) {
 		return new Returning<R>().when(matchValue, expr);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param <R>
+	 * @return
+	 */
 	public <R> Returning<R> returning() {
 		return new Returning<>();
 	}
@@ -120,6 +168,15 @@ public class Matching<T> {
 			return when(matchClass, truth, expr);
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchClass
+		 * @param pred
+		 * @param expr
+		 * @param <M>
+		 * @return
+		 */
 		@SuppressWarnings("unchecked")
 		public <M> Returning<R> when(Class<M> matchClass, Predicate<? super M> pred, Function<? super M, ? extends R> expr) {
 			if (isMatch(matchClass) && pred.test((M) value)) {
@@ -129,6 +186,14 @@ public class Matching<T> {
 			}
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchValue
+		 * @param expr
+		 * @param <U>
+		 * @return
+		 */
 		public <U> Returning<R> when(U matchValue, Supplier<? extends R> expr) {
 			if (isEqual(matchValue)) {
 				return new MatchedReturning<>(expr.get());
@@ -165,48 +230,116 @@ public class Matching<T> {
 			throw supplier.get();
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @return
+		 */
 		public final R orElseThrow() {
 			return orElseThrow(NoSuchElementException::new);
 		}
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param <R>
+	 */
 	private class MatchedReturning<R> extends Returning<R> {
+		/**
+		 * TODO
+		 */
 		private final R result;
 
+		/**
+		 * TODO
+		 *
+		 * @param result
+		 */
 		private MatchedReturning(R result) {
 			this.result = result;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchClass the class to match against
+		 * @param expr       expression to execute if this case is a match
+		 * @param <M>
+		 * @return
+		 */
 		@Override
 		public <M> Returning<R> when(Class<M> matchClass, Function<? super M, ? extends R> expr) {
 			return this;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchClass
+		 * @param pred
+		 * @param expr
+		 * @param <M>
+		 * @return
+		 */
 		@Override
 		public <M> Returning<R> when(Class<M> matchClass, Predicate<? super M> pred, Function<? super M, ? extends R> expr) {
 			return this;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchValue
+		 * @param expr
+		 * @param <U>
+		 * @return
+		 */
 		@Override
 		public <U> Returning<R> when(U matchValue, Supplier<? extends R> expr) {
 			return this;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @return
+		 */
 		@Override
 		public Optional<R> get() {
 			return Optional.ofNullable(result);
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param other
+		 * @return
+		 */
 		@Override
 		public R orElse(R other) {
 			return result;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param other
+		 * @return
+		 */
 		@Override
 		public R orElse(Supplier<? extends R> other) {
 			return result;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param supplier
+		 * @param <Z>
+		 * @return
+		 * @throws Z
+		 */
 		@Override
 		public <Z extends Throwable> R orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			return result;
@@ -229,6 +362,15 @@ public class Matching<T> {
 			return when(matchClass, truth, expr);
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchClass
+		 * @param pred
+		 * @param expr
+		 * @param <M>
+		 * @return
+		 */
 		@SuppressWarnings("unchecked")
 		public <M> Void when(Class<M> matchClass, Predicate<? super M> pred, Consumer<? super M> expr) {
 			if (isMatch(matchClass) && pred.test((M) value)) {
@@ -239,6 +381,14 @@ public class Matching<T> {
 			}
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchValue
+		 * @param expr
+		 * @param <U>
+		 * @return
+		 */
 		public <U> Void when(U matchValue, Runnable expr) {
 			if (isEqual(matchValue)) {
 				expr.run();
@@ -250,6 +400,8 @@ public class Matching<T> {
 
 		/**
 		 * If none of the previous cases were a match, executes action
+		 *
+		 * @param action
 		 */
 		public void orElse(Runnable action) {
 			action.run();
@@ -257,11 +409,18 @@ public class Matching<T> {
 
 		/**
 		 * If none of the previous cases were a match, throws the exception returned by the supplied
+		 *
+		 * @param supplier
+		 * @param <Z>
+		 * @throws Z
 		 */
 		public <Z extends Throwable> void orElseThrow(Supplier<? extends Z> supplier) throws Z {
 			throw supplier.get();
 		}
 
+		/**
+		 * TODO
+		 */
 		public final void orElseThrow() {
 			orElseThrow(NoSuchElementException::new);
 		}
@@ -271,19 +430,48 @@ public class Matching<T> {
 	 * A dummy dispatch expression that was already matched
 	 */
 	private class MatchedVoid extends Void {
+		/**
+		 * TODO
+		 *
+		 * @param matchClass
+		 * @param pred
+		 * @param expr
+		 * @param <M>
+		 * @return
+		 */
 		@Override
 		public <M> Void when(Class<M> matchClass, Predicate<? super M> pred, Consumer<? super M> expr) {
 			return this;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param matchValue
+		 * @param expr
+		 * @param <U>
+		 * @return
+		 */
 		@Override
 		public <U> Void when(U matchValue, Runnable expr) {
 			return this;
 		}
 
+		/**
+		 * TODO
+		 *
+		 * @param action
+		 */
 		@Override
 		public void orElse(Runnable action) {}
 
+		/**
+		 * TODO
+		 *
+		 * @param supplier
+		 * @param <Z>
+		 * @throws Z
+		 */
 		@Override
 		public <Z extends Throwable> void orElseThrow(Supplier<? extends Z> supplier) throws Z {}
 	}

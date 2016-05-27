@@ -5,42 +5,77 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Defines a column of a table
+ * Defines the column of a table
  */
 public class TableColumn extends Column {
+	/**
+	 * TODO
+	 */
 	public interface Properties extends Column.Properties {
 		boolean unique();
 		boolean primaryKey();
 		String check();
 	}
 
+	/**
+	 * TODO
+	 */
 	private Table parent;
+	/**
+	 * TODO
+	 */
 	private Properties props;
 
+	/**
+	 * TODO
+	 *
+	 * @param table
+	 * @param props
+	 */
 	public TableColumn(Table table, Properties props) {
 		super(props);
 		this.parent = table;
 		this.props = props;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Table parentTable() {
 		return parent;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public boolean unique() {
 		return props.unique();
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public Optional<String> check() {
 		return Optional.ofNullable(props.check());
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	public boolean primaryKey() {
 		return props.primaryKey();
 	}
 
 	/**
-	 * Rename the column
+	 * Rename the column.
 	 *
 	 * @param name
 	 */
@@ -83,7 +118,7 @@ public class TableColumn extends Column {
 	}
 
 	/**
-	 * Drop the column
+	 * Drop the column.
 	 */
 	public void drop() {
 		AlterTable alter = parentTable().alter();
@@ -91,6 +126,12 @@ public class TableColumn extends Column {
 		alter.execute();
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param obj
+	 * @return
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -103,6 +144,11 @@ public class TableColumn extends Column {
 		}
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @return
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(parent, name());
