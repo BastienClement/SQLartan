@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+
+<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.gui.controller.tabs.controller.TableTabsController">
+  <tabs>
+    <Tab fx:id="structureTab" text="Structure">
+         <content>
+            <TableView fx:id="structureTable" prefHeight="200.0" prefWidth="200.0">
+              <columns>
+                <TableColumn fx:id="colNo" prefWidth="75.0" text="#" />
+                  <TableColumn fx:id="colName" prefWidth="75.0" text="Name" />
+                <TableColumn fx:id="colType" prefWidth="75.0" text="Type" />
+                  <TableColumn fx:id="colNull" prefWidth="75.0" text="Null" />
+                  <TableColumn fx:id="colDefaultValue" prefWidth="104.0" text="Default Value" />
+                  <TableColumn fx:id="colComment" prefWidth="108.0" text="Comments" />
+                  <TableColumn fx:id="colRename" text="" />
+                  <TableColumn fx:id="colDelete" text="" />
+              </columns>
+            </TableView>
+         </content></Tab>
+    <Tab fx:id="displayTab" text="Display" />
+      <Tab fx:id="insertTab" text="Insert">
+         <content>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <TableView fx:id="insertTable" focusTraversable="false" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" styleClass="table-view-insert" stylesheets="@../../MainTheme.css" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <columns>
+                      <TableColumn fx:id="insertColName" prefWidth="75.0" text="Column" />
+                      <TableColumn fx:id="insertColType" prefWidth="75.0" text="Type" />
+                        <TableColumn fx:id="insertNull" prefWidth="75.0" text="Null" />
+                        <TableColumn fx:id="insertColValue" prefWidth="75.0" text="Value" />
+                    </columns>
+                  </TableView>
+                  <ButtonBar layoutX="36.0" layoutY="240.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    <buttons>
+                      <Button mnemonicParsing="false" onAction="#submitNewData" text="Submit" />
+                    </buttons>
+                  </ButtonBar>
+               </children>
+            </AnchorPane>
+         </content></Tab>
+      <Tab fx:id="sqlTab" text="SQL">
+         <content>
+            <StackPane fx:id="sqlPane" prefHeight="150.0" prefWidth="200.0" />
+         </content></Tab>
+  </tabs>
+</TabPane>
