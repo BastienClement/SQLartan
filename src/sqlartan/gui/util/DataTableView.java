@@ -19,22 +19,22 @@ public class DataTableView {
 	 * @return the table gui
 	 */
 	public static TableView getTableView(Result result) {
-		TableView<ObservableList<EditBidon>> tableView = new TableView<>();
+		TableView<ObservableList<EditModel>> tableView = new TableView<>();
 
 		// Create columns
 		int i = 0;
 		for (ResultColumn c : result.columns()) {
 			final int j = i++;
-			TableColumn<ObservableList<EditBidon>, EditBidon> col = new TableColumn<>(c.name());
+			TableColumn<ObservableList<EditModel>, EditModel> col = new TableColumn<>(c.name());
 			col.setCellValueFactory(tc -> new SimpleObjectProperty<>(tc.getValue().get(j)));
 			col.setCellFactory(tc -> new EditCell());
 			tableView.getColumns().add(col);
 		}
 
 		// Add datas
-		ObservableList<ObservableList<EditBidon>> rows = FXCollections.observableArrayList();
+		ObservableList<ObservableList<EditModel>> rows = FXCollections.observableArrayList();
 		result.forEach(row -> rows.add(FXCollections.observableArrayList(
-			result.columns().map(c -> new EditBidon(row, c, row.getString())))
+			result.columns().map(c -> new EditModel(row, c, row.getString())))
 		));
 		tableView.setEditable(true);
 		tableView.setItems(rows);

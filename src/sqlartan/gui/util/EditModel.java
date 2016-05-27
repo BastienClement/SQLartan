@@ -9,18 +9,18 @@ import sqlartan.core.Row;
  *
  * @author Adriano Ruberto
  */
-public class EditBidon {
+public class EditModel {
 	public final Row row;
 	public final ResultColumn column;
 	public String string;
 
-	public EditBidon(Row row, ResultColumn column, String string) {
+	public EditModel(Row row, ResultColumn column, String string) {
 		this.row = row;
 		this.column = column;
 		this.string = string;
 	}
 
-	public EditBidon update(String string) {
-		return new EditBidon(row, column, string);
+	public EditModel update(String string) {
+		return new EditModel(row, column, string);
 	}
 }

@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import sqlartan.core.util.UncheckedSQLException;
 
 /**
  * Created the 15 May 2016
@@ -12,7 +13,7 @@ import javafx.scene.input.KeyCode;
  * @author Adriano Ruberto
  * @version 1.0
  */
-public class EditCell extends TableCell<ObservableList<EditBidon>, EditBidon> {
+public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 	private TextField textField;
 
 	@Override
@@ -35,7 +36,7 @@ public class EditCell extends TableCell<ObservableList<EditBidon>, EditBidon> {
 	}
 
 	@Override
-	public void updateItem(EditBidon item, boolean empty) {
+	public void updateItem(EditModel item, boolean empty) {
 		super.updateItem(item, empty);
 		setText(null);
 		setGraphic(null);
@@ -55,7 +56,13 @@ public class EditCell extends TableCell<ObservableList<EditBidon>, EditBidon> {
 		textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
 		textField.setOnKeyReleased(t -> {
 			if (t.getCode() == KeyCode.ENTER) {
-				commitEdit(getItem().update(textField.getText()));
+				try {
+					getItem().row.update(getItem().column, textField.getText());
+					commitEdit(getItem().update(textField.getText()));
+				} catch (UncheckedSQLException e) {
+					cancelEdit();
+					throw e;
+				}
 			} else if (t.getCode() == KeyCode.ESCAPE) {
 				cancelEdit();
 			}
