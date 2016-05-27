@@ -54,8 +54,9 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	}
 
 	/**
-	 * Constructs a new IterableStream from a Supplier of independent Stream instances.
-	 * The returned IterableStream can be iterated or consumed multiple times.
+	 * Constructs a new IterableStream from a Supplier of independent Stream
+	 * instances. The returned IterableStream can be iterated or consumed
+	 * multiple times.
 	 *
 	 * @param supplier a Supplier of independent Stream instances
 	 * @param <U>      the type of elements in the stream
@@ -66,8 +67,9 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Concatenates two IterableStream.
-	 * The resulting stream will contain every elements from the first stream followed
-	 * by elements from the second.
+	 *
+	 * The resulting stream will contain every elements from the first stream
+	 * followed by elements from the second.
 	 *
 	 * @param a   the first stream to concatenate
 	 * @param b   the second stream to concatenate
@@ -84,11 +86,13 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Returns a reiterable copy of this IterableStream.
-	 * If this stream is already reiterable the same object is returned, else a new
-	 * IterableStream is constructed if one does not already exists for this object.
 	 *
-	 * Calling this method on a non-reiterable IterableStream will consume the original
-	 * stream and constructs an ImmutableList containing all elements from the stream.
+	 * If this stream is already reiterable the same object is returned,
+	 * else a new IterableStream is constructed.
+	 *
+	 * Calling this method on a non-reiterable IterableStream will consume
+	 * the original stream and constructs an ImmutableList containing every
+	 * elements from the stream.
 	 */
 	default IterableStream<T> reiterable() {
 		return isReiterable() ? this : ImmutableList.from(this);
@@ -96,8 +100,10 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Transforms this IterableStream to an ImmutableList.
-	 * ImmutableList also implements the IterableStream but is guaranteed to be reiterable,
-	 * implements the List interface and offers random access to elements.
+	 *
+	 * ImmutableList also implements the IterableStream but is guaranteed
+	 * to be reiterable, implements the List interface and offers random
+	 * access to elements.
 	 */
 	default ImmutableList<T> toList() {
 		return ImmutableList.from(this);
@@ -105,6 +111,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Returns a view of this object.
+	 *
 	 * A view is guaranteed to be backed by a Stream pipeline and not a List.
 	 * If called on a Stream, returns itself.
 	 */
@@ -132,10 +139,11 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * Performs a map/filter in a single operation.
 	 *
 	 * The mapping function must returns Optionals of the intended result type
-	 * that either contains a value or are empty. Empty optionals are then filtered
-	 * and the remaining values are unwrapped to produce the result stream.
+	 * that either contains a value or are empty. Empty optionals are then
+	 * filtered and the remaining values are unwrapped to produce the result
+	 * stream.
 	 *
-	 * Combination of map(), filter(Optional::isPresent) and map(Optional::get).
+	 * Combination of map(), filter(Optional::isPresent), map(Optional::get).
 	 *
 	 * @param mapper the mapping function
 	 * @param <R>    the type of the result
@@ -146,7 +154,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * Returns the first element of this stream after applying the mapper
 	 * function to it, if any.
 	 *
-	 * Combination of findFirst() and map()
+	 * Combination of findFirst(), map().
 	 *
 	 * @param mapper the mapping function
 	 * @param <R>    the type of the result
@@ -171,34 +179,76 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 */
 	Optional<T> find(Predicate<? super T> predicate);
 
+	/**
+	 * Tests whether a predicate holds for some of the elements of this stream.
+	 *
+	 * @param predicate a predicate function
+	 * @return true if the predicate holds for at least one element
+	 */
+	boolean exists(Predicate<? super T> predicate);
+
+	/**
+	 * Tests whether there is at least one element in this stream.
+	 *
+	 * @return true if there is at least one elements
+	 */
+	boolean exists();
+
 	//
 	// Stream methods
 	//
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> distinct();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> filter(Predicate<? super T> predicate);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	<R> IterableStream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> limit(long maxSize);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	<R> IterableStream<R> map(Function<? super T, ? extends R> mapper);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> peek(Consumer<? super T> action);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> skip(long n);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> sorted();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> sorted(Comparator<? super T> comparator);
 
@@ -206,15 +256,27 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	// BaseStream methods
 	//
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> onClose(Runnable closeHandler);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> parallel();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> sequential();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	IterableStream<T> unordered();
 
@@ -222,9 +284,15 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	// Disambiguate methods by removing default implementations
 	//
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	void forEach(Consumer<? super T> action);
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	Spliterator<T> spliterator();
 }

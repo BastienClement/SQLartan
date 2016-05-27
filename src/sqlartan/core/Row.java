@@ -8,27 +8,124 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 /**
  * A results row.
  */
-public class Row implements Structure<GeneratedColumn> {
-	private Result res;
+public class Row implements Structure<ResultColumn> {
+	private Result.QueryResult res;
 	private RowData data;
 	private int currentColumn = 1;
 
-	Row(Result res, ResultSet rs) {
+	Row(Result.QueryResult res, ResultSet rs) {
 		this.res = res;
 		this.data = new RowData(res, rs);
 	}
 
-	private Row(Result res, RowData rd) {
+	private Row(Result.QueryResult res, RowData rd) {
 		this.res = res;
 		this.data = rd;
 	}
 
+	/**
+	 * TODO
+	 */
 	public void reset() {
 		currentColumn = 1;
+	}
+
+	/**
+	 * @param columns
+	 * @return
+	 */
+	private Function<Table, ImmutableList<ResultColumn>> updatePartialFilter(ImmutableList<ResultColumn> columns) {
+		return table -> {
+			ImmutableList<Index> indices = table.indices();
+			return columns.filter(
+				col -> (col.type().equals("INTEGER") && col.sourceColumn().orElseThrow(IllegalStateException::new).primaryKey()) || indices.exists(
+					index -> index.columns().allMatch(
+						name -> columns.exists(
+							c -> c.sourceColumn().orElseThrow(IllegalStateException::new).name().equals(name)
+						)
+					)
+				)
+			);
+		};
+	}
+
+	/**
+	 * TODO
+	 */
+	private Optional<ImmutableList<ResultColumn>> updateKeys() {
+		return res.uniqueColumns()
+		          .map(list -> list.filter(col -> getObject(col.index()) != null))
+		          .flatMap(list -> list.findFirst()
+		                           .map(GeneratedColumn::sourceTable)
+		                           .map(ot -> ot.orElseThrow(IllegalStateException::new))
+		                           .map(updatePartialFilter(list))
+		          );
+	}
+
+	/**
+	 * TODO
+	 */
+	public boolean editable() {
+		return updateKeys().map(l -> !l.isEmpty()).orElse(false);
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @param column
+	 * @param value
+	 * @return
+	 */
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
+	public Result update(ResultColumn column, Object value) {
+		if (!editable()) throw new UnsupportedOperationException("Column is not editable");
+		ImmutableList<ResultColumn> keys = updateKeys().get();
+
+		Table table = column.sourceTable().get();
+		TableColumn target = column.sourceColumn().get();
+
+		ImmutableList<String> refs = keys.map(c -> c.sourceColumn().get().name());
+		ImmutableList<Object> data = keys.map(c -> getObject(c.index()));
+
+		String phs = String.join(" AND ", refs.map(n -> "[" + n + "]" + " = ?"));
+
+		try {
+			PreparedQuery pq = res.database()
+			                      .assemble("UPDATE ", table.fullName(), " SET ", target.name(), " = ? WHERE " + phs)
+			                      .prepare();
+			pq.set(1, value);
+			for (int i = 0, j = 2; i < data.size(); i++, j++) { pq.set(j, data.get(i)); }
+			return pq.execute();
+		} catch (SQLException e) {
+			throw new UncheckedSQLException(e);
+		}
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @param index
+	 * @param value
+	 * @return
+	 */
+	public Optional<Result> update(int index, Object value) {
+		return column(index).map(c -> update(c, value));
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @param label
+	 * @param value
+	 * @return
+	 */
+	public Optional<Result> update(String label, Object value) {
+		return column(label).map(c -> update(c, value));
 	}
 
 	/**
@@ -50,7 +147,7 @@ public class Row implements Structure<GeneratedColumn> {
 
 	@Override
 	public String toString() {
-		List<GeneratedColumn> columns = res.columns();
+		List<ResultColumn> columns = res.columns();
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("Row(");
@@ -69,17 +166,17 @@ public class Row implements Structure<GeneratedColumn> {
 	//###################################################################
 
 	@Override
-	public ImmutableList<GeneratedColumn> columns() {
+	public ImmutableList<ResultColumn> columns() {
 		return res.columns();
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(String name) {
+	public Optional<ResultColumn> column(String name) {
 		return res.column(name);
 	}
 
 	@Override
-	public Optional<GeneratedColumn> column(int idx) {
+	public Optional<ResultColumn> column(int idx) {
 		return res.column(idx);
 	}
 
@@ -187,8 +284,8 @@ public class Row implements Structure<GeneratedColumn> {
 		private Object[] values;
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
-		private RowData(Result res, ResultSet rs) {
-			List<GeneratedColumn> columns = res.columns();
+		private RowData(Result.QueryResult res, ResultSet rs) {
+			List<ResultColumn> columns = res.columns();
 			values = new Object[columns.size()];
 
 			int currentColumn = 1;

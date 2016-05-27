@@ -4,34 +4,44 @@ import sqlartan.core.ast.Keyword;
 import sqlartan.core.ast.Operator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import static sqlartan.core.ast.Keyword.NOT;
 import static sqlartan.core.ast.Operator.*;
 import static sqlartan.util.Matching.dispatch;
 
 /**
- * SQL Generator helper
+ * The SQL Generator helper.
+ *
  * This class wraps a StringBuilder object and provides utility functions for
- * appending Node and lists.
+ * appending Node and lists. Most methods of this class returns the object
+ * itself, allowing the calls to be chained.
  */
+@SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public class Builder {
 	/**
-	 * Define default spacing for the next token
+	 * Defines default spacing for the next token.
+	 * Some tokens might ignore this indication in certain context.
 	 */
 	private enum Spacing {
 		Space, NoSpace
 	}
 
 	/**
-	 * The internal StringBuilder object
+	 * The internal StringBuilder object.
 	 */
 	private StringBuilder builder = new StringBuilder();
 
 	/**
-	 * The last type of element appended to this builder
+	 * The spacing property of the last element appended to this builder.
 	 */
 	private Spacing last = Spacing.NoSpace;
 
+	/**
+	 * Appends a single keyword.
+	 *
+	 * @param keyword the SQL keyword to append
+	 */
 	public Builder append(Keyword keyword) {
 		if (last == Spacing.Space) builder.append(" ");
 		builder.append(keyword.name);
@@ -39,11 +49,21 @@ public class Builder {
 		return this;
 	}
 
+	/**
+	 * Appends multiple keywords.
+	 *
+	 * @param keywords multiple keywords to append to this Builder
+	 */
 	public Builder append(Keyword... keywords) {
 		for (Keyword keyword : keywords) append(keyword);
 		return this;
 	}
 
+	/**
+	 * Appends a single operator.
+	 *
+	 * @param operator the operator to append
+	 */
 	public Builder append(Operator operator) {
 		if (last == Spacing.Space && operator != COMMA && operator != RIGHT_PAREN && operator != DOT && operator != SEMICOLON) {
 			builder.append(" ");
@@ -53,17 +73,40 @@ public class Builder {
 		return this;
 	}
 
+	/**
+	 * Appends multiple operators.
+	 *
+	 * @param operators multiple operators to append to this Builder
+	 */
 	public Builder append(Operator... operators) {
 		for (Operator operator : operators) append(operator);
 		return this;
 	}
 
+	/**
+	 * Appends multiple keywords or operators.
+	 * The runtime type of each arguments is used to dispatch the elements
+	 * between append(Operator) and append(Keyword).
+	 *
+	 * @param items the items to append to this Builder
+	 */
 	public Builder append(KeywordOrOperator... items) {
 		for (KeywordOrOperator item : items) {
-			//noinspection Convert2MethodRef
-			dispatch(item).when(Keyword.class, kw -> append(kw))
-			              .when(Operator.class, op -> append(op));
+			dispatch(item).when(Keyword.class, (Consumer<Keyword>) this::append)
+			              .when(Operator.class, (Consumer<Operator>) this::append);
 		}
+		return this;
+	}
+
+	/**
+	 * Appends an unary operator.
+	 * Unary operators follow different spacing rule than equivalent binary operators.
+	 *
+	 * @param operator the unary operator to append
+	 */
+	public Builder appendUnary(KeywordOrOperator operator) {
+		append(operator);
+		if (operator != NOT) last = Spacing.NoSpace;
 		return this;
 	}
 
@@ -79,14 +122,19 @@ public class Builder {
 	}
 
 	/**
-	 * Appends a list of Nodes to the output, separated by the given separator.
+	 * Appends a list of elements to the output, separated by the given separator.
 	 *
-	 * @param nodes     the list of nodes to append
-	 * @param separator the separator between each element
+	 * The given adapter will be called on each elements of the list to convert it
+	 * to a Buildable instance.
+	 *
+	 * @param items     a list of items to append to the output
+	 * @param adapter   an adapter that can convert an item of type T to a Buildable
+	 * @param separator the separator to use between the items
+	 * @param <T>       the initial type of the items
 	 */
-	public <T> Builder append(List<? extends T> nodes, Function<? super T, ? extends Buildable> adapter, Buildable separator) {
+	public <T> Builder append(List<? extends T> items, Function<? super T, ? extends Buildable> adapter, Buildable separator) {
 		boolean first = true;
-		for (T item : nodes) {
+		for (T item : items) {
 			if (first) {
 				first = false;
 			} else if (separator != Keyword.VOID) {
@@ -97,34 +145,45 @@ public class Builder {
 		return this;
 	}
 
-	public Builder append(List<? extends Buildable> nodes, Buildable separator) {
-		return append(nodes, Function.identity(), separator);
+	/**
+	 * Appends a list of Buildable instances to the output, separated by the given separator.
+	 *
+	 * @param items     a list of Buildable to append
+	 * @param separator the seoarator to use between the items
+	 */
+	public Builder append(List<? extends Buildable> items, Buildable separator) {
+		return append(items, Function.identity(), separator);
 	}
 
 	/**
-	 * Appends a list of Nodes to the output.
-	 * The separator used will be the string ", ".
+	 * Appends a list of items to the output, separated by a comma.
 	 *
-	 * @param nodes the list of nodes to append
+	 * @param items   a list of items to append to the output
+	 * @param adapter an adapter that can convert an item of type T to a Buildable
+	 * @param <T>     the initial type of the items
 	 */
-	public <T> Builder append(List<? extends T> nodes, Function<? super T, ? extends Buildable> adapter) {
-		return append(nodes, adapter, COMMA);
+	public <T> Builder append(List<? extends T> items, Function<? super T, ? extends Buildable> adapter) {
+		return append(items, adapter, COMMA);
 	}
 
-	public Builder append(List<? extends Buildable> nodes) {
-		return append(nodes, Function.identity(), COMMA);
+	/**
+	 * Appends a list of Buildable instances to the output, separated by a comma.
+	 *
+	 * @param items a list of Buildable to append
+	 */
+	public Builder append(List<? extends Buildable> items) {
+		return append(items, Function.identity(), COMMA);
 	}
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	/**
+	 * Appends multiple optional Buildable to the output.
+	 * Each item will only be appended if the optional is non-empty.
+	 *
+	 * @param optionals multiple optionals to append to the output
+	 */
 	@SafeVarargs
 	public final Builder append(Optional<? extends Buildable>... optionals) {
 		for (Optional<? extends Buildable> optional : optionals) optional.ifPresent(this::append);
-		return this;
-	}
-
-	public Builder appendUnary(KeywordOrOperator operator) {
-		append(operator);
-		if (operator != NOT) last = Spacing.NoSpace;
 		return this;
 	}
 
@@ -141,14 +200,30 @@ public class Builder {
 		return this;
 	}
 
+	/**
+	 * Appends a list of identifiers, separated by the given separator.
+	 *
+	 * @param identifiers the identifiers to append
+	 * @param separator   the separator to use between identifiers
+	 */
 	public Builder appendIdentifiers(List<String> identifiers, Buildable separator) {
 		return append(identifiers, id -> sql -> sql.appendIdentifier(id), separator);
 	}
 
+	/**
+	 * Appends a list of identifiers, separated by a comma.
+	 *
+	 * @param identifiers the list of identifiers to append
+	 */
 	public Builder appendIdentifiers(List<String> identifiers) {
 		return appendIdentifiers(identifiers, COMMA);
 	}
 
+	/**
+	 * Appends a raw SQL fragment.
+	 *
+	 * @param fragment the SQL fragment to append
+	 */
 	public Builder appendRaw(String fragment) {
 		if (last == Spacing.Space) builder.append(" ");
 		builder.append(fragment);
@@ -179,7 +254,11 @@ public class Builder {
 		return this;
 	}
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	/**
+	 * Optionally appends a schema, does nothing if schema is empty.
+	 *
+	 * @param schema the schema name to append
+	 */
 	public Builder appendSchema(Optional<String> schema) {
 		schema.ifPresent(this::appendSchema);
 		return this;

@@ -39,7 +39,7 @@ public abstract class DataConverter {
 	}
 
 	/**
-	 * A converter construct values of a given class,
+	 * A converter constructing values of a specific class.
 	 *
 	 * @param <T> the type of the result of this Converter
 	 */
@@ -51,6 +51,9 @@ public abstract class DataConverter {
 		T fromString(String str_value);
 	}
 
+	/**
+	 * The data converter to Integer.
+	 */
 	private static class IntegerConverter implements Converter<Integer> {
 		private static Integer Zero = 0;
 		public Integer fromNull() { return Zero; }
@@ -60,6 +63,9 @@ public abstract class DataConverter {
 		public Integer fromString(String str_value) { return Integer.valueOf(str_value); }
 	}
 
+	/**
+	 * The data converter to Long.
+	 */
 	private static class LongConverter implements Converter<Long> {
 		private static Long zero = 0L;
 		public Long fromNull() { return zero; }
@@ -69,6 +75,9 @@ public abstract class DataConverter {
 		public Long fromString(String str_value) { return Long.valueOf(str_value); }
 	}
 
+	/**
+	 * The data converter to Double.
+	 */
 	private static class DoubleConverter implements Converter<Double> {
 		private static Double zero = 0.0;
 		public Double fromNull() { return zero; }
@@ -78,6 +87,9 @@ public abstract class DataConverter {
 		public Double fromString(String str_value) { return Double.valueOf(str_value); }
 	}
 
+	/**
+	 * The data converter to String.
+	 */
 	private static class StringConverter implements Converter<String> {
 		private static String empty = "";
 		public String fromNull() { return empty; }

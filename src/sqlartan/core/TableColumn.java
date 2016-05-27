@@ -1,6 +1,7 @@
 package sqlartan.core;
 
-import sqlartan.core.alterTable.AlterTable;
+import sqlartan.core.alter.AlterTable;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -32,6 +33,10 @@ public class TableColumn extends Column {
 
 	public Optional<String> check() {
 		return Optional.ofNullable(props.check());
+	}
+
+	public boolean primaryKey() {
+		return props.primaryKey();
 	}
 
 	/**
@@ -84,5 +89,22 @@ public class TableColumn extends Column {
 		AlterTable alter = parentTable().alter();
 		alter.dropColumn(this);
 		alter.execute();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		} else if (obj instanceof TableColumn) {
+			TableColumn col = (TableColumn) obj;
+			return parentTable().equals(col.parentTable()) && name().equals(col.name());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(parent, name());
 	}
 }

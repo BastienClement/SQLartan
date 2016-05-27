@@ -135,4 +135,40 @@ public class ResultsTests {
 			res.forEach(row -> {});
 		}
 	}
+
+	@Test
+	public void updateTests() throws SQLException {
+		try (Database db = Database.createEphemeral()) {
+			db.execute("CREATE TABLE foo (a INT, b INT UNIQUE, c TEXT, PRIMARY KEY (a, b))");
+			db.execute("INSERT INTO foo VALUES (1, 2, 'a'), (2, 3, 'b'), (3, 4, 'c')");
+
+			try (Result res = db.execute("SELECT * FROM foo")) {
+				Row row = res.findFirst().get();
+				boolean editable = row.editable();
+				assertTrue(editable);
+				row.update(1, 42);
+			}
+
+			try (Result res = db.execute("SELECT a, c FROM foo")) {
+				Row row = res.findFirst().get();
+				boolean editable = row.editable();
+				assertFalse(editable);
+			}
+
+			try (Result res = db.execute("SELECT b, c FROM foo")) {
+				Row row = res.findFirst().get();
+				boolean editable = row.editable();
+				assertTrue(editable);
+				row.update(1, 42);
+			}
+
+			try (Result res = db.execute("SELECT c FROM foo")) {
+				Row row = res.findFirst().get();
+				boolean editable = row.editable();
+				assertFalse(editable);
+				exception.expect(UnsupportedOperationException.class);
+				row.update(0, 42);
+			}
+		}
+	}
 }

@@ -2,6 +2,7 @@ package sqlartan.core.util;
 
 import sqlartan.core.GeneratedColumn;
 import sqlartan.core.Result;
+import sqlartan.core.ResultColumn;
 import sqlartan.core.Row;
 import sqlartan.core.stream.ImmutableList;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ abstract public class ResultPrinter {
 	 * @param res the result object
 	 */
 	public static void print(Result res) {
-		ImmutableList<GeneratedColumn> columns = res.columns();
+		ImmutableList<ResultColumn> columns = res.columns();
 
 		// Count the number of columns to display
 		int column_count = columns.size();

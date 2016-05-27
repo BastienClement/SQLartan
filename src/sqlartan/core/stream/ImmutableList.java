@@ -63,6 +63,9 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 		return ImmutableListImpl.mapping(elements, mapper);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> toList() {
 		return this;
@@ -70,6 +73,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 
 	/**
 	 * Returns an IterableStream over this list.
+	 *
 	 * The intended usage is to create transform pipeline that do not construct intermediate
 	 * immutable list at each step.
 	 */
@@ -78,19 +82,31 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 		return IterableStream.from(this::stream);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default Stream<T> stream() {
 		return List.super.stream();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default Spliterator<T> spliterator() {
 		return List.super.spliterator();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	Object[] toArray();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	Iterator<T> iterator();
 
@@ -98,56 +114,89 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	// Override transforming IterableStream methods to return ImmutableList instead
 	//
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> distinct() {
 		return ImmutableList.from(stream().distinct());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> filter(Predicate<? super T> predicate) {
 		return ImmutableList.from(stream().filter(predicate));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default <R> ImmutableList<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
 		return ImmutableList.from(stream().flatMap(mapper));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> limit(long maxSize) {
 		return ImmutableList.from(stream().limit(maxSize));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default <R> ImmutableList<R> map(Function<? super T, ? extends R> mapper) {
 		return ImmutableList.from(stream().map(mapper));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> peek(Consumer<? super T> action) {
 		return ImmutableList.from(stream().peek(action));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> skip(long n) {
 		return ImmutableList.from(stream().skip(n));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> sorted() {
 		return ImmutableList.from(stream().sorted());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default ImmutableList<T> sorted(Comparator<? super T> comparator) {
 		return ImmutableList.from(stream().sorted(comparator));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default <R> ImmutableList<R> mapOptional(Function<? super T, Optional<R>> mapper) {
 		return ImmutableList.from(stream().map(mapper).filter(Optional::isPresent).map(Optional::get));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	default void close() {}
 }
