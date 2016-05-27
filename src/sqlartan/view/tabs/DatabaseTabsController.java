@@ -13,6 +13,7 @@ import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Table;
 import sqlartan.core.View;
+import sqlartan.view.tabs.model.DatabaseStructureModel;
 import sqlartan.view.tabs.model.Model;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
@@ -25,15 +26,15 @@ import static sqlartan.view.util.ActionButtons.actionButton;
 public class DatabaseTabsController extends TabsController {
 
 	@FXML
-	private TableColumn<DatabaseStructureTab, Number> colLignes;
+	private TableColumn<DatabaseStructureModel, Number> colLignes;
 	@FXML
-	private TableColumn<DatabaseStructureTab, String> colRename;
+	private TableColumn<DatabaseStructureModel, String> colRename;
 	@FXML
-	private TableColumn<DatabaseStructureTab, String> colDelete;
+	private TableColumn<DatabaseStructureModel, String> colDelete;
 	@FXML
-	private TableView<DatabaseStructureTab> structureTable;
+	private TableView<DatabaseStructureModel> structureTable;
 	private Database database;
-	private ObservableList<DatabaseStructureTab> dbStructs = FXCollections.observableArrayList();
+	private ObservableList<DatabaseStructureModel> dbStructs = FXCollections.observableArrayList();
 
 
 	/**
@@ -48,7 +49,7 @@ public class DatabaseTabsController extends TabsController {
 		colLignes.setCellValueFactory(param -> param.getValue().lignes);
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
-			DatabaseStructureTab dbStruct = self.getTableView().getItems().get(self.getIndex());
+			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
 			String structName = dbStruct.name.get();
 			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
 				if (name.length() > 0 && !structName.equals(name)) {
@@ -58,7 +59,7 @@ public class DatabaseTabsController extends TabsController {
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
-			DatabaseStructureTab dbStruct = self.getTableView().getItems().get(self.getIndex());
+			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
 			database.structure(dbStruct.name.get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
 		}));
 
@@ -71,7 +72,7 @@ public class DatabaseTabsController extends TabsController {
 		dbStructs.clear();
 		dbStructs.addAll(database.structures()
 		                         .sorted((a, b) -> a.name().compareTo(b.name()))
-		                         .map(DatabaseStructureTab::new)
+		                         .map(DatabaseStructureModel::new)
 		                         .toList());
 		structureTable.setItems(dbStructs);
 	}
@@ -96,20 +97,5 @@ public class DatabaseTabsController extends TabsController {
 	 */
 	public void setDatabase(Database database) {
 		this.database = database;
-	}
-
-	/**
-	 * Represent the structure tab of a database
-	 */
-	private class DatabaseStructureTab extends Model {
-		private final LongProperty lignes;
-
-		private DatabaseStructureTab(PersistentStructure<?> structure) {
-			super(structure.name(), match(structure)
-				.when(Table.class, t -> "Table")
-				.when(View.class, v -> "View")
-				.orElse("Unknown"));
-			this.lignes = new SimpleLongProperty(structure.selectAll().count());
-		}
 	}
 }
