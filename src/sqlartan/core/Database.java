@@ -22,57 +22,24 @@ import static sqlartan.util.Matching.match;
 
 public class Database implements AutoCloseable {
 	/**
-	 * Constructs a new ephemeral database.
-	 *
-	 * @throws SQLException
+	 * The underlying JDBC connection
 	 */
-	public static Database createEphemeral() throws SQLException {
-		return open(":memory:");
-	}
-
-	/**
-	 * Opens a database file.
-	 *
-	 * @param path the path to the database file
-	 * @throws SQLException
-	 */
-	public static Database open(String path) throws SQLException {
-		return open(new File(path));
-	}
-
-	/**
-	 * Opens a database file.
-	 *
-	 * @param file the path to the database file
-	 * @throws SQLException
-	 */
-	public static Database open(File file) throws SQLException {
-		return new Database(file, "main", null);
-	}
-
+	protected Connection connection;
 	/**
 	 * Logical name of this database
 	 * This is always "main" for the first database in a SQLite Connection.
 	 * Additional databases loaded with ATTACH have user-defined names.
 	 */
 	private String name;
-
 	/**
 	 * File path to this database
 	 * For a memory-only database, this is an abstract file named ":memory:".
 	 */
 	private File path;
-
 	/**
 	 * Set of attached database
 	 */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
-
-	/**
-	 * The underlying JDBC connection
-	 */
-	protected Connection connection;
-
 	/**
 	 * The set of registered execute listeners
 	 */
@@ -134,7 +101,32 @@ public class Database implements AutoCloseable {
 			this.connection = connection;
 		}
 	}
-
+	/**
+	 * Constructs a new ephemeral database.
+	 *
+	 * @throws SQLException
+	 */
+	public static Database createEphemeral() throws SQLException {
+		return open(":memory:");
+	}
+	/**
+	 * Opens a database file.
+	 *
+	 * @param path the path to the database file
+	 * @throws SQLException
+	 */
+	public static Database open(String path) throws SQLException {
+		return open(new File(path));
+	}
+	/**
+	 * Opens a database file.
+	 *
+	 * @param file the path to the database file
+	 * @throws SQLException
+	 */
+	public static Database open(File file) throws SQLException {
+		return new Database(file, "main", null);
+	}
 	/**
 	 * Returns the logical name of this database.
 	 * The name of a database opened with the new operator is always "main".
@@ -154,6 +146,7 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param listener
 	 */
 	public void registerListener(Consumer<ReadOnlyResult> listener) {
@@ -162,6 +155,7 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param listener
 	 */
 	public void removeListener(Consumer<ReadOnlyResult> listener) {
@@ -178,9 +172,9 @@ public class Database implements AutoCloseable {
 	private <T> IterableStream<T> listStructures(String type, Function<String, T> builder) {
 		try {
 			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? ORDER BY name ASC")
-					.execute(type)
-					.map(Row::getString)
-					.map(builder);
+				.execute(type)
+				.map(Row::getString)
+				.map(builder);
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
@@ -197,9 +191,9 @@ public class Database implements AutoCloseable {
 	private <T> Optional<T> findStructure(String type, String name, Function<String, T> builder) {
 		try {
 			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? AND name = ?")
-					.execute(type, name)
-					.mapFirstOptional(Row::getString)
-					.map(builder);
+				.execute(type, name)
+				.mapFirstOptional(Row::getString)
+				.map(builder);
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
@@ -260,6 +254,7 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * TODO
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -375,7 +370,6 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 *
 	 * @param query
 	 * @return
 	 * @throws SQLException
@@ -466,16 +460,14 @@ public class Database implements AutoCloseable {
 	public void executeTransaction(String[] queries) throws SQLException {
 		try {
 			connection.setAutoCommit(false);
-			for(String query : queries) {
+			for (String query : queries) {
 				execute(query).close();
 			}
 			connection.commit();
-		}
-		catch (SQLException e){
+		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
-		}
-		finally {
+		} finally {
 			connection.setAutoCommit(true);
 		}
 	}
@@ -541,7 +533,7 @@ public class Database implements AutoCloseable {
 	 */
 	public void detach(String name) {
 		AttachedDatabase db = attached(name)
-				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
+			.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
 		db.detach();
 		attached.remove(name);
 	}
@@ -571,55 +563,124 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export SQL to a String
+	 * Export db to SQL
 	 *
 	 * @return
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public String export() throws SQLException{
-		// Disable foreign_keys check and begin transaction
-		String sql = "PRAGMA foreign_keys=OFF;\n" +
-			         "BEGIN TRANSACTION;\n";
+	public String export() throws SQLException {
+		return createSQLTransaction(getTablesSQL() + getTablesDataSQL() + getViewsSQL() + getTriggersSQL());
+	}
 
-		// Get every tables
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
-		sql += ";\n";
+	/**
+	 * Export Tables data to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String exportTablesData() throws SQLException {
+		return createSQLTransaction(getTablesDataSQL());
+	}
+
+	/**
+	 * Export structure to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	public String exportStructure() throws SQLException {
+		return createSQLTransaction(getTablesSQL() + getViewsSQL() + getTriggersSQL());
+	}
+
+	private String createSQLTransaction(String sql) {
+		return "PRAGMA foreign_keys=OFF;\n" +
+			"BEGIN TRANSACTION;\n" +
+			sql +
+			"COMMIT;";
+	}
+
+	/**
+	 * Export table to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTablesSQL() throws SQLException {
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export views to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getViewsSQL() throws SQLException {
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export triggers to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTriggersSQL() throws SQLException {
+		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n")) + ";\n";
+	}
+
+	/**
+	 * Export tables data to SQL
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	private String getTablesDataSQL() throws SQLException {
+		String sql = "";
 
 		// Get every values from tables
-		for(Table table : tables()){
-			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
+		for (Table table : tables()) {
+			if (assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
 				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
 				insertSQL += assemble("SELECT * FROM ", table.fullName())
-						.execute()
-						.map(row -> {
-							String s = "(";
-							for (int i = 1; i <= row.size(); i++) {
-								if(i != 1) s += ", ";
-								s += match(row.getObject(i))
-									.when(String.class, str -> "'" + str.replace("'", "''") + "'")
-									.when(Number.class, n -> n.toString())
-									.orElse(() -> {
-										return "NULL";
-									});
-								// TODO Manage byte array
-							}
-							return s + ")";
-						})
-						.collect(Collectors.joining(", "));
+					.execute()
+					.map(row -> {
+						String s = "(";
+						for (int i = 1; i <= row.size(); i++) {
+							if (i != 1) s += ", ";
+							s += match(row.getObject(i))
+								.when(String.class, str -> "'" + str.replace("'", "''") + "'")
+								.when(Number.class, n -> n.toString())
+								.orElse(() -> {
+									return "NULL";
+								});
+							// TODO Manage byte array
+						}
+						return s + ")";
+					})
+					.collect(Collectors.joining(", "));
 
 				sql += insertSQL + ";\n";
 			}
-		};
+		}
 
 		// Get every views
 		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'gui'")
-				.execute()
-				.map(Row::getString)
-				.collect(Collectors.joining(";\n"));
+			.execute()
+			.map(Row::getString)
+			.collect(Collectors.joining(";\n"));
 		sql += ";\n";
 
 		// Get every triggers
@@ -629,6 +690,6 @@ public class Database implements AutoCloseable {
 			.collect(Collectors.joining(";\n"));
 		sql += ";\n";
 
-		return sql + "COMMIT;";
+		return sql;
 	}
 }
