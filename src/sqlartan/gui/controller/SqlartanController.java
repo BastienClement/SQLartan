@@ -33,9 +33,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
 import static sqlartan.util.Matching.match;
 
 /**
@@ -47,7 +44,7 @@ public class SqlartanController {
 	/***********
 	 * ATRIBUTS*
 	 ***********/
-	private Database database = null;
+	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
 
@@ -59,7 +56,7 @@ public class SqlartanController {
 	@FXML
 	private StackPane stackPane;
 	@FXML
-	private Menu detatchMenu;
+	private Menu detachMenu;
 	@FXML
 	private Button reloadButton;
 
@@ -84,7 +81,6 @@ public class SqlartanController {
 
 	@FXML
 	private Menu databaseMenu;
-	private List<String> atachedDBs = new LinkedList<>();
 
 
 	/*****************************
@@ -122,33 +118,24 @@ public class SqlartanController {
 		viewTabPane.prefWidthProperty().bind(stackPane.widthProperty());
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-
-			Optional<? extends PersistentStructure<?>> structure = Optional.empty();
-			stackPane.getChildren().clear();
-
 			if (newValue != null) {
-				Optional<AttachedDatabase> adb = database.attached(newValue.getValue().name());
-
+				stackPane.getChildren().clear();
 				switch (newValue.getValue().type()) {
-					case DATABASE: {
+					case DATABASE:
 						stackPane.getChildren().add(databaseTabPane);
-						databaseTabsController.setDatabase(adb.isPresent() ? adb.get() : database);
+						databaseTabsController.setDatabase(newValue.getValue().database());
 						databaseTabsController.refresh();
-					}
-					break;
-					case TABLE: {
-						structure = (adb.isPresent() ? adb.get() : database).table(newValue.getValue().name());
+						break;
+					case TABLE:
 						stackPane.getChildren().add(tableTabPane);
-						structure.ifPresent(tableTabController::setStructure);
+						newValue.getValue().database().table(newValue.getValue().name()).ifPresent(tableTabController::setStructure);
 						tableTabController.refresh();
-					}
-					break;
-					case VIEW: {
-						structure = (adb.isPresent() ? adb.get() : database).view(newValue.getValue().name());
+						break;
+					case VIEW:
 						stackPane.getChildren().add(viewTabPane);
-						structure.ifPresent(viewTabsController::setStructure);
+						newValue.getValue().database().view(newValue.getValue().name()).ifPresent(viewTabsController::setStructure);
 						viewTabsController.refresh();
-					}
+						break;
 				}
 			}
 		});
@@ -487,30 +474,23 @@ public class SqlartanController {
 	 * @param dbName name that will be shown in the treeView
 	 */
 	public void attachDatabase(File file, String dbName) {
-
 		try {
 			database.attach(file, dbName);
-
-			atachedDBs.add(dbName);
 
 			MenuItem newMenuItem = new MenuItem(dbName);
 			newMenuItem.setOnAction(event -> {
 				database.detach(newMenuItem.getText());
-				detatchMenu.getItems().removeAll(newMenuItem);
+				detachMenu.getItems().removeAll(newMenuItem);
 				refreshView();
 
 			});
 
-			detatchMenu.getItems().add(newMenuItem);
+			detachMenu.getItems().add(newMenuItem);
 
 			refreshView();
-
-
 		} catch (SQLException e) {
 			Popup.error("Problem while attaching database", e.getMessage());
 		}
-
-
 	}
 
 
@@ -533,7 +513,7 @@ public class SqlartanController {
 	 */
 	public void renameStructure(PersistentStructure<?> structure, String name) {
 		structure.rename(name);
-		//refreshView();
+		refreshView();
 	}
 
 
@@ -543,7 +523,7 @@ public class SqlartanController {
 	 * @param database
 	 * @param name
 	 */
-	public void addTable(Database database, String name)  {
+	public void addTable(Database database, String name) {
 		try {
 			database.addTable(name);
 			refreshView();
@@ -606,12 +586,12 @@ public class SqlartanController {
 
 
 	/**
-	 * Detach a database from the main database
+	 * Detach a attachedDatabase from the main attachedDatabase
 	 *
-	 * @param database
+	 * @param attachedDatabase
 	 */
-	public void detachDatabase(Database database) {
-		this.database.detach(database.name());
+	public void detachDatabase(AttachedDatabase attachedDatabase) {
+		database.detach(attachedDatabase.name());
 		refreshView();
 	}
 

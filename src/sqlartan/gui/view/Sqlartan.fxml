@@ -26,8 +26,8 @@
           </Menu>
             <Menu fx:id="databaseMenu" disable="true" mnemonicParsing="false" text="Database">
               <items>
-                  <MenuItem mnemonicParsing="false" onAction="#attachButton" text="Attached Database..." />
-                  <Menu fx:id="detatchMenu" mnemonicParsing="false" text="Detatch Database" />
+                  <MenuItem mnemonicParsing="false" onAction="#attachButton" text="Attach Database..." />
+                  <Menu fx:id="detachMenu" mnemonicParsing="false" text="Detach Database" />
                 <MenuItem mnemonicParsing="false" text="Vacuum" />
                   <MenuItem mnemonicParsing="false" onAction="#importFX" text="Import" />
                   <MenuItem mnemonicParsing="false" onAction="#export" text="Export" />
