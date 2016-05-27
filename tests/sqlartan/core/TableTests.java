@@ -1,5 +1,6 @@
 package sqlartan.core;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import sqlartan.core.alter.AlterTable;
 import sqlartan.core.ast.parser.ParseException;
@@ -229,6 +230,7 @@ public class TableTests {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void alterTests() throws SQLException, ParseException {
 		try (Database db = Database.createEphemeral()) {
