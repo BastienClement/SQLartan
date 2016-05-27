@@ -8,6 +8,7 @@ import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.Lazy;
 import java.sql.*;
 import java.util.*;
+import static sqlartan.util.Lazy.lazy;
 
 /**
  * The result of a database query.
@@ -187,7 +188,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	/**
 	 * Result of an SELECT-like statement.
 	 */
-	private static class QueryResult extends Result implements IterableAdapter<Row> {
+	static class QueryResult extends Result implements IterableAdapter<Row> {
 		/**
 		 * The columns of this result set
 		 */
@@ -248,9 +249,8 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		/**
 		 * A list of the TableColumn composing this result set.
 		 */
-		private Lazy<Optional<ImmutableList<TableColumn>>> columnRefs = new Lazy<>(
-			() -> QueryResolver.resolveColumns(database(), query())
-		);
+		private Lazy<Optional<ImmutableList<TableColumn>>> columnRefs =
+			lazy(() -> QueryResolver.resolveColumns(database(), query()));
 
 		/**
 		 * Returns the source table column for a given column in the
@@ -392,6 +392,34 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 			}
 
 			super.close();
+		}
+
+		/**
+		 * A list of unique columns in this result set
+		 */
+		private Lazy<Optional<ImmutableList<ResultColumn>>> uniqueColumns =
+			new Lazy<Optional<ImmutableList<ResultColumn>>>() {
+				private int idx;
+
+				@Override
+				public Optional<ImmutableList<ResultColumn>> gen() {
+					idx = 0;
+					return QueryResolver.resolveColumns(database(), query()).map(cols ->
+						cols.map(c -> column(++idx).orElseThrow(IllegalStateException::new))
+						    .filter(c -> c.sourceColumn().orElseThrow(IllegalStateException::new).unique())
+					);
+				}
+			};
+
+		/**
+		 * Returns a list of the unique columns in the result set.
+		 * This methods only provides a result for simple select statements.
+		 *
+		 * @return A list of the unique columns in the result set, if
+		 * computable.
+		 */
+		public Optional<ImmutableList<ResultColumn>> uniqueColumns() {
+			return uniqueColumns.get();
 		}
 	}
 

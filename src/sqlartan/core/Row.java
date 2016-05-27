@@ -11,16 +11,16 @@ import java.util.*;
  * A results row.
  */
 public class Row implements Structure<ResultColumn> {
-	private Result res;
+	private Result.QueryResult res;
 	private RowData data;
 	private int currentColumn = 1;
 
-	Row(Result res, ResultSet rs) {
+	Row(Result.QueryResult res, ResultSet rs) {
 		this.res = res;
 		this.data = new RowData(res, rs);
 	}
 
-	private Row(Result res, RowData rd) {
+	private Row(Result.QueryResult res, RowData rd) {
 		this.res = res;
 		this.data = rd;
 	}
@@ -35,16 +35,15 @@ public class Row implements Structure<ResultColumn> {
 	/**
 	 * TODO
 	 */
-	private boolean isEditable(Set<ResultColumn> updateKeys) {
-		return !updateKeys.isEmpty() && updateKeys.stream().allMatch(
-			col -> getObject(col.index()) != null && col.sourceColumn().isPresent());
+	private Optional<List<ResultColumn>> updateKeys() {
+		return res.uniqueColumns().map(list -> list.filter(col -> getObject(col.index()) != null));
 	}
 
 	/**
 	 * TODO
 	 */
-	public boolean isEditable(ResultColumn column) {
-		return isEditable(column.updateKeys());
+	public boolean isEditable() {
+		return updateKeys().map(l -> !l.isEmpty()).orElse(false);
 	}
 
 	/**
@@ -55,10 +54,7 @@ public class Row implements Structure<ResultColumn> {
 	 */
 	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	public Result update(ResultColumn column, Object value) {
-		Set<ResultColumn> updateKeys = column.updateKeys();
-		if (!isEditable(updateKeys)) {
-			throw new UnsupportedOperationException("Column is not editable");
-		}
+		if (!isEditable()) throw new UnsupportedOperationException("Column is not editable");
 
 		Table table = column.sourceTable().get();
 		TableColumn tcol = column.sourceColumn().get();
@@ -261,7 +257,7 @@ public class Row implements Structure<ResultColumn> {
 		private Object[] values;
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
-		private RowData(Result res, ResultSet rs) {
+		private RowData(Result.QueryResult res, ResultSet rs) {
 			List<ResultColumn> columns = res.columns();
 			values = new Object[columns.size()];
 
