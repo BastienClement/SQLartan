@@ -6,6 +6,7 @@ import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.Lazy;
 import java.sql.SQLException;
 import java.util.Optional;
+import static sqlartan.util.Lazy.lazy;
 
 /**
  * A persistent structure in a Database.
@@ -102,7 +103,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 	/**
 	 * A lazily computed list of columns in this table
 	 */
-	private Lazy<ImmutableList<T>> columns = new Lazy<>(() -> {
+	private Lazy<ImmutableList<T>> columns = lazy(() -> {
 		try {
 			return database.assemble("PRAGMA ", database.name(), ".table_info(", name(), ")")
 			               .execute()

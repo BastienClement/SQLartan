@@ -405,7 +405,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 				public Optional<ImmutableList<ResultColumn>> gen() {
 					idx = 0;
 					return QueryResolver.resolveColumns(database(), query()).map(cols ->
-						cols.map(c -> column(++idx).orElseThrow(IllegalStateException::new))
+						cols.map(c -> column(idx++).orElseThrow(IllegalStateException::new))
 						    .filter(c -> c.sourceColumn().orElseThrow(IllegalStateException::new).unique())
 					);
 				}

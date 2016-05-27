@@ -13,6 +13,7 @@ import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
+import static sqlartan.util.Lazy.lazy;
 import static sqlartan.util.Matching.match;
 
 /**
@@ -33,7 +34,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	/**
 	 * The CREATE TABLE statement corresponding to this table
 	 */
-	private Lazy<String> createStatement = new Lazy<>(() -> {
+	private Lazy<String> createStatement = lazy(() -> {
 		try {
 			return database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'table' AND name = ?")
 			               .execute(this.name)
@@ -46,7 +47,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	/**
 	 * The parsed CREATE TABLE statement corresponding to this table
 	 */
-	private Lazy<CreateTableStatement> createStatementParsed = new Lazy<>(() -> {
+	private Lazy<CreateTableStatement> createStatementParsed = lazy(() -> {
 		try {
 			return Parser.parse(createStatement.get(), CreateTableStatement::parse);
 		} catch (ParseException e) {
@@ -142,7 +143,7 @@ public class Table extends PersistentStructure<TableColumn> {
 					String columnCheck = check.map(c -> c.expression.toSQL()).orElse(null);
 
 					// Whether this column is unique or not
-					Lazy<Boolean> columnUnique = new Lazy<>(
+					Lazy<Boolean> columnUnique = lazy(
 						() -> indices().filter(i -> i.unique() && i.columns().contains(columnName)).exists()
 					);
 
@@ -167,7 +168,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	/**
 	 * The indices defined for this table
 	 */
-	private Lazy<ImmutableList<Index>> indices = new Lazy<>(() -> Index.indicesForTable(this));
+	private Lazy<ImmutableList<Index>> indices = lazy(() -> Index.indicesForTable(this));
 
 	/**
 	 * Returns the list of indices associated with this table.

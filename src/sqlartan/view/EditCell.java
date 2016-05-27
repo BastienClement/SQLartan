@@ -17,7 +17,7 @@ public class EditCell extends TableCell<ObservableList<EditBidon>, EditBidon> {
 
 	@Override
 	public void startEdit() {
-		if (!isEmpty() && getItem().row.isEditable(getItem().column)) {
+		if (!isEmpty() && getItem().row.editable()) {
 			super.startEdit();
 			createTextField();
 			setText(null);

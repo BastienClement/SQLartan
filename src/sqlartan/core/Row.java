@@ -44,7 +44,7 @@ public class Row implements Structure<ResultColumn> {
 	/**
 	 * TODO
 	 */
-	public boolean isEditable() {
+	public boolean editable() {
 		return updateKeys().map(l -> !l.isEmpty()).orElse(false);
 	}
 
@@ -56,7 +56,7 @@ public class Row implements Structure<ResultColumn> {
 	 */
 	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	public Result update(ResultColumn column, Object value) {
-		if (!isEditable()) throw new UnsupportedOperationException("Column is not editable");
+		if (!editable()) throw new UnsupportedOperationException("Column is not editable");
 		ImmutableList<ResultColumn> keys = updateKeys().get();
 
 		Table table = column.sourceTable().get();
