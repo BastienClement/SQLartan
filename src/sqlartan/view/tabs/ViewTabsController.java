@@ -1,21 +1,21 @@
 package sqlartan.view.tabs;
 
-import java.io.IOException;
+import javafx.scene.control.Tab;
 
 /**
  * Created by julien on 24.05.16.
  */
 public class ViewTabsController extends PersistentStructureTabsController {
 
-	protected void initialize() throws IOException {
-		super.initialize();
-
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			if (newTab == displayTab) {
-				displayData();
-			} else if (newTab == structureTab) {
-				displayStructure();
-			}
-		});
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void refresh(Tab selected) {
+		if (selected == structureTab) {
+			displayStructure();
+		} else if (selected == displayTab) {
+			displayData();
+		}
 	}
 }

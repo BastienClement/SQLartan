@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
@@ -32,17 +33,16 @@ public class DatabaseTabsController extends TabsController {
 	private TableView<DatabaseStructureTab> structureTable;
 	private Database database;
 	private ObservableList<DatabaseStructureTab> dbStructs = FXCollections.observableArrayList();
+
+
+	/**
+	 * Add button rename and drop to structure tab
+	 *
+	 * @throws IOException
+	 */
 	@FXML
 	protected void initialize() throws IOException {
 		super.initialize();
-
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			if (newTab == structureTab) {
-				displayStructure();
-			} else if (newTab == sqlTab) {
-
-			}
-		});
 
 		colLignes.setCellValueFactory(param -> param.getValue().lignes);
 
@@ -74,10 +74,24 @@ public class DatabaseTabsController extends TabsController {
 		                         .toList());
 		structureTable.setItems(dbStructs);
 	}
+
 	/**
-	 * Set the database
+	 * {@inheritDoc}
+	 * @param newTab
+	 */
+	@Override
+	protected void refresh(Tab newTab) {
+		Tab selected = tabPane.getSelectionModel().getSelectedItem();
+		if (selected == structureTab) {
+			displayStructure();
+		}
+	}
+
+
+	/**
+	 * Set the database wich will be used in this tab
 	 *
-	 * @param database
+	 * @param database the database to work on
 	 */
 	public void setDatabase(Database database) {
 		this.database = database;

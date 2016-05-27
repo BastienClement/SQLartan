@@ -22,7 +22,7 @@
             </TableView>
          </content></Tab>
     <Tab fx:id="displayTab" text="Display" />
-      <Tab fx:id="sqlTab" text="+ SQL">
+      <Tab fx:id="sqlTab" text="SQL">
          <content>
             <StackPane fx:id="sqlPane" prefHeight="150.0" prefWidth="200.0" />
          </content></Tab>

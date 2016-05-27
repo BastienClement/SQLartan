@@ -49,8 +49,9 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		colNull.setCellValueFactory(param -> param.getValue().nullable);
 	}
 	/**
-	 * {@inheritDoc}
+	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
 	 */
+	@Override
 	protected void displayStructure() {
 		ObservableList<PersistentStructureTab> tableStructures = FXCollections.observableArrayList();
 
@@ -72,20 +73,25 @@ public abstract class PersistentStructureTabsController extends TabsController {
 
 		structureTable.setItems(tableStructures);
 	}
+
+
 	/**
 	 * Display the data table
 	 */
 	protected void displayData() {
 		displayTab.setContent(DataTableView.getTableView(structure.selectAll()));
 	}
+
+
 	/**
-	 * TODO
+	 * Set the structure to use for the structure tab
 	 *
-	 * @param structure
+	 * @param structure the structure
 	 */
 	public void setStructure(PersistentStructure<?> structure) {
 		this.structure = structure;
 	}
+
 
 	/**
 	 * Represent the structure tab for a view or a table

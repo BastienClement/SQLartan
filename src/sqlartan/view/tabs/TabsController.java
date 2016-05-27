@@ -12,7 +12,10 @@ import sqlartan.Sqlartan;
 import java.io.IOException;
 
 /**
- * Created by julien on 24.05.16.
+ * Projet : SQLartan
+ * Créé le 24.05.16.
+ *
+ * @author Julien Leroy
  */
 public abstract class TabsController {
 
@@ -30,20 +33,30 @@ public abstract class TabsController {
 	@FXML
 	protected Tab sqlTab;
 	@FXML
-	private SqlTabController allRequestControler;
+	private SqlTabController sqlTabController;
 
+
+	/**
+	 * Initialize tabs structure and sql
+	 *
+	 * @throws IOException
+	 */
 	@FXML
 	protected void initialize() throws IOException {
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("view/tabs/sqlTab.fxml"));
 
+		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
+			refresh(newTab);
+		});
+
 		Pane pane = loader.load();
 
 		sqlPane.getChildren().add(pane);
-		allRequestControler = loader.getController();
+		sqlTabController = loader.getController();
 		pane.prefHeightProperty().bind(sqlPane.heightProperty());
 		pane.prefWidthProperty().bind(sqlPane.widthProperty());
 
-		sqlTab = allRequestControler;
+		sqlTab = sqlTabController;
 
 		colName.setCellValueFactory(param -> param.getValue().name);
 		colType.setCellValueFactory(param -> param.getValue().type);
@@ -53,23 +66,39 @@ public abstract class TabsController {
 
 
 	/**
-	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
+	 * Call when the tab structure is clicked
 	 */
 	protected abstract void displayStructure();
 
 
 	/**
-	 * TODO
+	 * Call when a tab is selected Refresh the controller
 	 *
-	 * @param request
+	 * @param selected the selected tab
 	 */
-	public void setSqlRequest(String request) {
-		allRequestControler.setRequest(request);
+	protected abstract void refresh(Tab selected);
+
+
+	/**
+	 * Refresh the selected tab
+	 */
+	public void refresh() {
+		refresh(tabPane.getSelectionModel().getSelectedItem());
 	}
 
 
 	/**
-	 * TODO
+	 * Set the text in the sqlTab
+	 *
+	 * @param request the request to put
+	 */
+	public void setSqlRequest(String request) {
+		sqlTabController.setRequest(request);
+	}
+
+
+	/**
+	 * Select the sql tab
 	 */
 	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();
@@ -77,7 +106,7 @@ public abstract class TabsController {
 	}
 
 	/**
-	 * TODO
+	 * Represent the data to be shown in the the structure tab
 	 */
 	public abstract static class StructureTab {
 		public final StringProperty name;

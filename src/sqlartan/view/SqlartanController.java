@@ -134,6 +134,7 @@ public class SqlartanController {
 					case DATABASE: {
 						stackPane.getChildren().add(databaseTabPane);
 						databaseTabsController.setDatabase(database);
+						databaseTabsController.refresh();
 					}
 					break;
 					case TABLE: {
@@ -147,6 +148,7 @@ public class SqlartanController {
 						structure = database.view(newValue.getValue().name());
 						stackPane.getChildren().add(viewTabPane);
 						structure.ifPresent(viewTabsController::setStructure);
+						viewTabsController.refresh();
 					}
 				}
 			}

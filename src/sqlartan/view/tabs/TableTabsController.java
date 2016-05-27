@@ -20,6 +20,7 @@ import static sqlartan.view.util.ActionButtons.actionButton;
 
 
 /**
+ * TODO JAVADOC
  * Created by julien on 29.04.16.
  */
 public class TableTabsController extends PersistentStructureTabsController {
@@ -41,19 +42,15 @@ public class TableTabsController extends PersistentStructureTabsController {
 	@FXML
 	private TableView<InsertRowStructure> insertTable;
 
+	private ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
+
+	/**
+	 * {@inheritDoc}
+	 * Create the button rename and drop, complete the structure tab
+	 */
 	@FXML
 	protected void initialize() throws IOException {
 		super.initialize();
-
-		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			if (newTab == displayTab) {
-				displayData();
-			} else if (newTab == structureTab) {
-				displayStructure();
-			} else if (newTab == insertTab) {
-				displayInsertTab();
-			}
-		});
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			StructureTab tableStruct = self.getTableView().getItems().get(self.getIndex());
@@ -70,7 +67,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 			Sqlartan.getInstance().getController().refreshView();
 		}));
 
-		insertTable.setEditable(true);
+		insertTable.setEditable(true); // TODO test false
 
 		insertColName.setCellValueFactory(param -> param.getValue().name);
 		insertColType.setCellValueFactory(param -> param.getValue().type);
@@ -92,32 +89,11 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 
 	/**
-	 * TODO
-	 */
-	public void refresh() {
-		switch (tabPane.getSelectionModel().getSelectedIndex()) {
-			case 0: {
-				displayStructure();
-			}
-			break;
-			case 1: {
-				displayData();
-			}
-			break;
-			case 2: {
-				displayInsertTab();
-			}
-		}
-	}
-
-	/**
-	 * TODO
+	 * Display the insert tab
 	 */
 	private void displayInsertTab() {
-		ObservableList<InsertRowStructure> insertRows = FXCollections.observableArrayList();
-
+		insertRows.clear();
 		insertRows.addAll(structure.columns().map(InsertRowStructure::new).toList());
-
 		insertTable.setItems(insertRows);
 	}
 
@@ -139,6 +115,21 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 		} catch (Exception e) {
 			Popup.error("Error while inserting data", e.getMessage());
+		}
+	}
+
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void refresh(Tab selected) {
+		if (selected == structureTab) {
+			displayStructure();
+		} else if (selected == displayTab) {
+			displayData();
+		} else if (selected == insertTab) {
+			displayInsertTab();
 		}
 	}
 	/**
@@ -170,6 +161,8 @@ public class TableTabsController extends PersistentStructureTabsController {
 				}
 			});
 		}
+
+
 		/**
 		 * Make an object table with the good typs for the sql insertion
 		 *

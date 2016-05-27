@@ -18,6 +18,9 @@ import sqlartan.core.Result;
 import sqlartan.view.util.DataTableView;
 import java.sql.SQLException;
 
+/**
+ * TODO
+ */
 public class SqlTabController extends Tab {
 
 	@FXML
@@ -51,6 +54,11 @@ public class SqlTabController extends Tab {
 		}
 	}
 
+	/**
+	 * Set the specific request
+	 *
+	 * @param request
+	 */
 	public void setRequest(String request) {
 		SQLTextQuery.setText(request);
 	}
