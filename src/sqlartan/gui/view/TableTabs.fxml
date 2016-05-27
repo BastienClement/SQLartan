@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.StackPane?>
 
-<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.gui.controller.tabs.controller.TableTabsController">
+<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.gui.controller.tabs.TableTabsController">
   <tabs>
     <Tab fx:id="structureTab" text="Structure">
          <content>
@@ -31,7 +31,7 @@
          <content>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <TableView fx:id="insertTable" focusTraversable="false" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" styleClass="table-view-insert" stylesheets="@../../MainTheme.css" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TableView fx:id="insertTable" focusTraversable="false" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" styleClass="table-view-insert" stylesheets="@../MainTheme.css" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columns>
                       <TableColumn fx:id="insertColName" prefWidth="75.0" text="Column" />
                       <TableColumn fx:id="insertColType" prefWidth="75.0" text="Type" />

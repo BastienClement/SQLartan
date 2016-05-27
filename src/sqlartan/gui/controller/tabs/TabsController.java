@@ -42,7 +42,7 @@ public abstract class TabsController {
 	 */
 	@FXML
 	protected void initialize() throws IOException {
-		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/tabs/sqlTab.fxml"));
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/sqlTab.fxml"));
 
 		tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
 			refresh(newTab);

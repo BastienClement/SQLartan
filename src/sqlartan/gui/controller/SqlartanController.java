@@ -26,11 +26,10 @@ import sqlartan.core.TableColumn;
 import sqlartan.core.alterTable.AlterTable;
 import sqlartan.core.ast.token.TokenizeException;
 import sqlartan.util.UncheckedException;
-import sqlartan.gui.attached.AttachedChooserController;
-import sqlartan.gui.tabs.controller.DatabaseTabsController;
-import sqlartan.gui.tabs.controller.TableTabsController;
-import sqlartan.gui.tabs.controller.ViewTabsController;
-import sqlartan.gui.treeitem.*;
+import sqlartan.gui.controller.tabs.DatabaseTabsController;
+import sqlartan.gui.controller.tabs.TableTabsController;
+import sqlartan.gui.controller.tabs.ViewTabsController;
+import sqlartan.gui.controller.treeitem.*;
 import sqlartan.gui.util.Popup;
 import java.io.File;
 import java.io.FileWriter;
@@ -103,15 +102,15 @@ public class SqlartanController {
 
 		treeView.setCellFactory(param -> new CustomTreeCell(this));
 
-		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/tabs/DatabaseTabs.fxml"));
+		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/DatabaseTabs.fxml"));
 		databaseTabPane = loader.load();
 		databaseTabsController = loader.getController();
 
-		loader = new FXMLLoader(Sqlartan.class.getResource("gui/tabs/TableTabs.fxml"));
+		loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/TableTabs.fxml"));
 		tableTabPane = loader.load();
 		tableTabController = loader.getController();
 
-		loader = new FXMLLoader(Sqlartan.class.getResource("gui/tabs/ViewTabs.fxml"));
+		loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/ViewTabs.fxml"));
 		viewTabPane = loader.load();
 		viewTabsController = loader.getController();
 
@@ -241,7 +240,7 @@ public class SqlartanController {
 
 		try {
 
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/attached/AttachedChooser.fxml"));
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/AttachedChooser.fxml"));
 
 			stage.setTitle("SQLartan");
 			attachedChooser = loader.load();
@@ -335,7 +334,7 @@ public class SqlartanController {
 		Pane pane;
 
 		try {
-			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/about/About.fxml"));
+			FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/About.fxml"));
 
 			stage.setTitle("SQLartan - About");
 			pane = loader.load();

@@ -236,17 +236,17 @@ public class Database implements AutoCloseable {
 	 * Returns a stream of views in this database.
 	 */
 	public IterableStream<View> views() {
-		return listStructures("view", n -> new View(this, n));
+		return listStructures("gui", n -> new View(this, n));
 	}
 
 	/**
-	 * Returns the view with the given name, if it exists.
-	 * If the view does not exist, an empty Optional is returned.
+	 * Returns the gui with the given name, if it exists.
+	 * If the gui does not exist, an empty Optional is returned.
 	 *
-	 * @param name the name of the view
+	 * @param name the name of the gui
 	 */
 	public Optional<View> view(String name) {
-		return findStructure("view", name, n -> new View(this, n));
+		return findStructure("gui", name, n -> new View(this, n));
 	}
 
 	/**
@@ -616,7 +616,7 @@ public class Database implements AutoCloseable {
 		};
 
 		// Get every views
-		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
+		sql += assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'gui'")
 				.execute()
 				.map(Row::getString)
 				.collect(Collectors.joining(";\n"));

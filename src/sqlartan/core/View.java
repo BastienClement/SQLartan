@@ -16,8 +16,8 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 	@Override
 	public View duplicate(String newName) {
 		try {
-			// retrieve the view creation sql
-			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'view' AND name = ?")
+			// retrieve the gui creation sql
+			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'gui' AND name = ?")
 			                     .execute(name)
 			                     .mapFirst(Row::getString);
 
@@ -26,7 +26,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 			create.name = newName;
 			create.schema = Optional.of(database.name());
 
-			// Execute the new sql, add the new view
+			// Execute the new sql, add the new gui
 			database.execute(create.toSQL());
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
@@ -34,7 +34,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 			throw new UncheckedException(e);
 		}
 
-		// Gets the new view, without inspection
+		// Gets the new gui, without inspection
 		// noinspection OptionalGetWithoutIsPresent
 		return database.view(newName).get();
 	}
