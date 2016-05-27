@@ -1,10 +1,6 @@
 package sqlartan.view.tabs;
 
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -13,9 +9,9 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
-import sqlartan.core.Column;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.view.tabs.model.PersistentStructureModel;
 import sqlartan.view.util.DataTableView;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
@@ -31,15 +27,15 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	protected Tab displayTab;
 	protected PersistentStructure<?> structure;
 	@FXML
-	protected TableView<PersistentStructureTab> structureTable;
+	protected TableView<PersistentStructureModel> structureTable;
 	@FXML
-	protected TableColumn<PersistentStructureTab, Number> colNo;
+	protected TableColumn<PersistentStructureModel, Number> colNo;
 	@FXML
-	protected TableColumn<PersistentStructureTab, String> colNull;
+	protected TableColumn<PersistentStructureModel, String> colNull;
 	@FXML
-	protected TableColumn<PersistentStructureTab, String> colDefaultValue;
+	protected TableColumn<PersistentStructureModel, String> colDefaultValue;
 	@FXML
-	protected TableColumn<PersistentStructureTab, String> colComment;
+	protected TableColumn<PersistentStructureModel, String> colComment;
 	protected void initialize() throws IOException {
 		super.initialize();
 
@@ -53,12 +49,12 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	 */
 	@Override
 	protected void displayStructure() {
-		ObservableList<PersistentStructureTab> tableStructures = FXCollections.observableArrayList();
+		ObservableList<PersistentStructureModel> tableStructures = FXCollections.observableArrayList();
 
 		try {
 			int[] i = { 0 };
 			tableStructures.addAll(structure.columns()
-			                                .map(c -> new PersistentStructureTab(c, ++i[0]))
+			                                .map(c -> new PersistentStructureModel(c, ++i[0]))
 			                                .toList());
 		} catch (UncheckedSQLException e) {
 			Platform.runLater(() -> {
@@ -92,22 +88,4 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		this.structure = structure;
 	}
 
-
-	/**
-	 * Represent the structure tab for a view or a table
-	 */
-	protected class PersistentStructureTab extends TabsController.StructureTab {
-		private final IntegerProperty no;
-		private final StringProperty nullable;
-		private final StringProperty defaultValue;
-		private final StringProperty comment;
-
-		private PersistentStructureTab(Column column, int ID) {
-			super(column.name(), column.type());
-			this.no = new SimpleIntegerProperty(ID);
-			this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");
-			this.defaultValue = new SimpleStringProperty(); // TODO
-			this.comment = new SimpleStringProperty(); // TODO
-		}
-	}
 }

@@ -13,6 +13,7 @@ import sqlartan.core.Database;
 import sqlartan.core.PersistentStructure;
 import sqlartan.core.Table;
 import sqlartan.core.View;
+import sqlartan.view.tabs.model.Model;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import static sqlartan.util.Matching.match;
@@ -100,7 +101,7 @@ public class DatabaseTabsController extends TabsController {
 	/**
 	 * Represent the structure tab of a database
 	 */
-	private class DatabaseStructureTab extends StructureTab {
+	private class DatabaseStructureTab extends Model {
 		private final LongProperty lignes;
 
 		private DatabaseStructureTab(PersistentStructure<?> structure) {
