@@ -7,8 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import sqlartan.view.SqlartanController;
-import sqlartan.view.util.Popup;
+import sqlartan.gui.controller.SqlartanController;
+import sqlartan.gui.util.Popup;
 
 public class Sqlartan extends Application {
 
@@ -71,7 +71,7 @@ public class Sqlartan extends Application {
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("SQLartan");
 		FXMLLoader loader = new FXMLLoader();
-		loader.setLocation(Sqlartan.class.getResource("view/Sqlartan.fxml"));
+		loader.setLocation(Sqlartan.class.getResource("gui/view/Sqlartan.fxml"));
 		mainLayout = loader.load();
 
 		primaryStage.setScene(new Scene(mainLayout));
