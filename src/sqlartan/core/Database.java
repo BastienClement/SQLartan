@@ -20,6 +20,9 @@ import static sqlartan.core.ast.Keyword.*;
 import static sqlartan.core.ast.Operator.SEMICOLON;
 import static sqlartan.util.Matching.match;
 
+/**
+ * Defines a SQLITE database.
+ */
 public class Database implements AutoCloseable {
 	/**
 	 * Constructs a new ephemeral database.
@@ -79,6 +82,8 @@ public class Database implements AutoCloseable {
 	private Set<Consumer<ReadOnlyResult>> executeListeners = new HashSet<>();
 
 	/**
+	 * Constructs a new empty database in memory.
+	 *
 	 * @throws SQLException
 	 * @deprecated Use Database.createEphemeral() instead
 	 */
@@ -88,6 +93,8 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Load a database from a file in the given path.
+	 *
 	 * @throws SQLException
 	 * @deprecated Use Database.open(path) instead
 	 */
@@ -97,6 +104,8 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Load a database from a file.
+	 *
 	 * @throws SQLException
 	 * @deprecated Use Database.open(path) instead
 	 */
@@ -139,6 +148,8 @@ public class Database implements AutoCloseable {
 	 * Returns the logical name of this database.
 	 * The name of a database opened with the new operator is always "main".
 	 * An attached database will have the name given to attach().
+	 *
+	 * @return the name of the database
 	 */
 	public String name() {
 		return name;
@@ -147,13 +158,16 @@ public class Database implements AutoCloseable {
 	/**
 	 * Returns the file path of this database.
 	 * If this is a temporary in-memory database, returns an abstract File named ":memory:".
+	 *
+	 * @return the file containing the database
 	 */
 	public File path() {
 		return path;
 	}
 
 	/**
-	 * TODO
+	 * Register a new listener of the class Consumer<ReadOnlyResul>.
+	 *
 	 * @param listener
 	 */
 	public void registerListener(Consumer<ReadOnlyResult> listener) {
@@ -161,7 +175,8 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * TODO
+	 * Remove a listener from the database.
+	 *
 	 * @param listener
 	 */
 	public void removeListener(Consumer<ReadOnlyResult> listener) {
@@ -174,6 +189,7 @@ public class Database implements AutoCloseable {
 	 * @param type
 	 * @param builder
 	 * @param <T>
+	 * @return
 	 */
 	private <T> IterableStream<T> listStructures(String type, Function<String, T> builder) {
 		try {
@@ -189,8 +205,8 @@ public class Database implements AutoCloseable {
 	/**
 	 * TODO
 	 *
-	 * @param type
-	 * @param name
+	 * @param type      the type of the structure
+	 * @param name      the name of the structure
 	 * @param builder
 	 * @param <T>
 	 */
@@ -206,7 +222,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Returns a stream of tables in this database.
+	 * Returns every tables in this database.
+	 *
+	 * @return a stream of tables
 	 */
 	public IterableStream<Table> tables() {
 		return listStructures("table", n -> new Table(this, n));
@@ -217,15 +235,16 @@ public class Database implements AutoCloseable {
 	 * If the table does not exist, an empty Optional is returned.
 	 *
 	 * @param name the name of the table
+	 * @return the optional table
 	 */
 	public Optional<Table> table(String name) {
 		return findStructure("table", name, n -> new Table(this, n));
 	}
 
 	/**
-	 * Add a new empty table
+	 * Add a new empty table.
 	 *
-	 * @param name
+	 * @param name the name of the new table
 	 * @throws SQLException
 	 */
 	public void addTable(String name) throws SQLException {
@@ -233,7 +252,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Returns a stream of views in this database.
+	 * Returns every views in the database.
+	 *
+	 * @return a stream of views
 	 */
 	public IterableStream<View> views() {
 		return listStructures("view", n -> new View(this, n));
@@ -244,24 +265,27 @@ public class Database implements AutoCloseable {
 	 * If the view does not exist, an empty Optional is returned.
 	 *
 	 * @param name the name of the view
+	 * @return the optional view
 	 */
 	public Optional<View> view(String name) {
 		return findStructure("view", name, n -> new View(this, n));
 	}
 
 	/**
-	 * TODO
+	 * Returns every persistent structures of the database.
 	 *
-	 * @return
+	 * @return a stream of persistent structures
 	 */
 	public IterableStream<PersistentStructure<? extends Column>> structures() {
 		return IterableStream.concat(tables(), views());
 	}
 
 	/**
-	 * TODO
-	 * @param name
-	 * @return
+	 * Returns the structure with the given name, if it exists.
+	 * If the structure does not exist, an empty Optional is returned.
+	 *
+	 * @param name the name of the structure
+	 * @return the optional structure
 	 */
 	public Optional<PersistentStructure<? extends Column>> structure(String name) {
 		return Optionals.firstPresent(() -> table(name), () -> view(name));
@@ -354,6 +378,13 @@ public class Database implements AutoCloseable {
 		return new AssembledQuery(this, query.toString());
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @param query
+	 * @param res
+	 * @return
+	 */
 	Result notifyListeners(String query, Result res) {
 		for (Consumer<ReadOnlyResult> listener : executeListeners) {
 			try {
@@ -366,7 +397,7 @@ public class Database implements AutoCloseable {
 	/**
 	 * Executes a query on the database.
 	 *
-	 * @param query
+	 * @param query the String containing the query
 	 * @return the result of the query
 	 * @throws SQLException
 	 */
@@ -375,9 +406,10 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
+	 * Executes a String containing multiple queries on the database.
 	 *
-	 * @param query
-	 * @return
+	 * @param query the String containing the queries
+	 * @return a stream of results
 	 * @throws SQLException
 	 */
 	public IterableStream<Result> executeMulti(String query) throws SQLException, TokenizeException {
@@ -547,10 +579,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Import SQL from a string
+	 * Import SQL from a string.
 	 *
-	 * @param sql
-	 * @return
+	 * @param sql the String containing the SQL
 	 * @throws SQLException
 	 */
 	public void importFromString(String sql) throws SQLException, TokenizeException {
@@ -558,10 +589,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Import SQL from a file
+	 * Import SQL from a file.
 	 *
-	 * @param file
-	 * @return
+	 * @param file the file containing the SQL
 	 * @throws SQLException
 	 * @throws IOException
 	 */
@@ -571,9 +601,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export db to SQL
+	 * Export the database to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 * @throws IOException
 	 */
@@ -582,9 +612,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export Tables data to SQL
+	 * Export tables data to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 * @throws IOException
 	 */
@@ -593,9 +623,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export structure to SQL
+	 * Export the structure of the database to SQL
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 * @throws IOException
 	 */
@@ -603,6 +633,12 @@ public class Database implements AutoCloseable {
 		return createSQLTransaction(getTablesSQL() + getViewsSQL() + getTriggersSQL());
 	}
 
+	/**
+	 * Put SQL inside a transaction.
+	 *
+	 * @param sql
+	 * @return the transaction
+	 */
 	private String createSQLTransaction(String sql) {
 		return "PRAGMA foreign_keys=OFF;\n" +
 			   "BEGIN TRANSACTION;\n" +
@@ -611,9 +647,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export table to SQL
+	 * Export tables to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 */
 	private String getTablesSQL() throws SQLException{
@@ -624,9 +660,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export views to SQL
+	 * Export views to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 */
 	private String getViewsSQL() throws SQLException{
@@ -637,9 +673,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export triggers to SQL
+	 * Export triggers to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 */
 	private String getTriggersSQL() throws SQLException{
@@ -650,9 +686,9 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Export tables data to SQL
+	 * Export tables data to SQL.
 	 *
-	 * @return
+	 * @return the SQL
 	 * @throws SQLException
 	 */
 	private String getTablesDataSQL() throws SQLException{

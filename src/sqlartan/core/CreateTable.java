@@ -1,7 +1,7 @@
 package sqlartan.core;
 
 /**
- * Created by matthieu.villard on 23.05.2016.
+ *
  */
 public class CreateTable {
 
