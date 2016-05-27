@@ -12,14 +12,19 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by julien on 21.05.16.
+ * Projet : SQLartan
+ * Créé le 21.05.16.
+ *
+ * @author Julien leroy
+ *
+ * TODO
  */
 public class InsertRowModel {
 	public final StringProperty name;
 	public final StringProperty type;
 	public final StringProperty value;
 	public final BooleanProperty nullable;
-	public final Type typed;
+	private final Type typed;
 
 	public InsertRowModel(Column column) {
 		name = new SimpleStringProperty(column.name());

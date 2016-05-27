@@ -11,11 +11,11 @@ import javafx.beans.property.StringProperty;
  * </p>
  * Represent the data to be shown in the the structure tab
  */
-public abstract class Model {
+public abstract class StructureModel {
 	public final StringProperty name;
 	public final StringProperty type;
 
-	public Model(String name, String type) {
+	public StructureModel(String name, String type) {
 		this.name = new SimpleStringProperty(name);
 		this.type = new SimpleStringProperty(type);
 	}

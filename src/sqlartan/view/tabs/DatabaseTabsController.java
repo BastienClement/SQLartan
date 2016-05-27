@@ -1,7 +1,5 @@
 package sqlartan.view.tabs;
 
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -10,11 +8,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
-import sqlartan.core.PersistentStructure;
-import sqlartan.core.Table;
-import sqlartan.core.View;
 import sqlartan.view.tabs.model.DatabaseStructureModel;
-import sqlartan.view.tabs.model.Model;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import static sqlartan.util.Matching.match;

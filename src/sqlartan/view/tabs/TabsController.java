@@ -7,7 +7,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.layout.Pane;
 import sqlartan.Sqlartan;
-import sqlartan.view.tabs.model.Model;
+import sqlartan.view.tabs.model.StructureModel;
 import java.io.IOException;
 
 /**
@@ -19,9 +19,9 @@ import java.io.IOException;
 public abstract class TabsController {
 
 	@FXML
-	protected TableColumn<Model, String> colName;
+	protected TableColumn<StructureModel, String> colName;
 	@FXML
-	protected TableColumn<Model, String> colType;
+	protected TableColumn<StructureModel, String> colType;
 
 	@FXML
 	protected TabPane tabPane;

@@ -10,8 +10,8 @@ import sqlartan.Sqlartan;
 import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
 import sqlartan.view.tabs.model.InsertRowModel;
+import sqlartan.view.tabs.model.StructureModel;
 import sqlartan.view.tabs.model.PersistentStructureModel;
-import sqlartan.view.tabs.model.Model;
 import sqlartan.view.util.Popup;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -52,7 +52,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 		super.initialize();
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
-			Model tableStruct = self.getTableView().getItems().get(self.getIndex());
+			StructureModel tableStruct = self.getTableView().getItems().get(self.getIndex());
 			Popup.input("Rename", "Rename " + tableStruct.name.get() + " into : ", tableStruct.name.get()).ifPresent(name -> {
 				if (name.length() > 0 && !tableStruct.name.get().equals(name)) {
 					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.name.get(), name);
@@ -61,7 +61,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
-			Model tableStruct = self.getTableView().getItems().get(self.getIndex());
+			StructureModel tableStruct = self.getTableView().getItems().get(self.getIndex());
 			((Table) structure).column(tableStruct.name.get()).ifPresent(sqlartan.core.TableColumn::drop);
 			Sqlartan.getInstance().getController().refreshView();
 		}));

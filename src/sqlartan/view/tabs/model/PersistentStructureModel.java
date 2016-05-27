@@ -7,9 +7,9 @@ import javafx.beans.property.StringProperty;
 import sqlartan.core.Column;
 
 /**
- * Represent the structure tab for a view or a table
+ *
  */
-public class PersistentStructureModel extends Model {
+public class PersistentStructureModel extends StructureModel {
 	public final IntegerProperty no;
 	public final StringProperty nullable;
 	public final StringProperty defaultValue;

@@ -16,7 +16,7 @@ import static sqlartan.util.Matching.match;
  *
  * Represent the structure tab of a database
  */
-public class DatabaseStructureModel extends Model {
+public class DatabaseStructureModel extends StructureModel {
 	public final LongProperty lignes;
 
 	public DatabaseStructureModel(PersistentStructure<?> structure) {
