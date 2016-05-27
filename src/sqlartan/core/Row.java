@@ -5,7 +5,9 @@ import sqlartan.core.util.DataConverter;
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * A results row.
@@ -35,7 +37,7 @@ public class Row implements Structure<ResultColumn> {
 	/**
 	 * TODO
 	 */
-	private Optional<List<ResultColumn>> updateKeys() {
+	private Optional<ImmutableList<ResultColumn>> updateKeys() {
 		return res.uniqueColumns().map(list -> list.filter(col -> getObject(col.index()) != null));
 	}
 
@@ -55,23 +57,19 @@ public class Row implements Structure<ResultColumn> {
 	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	public Result update(ResultColumn column, Object value) {
 		if (!isEditable()) throw new UnsupportedOperationException("Column is not editable");
+		ImmutableList<ResultColumn> keys = updateKeys().get();
 
 		Table table = column.sourceTable().get();
-		TableColumn tcol = column.sourceColumn().get();
+		TableColumn target = column.sourceColumn().get();
 
-		List<String> refs = new ArrayList<>();
-		List<Object> data = new ArrayList<>();
+		ImmutableList<String> refs = keys.map(c -> c.sourceColumn().get().name());
+		ImmutableList<Object> data = keys.map(c -> getObject(c.index()));
 
-		updateKeys.forEach(col -> {
-			refs.add(col.sourceColumn().get().name());
-			data.add(getObject(col.index()));
-		});
-
-		String phs = String.join(" AND ", (Iterable<String>) refs.stream().map(n -> "[" + n + "]" + " = ?")::iterator);
+		String phs = String.join(" AND ", refs.map(n -> "[" + n + "]" + " = ?"));
 
 		try {
 			PreparedQuery pq = res.database()
-			                      .assemble("UPDATE ", table.fullName(), " SET ", tcol.name(), " = ? WHERE " + phs)
+			                      .assemble("UPDATE ", table.fullName(), " SET ", target.name(), " = ? WHERE " + phs)
 			                      .prepare();
 			pq.set(1, value);
 			for (int i = 0, j = 2; i < data.size(); i++, j++) { pq.set(j, data.get(i)); }
