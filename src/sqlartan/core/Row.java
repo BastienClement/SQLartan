@@ -60,11 +60,11 @@ public class Row implements Structure<ResultColumn> {
 	private Optional<ImmutableList<ResultColumn>> updateKeys() {
 		return res.uniqueColumns()
 		          .map(list -> list.filter(col -> getObject(col.index()) != null))
-		          .map(list -> list.findFirst()
+		          .flatMap(list -> list.findFirst()
 		                           .map(GeneratedColumn::sourceTable)
 		                           .map(ot -> ot.orElseThrow(IllegalStateException::new))
 		                           .map(updatePartialFilter(list))
-		          ).orElseThrow(IllegalStateException::new);
+		          );
 	}
 
 	/**
