@@ -18,7 +18,7 @@ import sqlartan.core.Result;
 import sqlartan.view.DataTableView;
 import java.sql.SQLException;
 
-public class SqlTab extends Tab {
+public class SqlTabController extends Tab {
 
 	@FXML
 	Button execute;

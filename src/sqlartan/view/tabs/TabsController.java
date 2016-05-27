@@ -30,7 +30,7 @@ public abstract class TabsController {
 	@FXML
 	protected Tab sqlTab;
 	@FXML
-	private SqlTab allRequestControler;
+	private SqlTabController allRequestControler;
 
 	@FXML
 	protected void initialize() throws IOException {
