@@ -6,24 +6,40 @@ import java.util.TreeMap;
  * Defines the different types
  */
 public enum Affinity {
+	/**
+	 * All the types available in SQLITE
+	 */
 	Text(Type.Text),
 	Numeric(Type.Real),
 	Integer(Type.Integer),
 	Real(Type.Real),
 	Blob(Type.Blob);
 
+	/**
+	 * The type of the affinity
+	 */
 	public final Type type;
 
+	/**
+	 * Constructs a new affinity with the given type.
+	 *
+	 * @param type  the type of the affinity
+	 */
 	Affinity(Type type) {
 		this.type = type;
 	}
 
+	/**
+	 * Cache for the affinities
+	 */
 	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
 
 	/**
+	 * Returns a new affinity with the specified type in String.
+	 * Put it in the cache if it wasn't in it.
 	 *
-	 * @param type
-	 * @return
+	 * @param type  the type of the affinity in a String
+	 * @return the new affinity
 	 */
 	public static Affinity forType(String type) {
 		type = type.toUpperCase().trim();
@@ -38,7 +54,8 @@ public enum Affinity {
 	}
 
 	/**
-	 *
+	 * Transform a String to an affinity.
+	 * Returns a numeric if the type wasn't found.
 	 *
 	 * @param type
 	 * @return
