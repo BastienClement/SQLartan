@@ -18,6 +18,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 
 	/**
 	 * {@inheritDoc}
+	 * add a vacuum and a add table menu
 	 */
 	@Override
 	public ContextMenu getMenu() {

@@ -14,6 +14,7 @@ public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 	}
 	/**
 	 * {@inheritDoc}
+	 * Add a detach menu
 	 */
 	@Override
 	public ContextMenu getMenu() {

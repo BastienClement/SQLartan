@@ -14,31 +14,25 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
 import sqlartan.core.alter.AlterTable;
 import sqlartan.core.ast.token.TokenizeException;
-import sqlartan.util.UncheckedException;
 import sqlartan.gui.controller.tabs.DatabaseTabsController;
 import sqlartan.gui.controller.tabs.TableTabsController;
 import sqlartan.gui.controller.tabs.ViewTabsController;
 import sqlartan.gui.controller.treeitem.*;
 import sqlartan.gui.util.Popup;
+import sqlartan.util.UncheckedException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -133,22 +127,24 @@ public class SqlartanController {
 			stackPane.getChildren().clear();
 
 			if (newValue != null) {
+				Optional<AttachedDatabase> adb = database.attached(newValue.getValue().name());
+
 				switch (newValue.getValue().type()) {
 					case DATABASE: {
 						stackPane.getChildren().add(databaseTabPane);
-						databaseTabsController.setDatabase(database);
+						databaseTabsController.setDatabase(adb.isPresent() ? adb.get() : database);
 						databaseTabsController.refresh();
 					}
 					break;
 					case TABLE: {
-						structure = database.table(newValue.getValue().name());
+						structure = (adb.isPresent() ? adb.get() : database).table(newValue.getValue().name());
 						stackPane.getChildren().add(tableTabPane);
 						structure.ifPresent(tableTabController::setStructure);
 						tableTabController.refresh();
 					}
 					break;
 					case VIEW: {
-						structure = database.view(newValue.getValue().name());
+						structure = (adb.isPresent() ? adb.get() : database).view(newValue.getValue().name());
 						stackPane.getChildren().add(viewTabPane);
 						structure.ifPresent(viewTabsController::setStructure);
 						viewTabsController.refresh();
@@ -544,11 +540,12 @@ public class SqlartanController {
 	/**
 	 * Add a table to the specified database
 	 *
+	 * @param database
 	 * @param name
 	 */
-	public void addTable(Database db, String name) {
+	public void addTable(Database database, String name)  {
 		try {
-			db.addTable(name);
+			database.addTable(name);
 			refreshView();
 		} catch (SQLException e) {
 			throw new UncheckedException(e);
@@ -629,10 +626,9 @@ public class SqlartanController {
 	}
 
 
-
 	@FXML
 	public void export() {
-		class Result{
+		class Result {
 			private boolean structure, data, structureAndData;
 
 			public Result(boolean structure, boolean data, boolean structureAndData) {
@@ -694,13 +690,13 @@ public class SqlartanController {
 			try {
 				//Show save file dialog
 				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-				if(file != null){
+				if (file != null) {
 					FileWriter fileWriter = new FileWriter(file);
-					if(result.structure){
+					if (result.structure) {
 						fileWriter.write(database.exportStructure());
-					} else if (result.data){
+					} else if (result.data) {
 						fileWriter.write(database.exportTablesData());
-					} else if (result.structureAndData){
+					} else if (result.structureAndData) {
 						fileWriter.write(database.export());
 					}
 					fileWriter.close();
@@ -713,7 +709,7 @@ public class SqlartanController {
 
 	public void vacuum(Database database) {
 		database.vacuum();
-		Popup.information("Vacuum", "The database " + Sqlartan.getInstance().getController().database().name() + " get vacuumed");
+		Popup.information("Vacuum", "The database " + database.name() + " get vacuumed");
 	}
 
 }
