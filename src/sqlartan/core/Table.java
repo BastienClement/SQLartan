@@ -142,6 +142,11 @@ public class Table extends PersistentStructure<TableColumn> {
 
 					String columnCheck = check.map(c -> c.expression.toSQL()).orElse(null);
 
+					// Check the integer primary key case
+					boolean integerPrimaryKey =
+						col.type.map(t -> t.name.equals("INTEGER")).orElse(false)
+						&& IterableStream.from(col.constraints).exists(c -> c instanceof ColumnConstraint.PrimaryKey);
+
 					// Whether this column is unique or not
 					Lazy<Boolean> columnUnique = lazy(
 						() -> indices().filter(i -> i.unique() && i.columns().contains(columnName)).exists()
@@ -153,7 +158,7 @@ public class Table extends PersistentStructure<TableColumn> {
 						@Override
 						public String type() { return columnType; }
 						@Override
-						public boolean unique() { return columnUnique.get(); }
+						public boolean unique() { return integerPrimaryKey || columnUnique.get(); }
 						@Override
 						public boolean primaryKey() { return columnPrimaryKey; }
 						@Override

@@ -35,6 +35,10 @@ public class TableColumn extends Column {
 		return Optional.ofNullable(props.check());
 	}
 
+	public boolean primaryKey() {
+		return props.primaryKey();
+	}
+
 	/**
 	 * Rename the column
 	 *

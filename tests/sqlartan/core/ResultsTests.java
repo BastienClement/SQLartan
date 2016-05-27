@@ -139,7 +139,7 @@ public class ResultsTests {
 	@Test
 	public void updateTests() throws SQLException {
 		try (Database db = Database.createEphemeral()) {
-			db.execute("CREATE TABLE foo (a INT PRIMARY KEY, b INT UNIQUE, c TEXT)");
+			db.execute("CREATE TABLE foo (a INT, b INT UNIQUE, c TEXT, PRIMARY KEY (a, b))");
 			db.execute("INSERT INTO foo VALUES (1, 2, 'a'), (2, 3, 'b'), (3, 4, 'c')");
 
 			try (Result res = db.execute("SELECT * FROM foo")) {
@@ -152,8 +152,7 @@ public class ResultsTests {
 			try (Result res = db.execute("SELECT a, c FROM foo")) {
 				Row row = res.findFirst().get();
 				boolean editable = row.editable();
-				assertTrue(editable);
-				row.update(1, 42);
+				assertFalse(editable);
 			}
 
 			try (Result res = db.execute("SELECT b, c FROM foo")) {

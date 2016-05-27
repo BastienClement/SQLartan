@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 /**
  * A results row.
@@ -35,10 +36,35 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
+	 * @param columns
+	 * @return
+	 */
+	private Function<Table, ImmutableList<ResultColumn>> updatePartialFilter(ImmutableList<ResultColumn> columns) {
+		return table -> {
+			ImmutableList<Index> indices = table.indices();
+			return columns.filter(
+				col -> (col.type().equals("INTEGER") && col.sourceColumn().orElseThrow(IllegalStateException::new).primaryKey()) || indices.exists(
+					index -> index.columns().allMatch(
+						name -> columns.exists(
+							c -> c.sourceColumn().orElseThrow(IllegalStateException::new).name().equals(name)
+						)
+					)
+				)
+			);
+		};
+	}
+
+	/**
 	 * TODO
 	 */
 	private Optional<ImmutableList<ResultColumn>> updateKeys() {
-		return res.uniqueColumns().map(list -> list.filter(col -> getObject(col.index()) != null));
+		return res.uniqueColumns()
+		          .map(list -> list.filter(col -> getObject(col.index()) != null))
+		          .map(list -> list.findFirst()
+		                           .map(GeneratedColumn::sourceTable)
+		                           .map(ot -> ot.orElseThrow(IllegalStateException::new))
+		                           .map(updatePartialFilter(list))
+		          ).orElseThrow(IllegalStateException::new);
 	}
 
 	/**
@@ -50,6 +76,7 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * TODO
+	 *
 	 * @param column
 	 * @param value
 	 * @return
@@ -81,6 +108,7 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * TODO
+	 *
 	 * @param index
 	 * @param value
 	 * @return
@@ -91,6 +119,7 @@ public class Row implements Structure<ResultColumn> {
 
 	/**
 	 * TODO
+	 *
 	 * @param label
 	 * @param value
 	 * @return
