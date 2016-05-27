@@ -15,10 +15,19 @@ import java.util.Optional;
  * TODO
  */
 public abstract class AlterColumnAction extends AlterAction {
+	/**
+	 * TODO
+	 */
 	private final TableColumn column;
+
+	/**
+	 * TODO
+	 */
 	protected final ColumnDefinition columnDefinition;
 
 	/**
+	 * TODO
+	 *
 	 * @param table
 	 * @param column
 	 * @throws TokenizeException
