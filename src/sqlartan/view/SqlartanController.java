@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,9 +18,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import sqlartan.Sqlartan;
 import sqlartan.core.*;
 import sqlartan.core.TableColumn;
@@ -36,6 +39,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -295,34 +299,6 @@ public class SqlartanController {
 		}
 		refreshView();
 	}
-
-
-	/**
-	 * Export the database
-	 *
-	 * @throws UncheckedException
-	 */
-	@FXML
-	public void export() {
-		FileChooser fileChooser = new FileChooser();
-
-		//Set extension filter
-		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-		fileChooser.getExtensionFilters().add(extFilter);
-
-		try {
-			//Show save file dialog
-			File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-			if (file != null) {
-				FileWriter fileWriter = new FileWriter(file);
-				fileWriter.write(database.export());
-				fileWriter.close();
-			}
-		} catch (IOException | SQLException e) {
-			throw new UncheckedException(e);
-		}
-	}
-
 
 	/**
 	 * Function called by the GUI
@@ -648,6 +624,88 @@ public class SqlartanController {
 	 */
 	public void selectTreeIndex(int index) {
 		treeView.getSelectionModel().select(index);
+	}
+
+
+	@FXML
+	public void export() {
+		class Result{
+			private boolean structure, data, structureAndData;
+
+			public Result(boolean structure, boolean data, boolean structureAndData) {
+				this.structure = structure;
+				this.data = data;
+				this.structureAndData = structureAndData;
+			}
+		}
+
+		// Create the custom dialog.
+		Dialog<Result> dialog = new Dialog<>();
+		dialog.setTitle("Choose option for export");
+		dialog.setHeaderText(null);
+
+		// Set the button types.
+		ButtonType okButtonType = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		// Create the two labels and fields
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+
+		final ToggleGroup group = new ToggleGroup();
+
+		RadioButton rb1 = new RadioButton("Structure");
+		rb1.setToggleGroup(group);
+		rb1.setSelected(true);
+
+		RadioButton rb2 = new RadioButton("Data");
+		rb2.setToggleGroup(group);
+
+		RadioButton rb3 = new RadioButton("Structure and data");
+		rb3.setToggleGroup(group);
+
+		grid.add(new Label("Choose one option : "), 0, 0);
+		grid.add(rb1, 0, 1);
+		grid.add(rb2, 0, 2);
+		grid.add(rb3, 0, 3);
+
+		dialog.getDialogPane().setContent(grid);
+
+		// Convert the result to a username-password-pair when the login button is clicked.
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButtonType) {
+				return new Result(rb1.isSelected(), rb2.isSelected(), rb3.isSelected());
+			}
+			return null;
+		});
+
+		dialog.showAndWait().ifPresent(result -> {
+			FileChooser fileChooser = new FileChooser();
+
+			//Set extension filter
+			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
+			fileChooser.getExtensionFilters().add(extFilter);
+
+			try {
+				//Show save file dialog
+				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
+				if(file != null){
+					FileWriter fileWriter = new FileWriter(file);
+					if(result.structure){
+						fileWriter.write(database.exportStructure());
+					} else if (result.data){
+						fileWriter.write(database.exportTablesData());
+					} else if (result.structureAndData){
+						fileWriter.write(database.export());
+					}
+					fileWriter.close();
+				}
+			} catch (IOException | SQLException e) {
+				throw new UncheckedException(e);
+			}
+		});
 	}
 
 
