@@ -32,10 +32,6 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	protected TableColumn<PersistentStructureModel, Number> colNo;
 	@FXML
 	protected TableColumn<PersistentStructureModel, String> colNull;
-	@FXML
-	protected TableColumn<PersistentStructureModel, String> colDefaultValue;
-	@FXML
-	protected TableColumn<PersistentStructureModel, String> colComment;
 
 	/**
 	 * {@inheritDoc}
@@ -45,8 +41,6 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	protected void initialize() throws IOException {
 		super.initialize();
 
-		colComment.setCellValueFactory(param -> param.getValue().comment);
-		colDefaultValue.setCellValueFactory(param -> param.getValue().defaultValue);
 		colNo.setCellValueFactory(param -> param.getValue().no);
 		colNull.setCellValueFactory(param -> param.getValue().nullable);
 	}

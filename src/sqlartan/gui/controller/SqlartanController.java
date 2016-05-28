@@ -606,7 +606,7 @@ public class SqlartanController {
 
 
 	@FXML
-	public void export() {
+	public void export(Database database) {
 		class Result {
 			private boolean structure, data, structureAndData;
 
@@ -619,7 +619,7 @@ public class SqlartanController {
 
 		// Create the custom dialog.
 		Dialog<Result> dialog = new Dialog<>();
-		dialog.setTitle("Choose option for export");
+		dialog.setTitle("Exporting " + database.name());
 		dialog.setHeaderText(null);
 
 		// Set the button types.
