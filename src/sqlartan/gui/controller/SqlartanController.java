@@ -331,12 +331,8 @@ public class SqlartanController {
 			}
 
 
-			treeView.getSelectionModel().select(Math.min(selected, count(mainTreeItem)));
+			treeView.getSelectionModel().select(selected);
 		}
-	}
-
-	private int count(TreeItem<?> node) {
-		return 1 + node.getChildren().stream().mapToInt(this::count).sum();
 	}
 
 
