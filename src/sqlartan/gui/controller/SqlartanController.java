@@ -270,7 +270,7 @@ public class SqlartanController {
 	 * Import in the current open database
 	 */
 	@FXML
-	public void importFX() {
+	public void importDatabase(Database database) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Import SQLite database");
 		try {
@@ -278,10 +278,10 @@ public class SqlartanController {
 			if (f != null) {
 				database.importfromFile(f);
 			}
+			refreshView();
 		} catch (SQLException | IOException | TokenizeException e) {
 			throw new UncheckedException(e);
 		}
-		refreshView();
 	}
 
 	/**
@@ -606,7 +606,7 @@ public class SqlartanController {
 
 
 	@FXML
-	public void export() {
+	public void export(Database database) {
 		class Result {
 			private boolean structure, data, structureAndData;
 
@@ -619,7 +619,7 @@ public class SqlartanController {
 
 		// Create the custom dialog.
 		Dialog<Result> dialog = new Dialog<>();
-		dialog.setTitle("Choose option for export");
+		dialog.setTitle("Exporting " + database.name());
 		dialog.setHeaderText(null);
 
 		// Set the button types.

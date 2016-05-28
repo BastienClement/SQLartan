@@ -2,9 +2,9 @@ package sqlartan.gui.controller.treeitem;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import sqlartan.core.Database;
 import sqlartan.gui.controller.SqlartanController;
 import sqlartan.gui.util.Popup;
-import sqlartan.core.Database;
 
 public class DatabaseTreeItem extends CustomTreeItem {
 
@@ -24,6 +24,8 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	public ContextMenu getMenu() {
 		MenuItem vacuum = new MenuItem("Vacuum");
 		MenuItem addTable = new MenuItem("Add table");
+		MenuItem export = new MenuItem("Export");
+		MenuItem importItem = new MenuItem("Import");
 
 		vacuum.setOnAction(event -> controller.vacuum(database));
 		addTable.setOnAction(event -> {
@@ -32,10 +34,11 @@ public class DatabaseTreeItem extends CustomTreeItem {
 					controller.addTable(database, name);
 				}
 			});
-			//controller.addColumn();
 		});
+		export.setOnAction(event -> controller.export(database));
+		importItem.setOnAction(event -> controller.importDatabase(database));
 
-		return new ContextMenu(vacuum, addTable);
+		return new ContextMenu(addTable, export, importItem, vacuum);
 
 	}
 
