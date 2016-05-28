@@ -39,7 +39,7 @@
             </GridPane>
             <ButtonBar prefHeight="40.0" prefWidth="200.0">
               <buttons>
-                  <Button fx:id="ok" mnemonicParsing="false" onAction="#validate" text="Attached" />
+                  <Button fx:id="ok" mnemonicParsing="false" onAction="#validate" text="Attach" />
                 <Button fx:id="cancel" mnemonicParsing="false" onAction="#close" text="Cancel" />
               </buttons>
                <VBox.margin>
