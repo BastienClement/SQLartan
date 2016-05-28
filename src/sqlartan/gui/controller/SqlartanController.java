@@ -36,14 +36,14 @@ import java.sql.SQLException;
 import static sqlartan.util.Matching.match;
 
 /**
- * SqlartanController
+ * Controller for the Sqlartan.fxml.
  */
 public class SqlartanController {
 
 
-	/***********
-	 * ATRIBUTS*
-	 ***********/
+	/************
+	 * ATRIBUTS *
+	 ************/
 	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
@@ -90,6 +90,7 @@ public class SqlartanController {
 
 	/**
 	 * First methode call when FXML loaded
+	 * Load all the tabs and create the history pane
 	 */
 	@FXML
 	private void initialize() throws IOException {
@@ -185,33 +186,14 @@ public class SqlartanController {
 	 */
 	@FXML
 	private void createDatabase() throws SQLException {
-		FileChooser fileChooser = new FileChooser();
-
-		//Show save file dialog
-		fileChooser.setTitle("Create a new database");
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
-		if (database != null && (!database.isClosed())) {
-			attachDatabase(file, file.getName().split("\\.")[0]);
-		} else {
-			openDatabase(file);
-		}
-	}
-
-
-	/**
-	 * Function called by the GUI
-	 * to open a database
-	 */
-	@FXML
-	private void openSQLiteDatabase() {
-		// Create the file popup
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLite database");
-
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-
-		openDatabase(file);
+		Popup.fileChooser("Create a new database", sqlartan.getPrimaryStage(), null)
+		     .ifPresent(file -> {
+			     if (database != null && (!database.isClosed())) {
+				     attachDatabase(file, file.getName().split("\\.")[0]);
+			     } else {
+				     openDatabase(file);
+			     }
+		     });
 	}
 
 
@@ -271,17 +253,15 @@ public class SqlartanController {
 	 */
 	@FXML
 	public void importDatabase(Database database) {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Import SQLite database");
-		try {
-			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-			if (f != null) {
-				database.importfromFile(f);
-			}
-			refreshView();
-		} catch (SQLException | IOException | TokenizeException e) {
-			throw new UncheckedException(e);
-		}
+		Popup.fileChooser("Import SQLite database", sqlartan.getPrimaryStage(), null)
+		     .ifPresent(file -> {
+			     try {
+				     database.importfromFile(file);
+				     refreshView();
+			     } catch (SQLException | IOException | TokenizeException e) {
+				     throw new UncheckedException(e);
+			     }
+		     });
 	}
 
 	/**
@@ -378,7 +358,8 @@ public class SqlartanController {
 			ButtonType buttonRetry = new ButtonType("Retry");
 			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
 			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> openSQLiteDatabase());
+			     .ifPresent(b -> Popup.fileChooser("Open SQLite database", sqlartan.getPrimaryStage(), null)
+			                          .ifPresent(this::openDatabase));
 		}
 	}
 
@@ -660,29 +641,23 @@ public class SqlartanController {
 		});
 
 		dialog.showAndWait().ifPresent(result -> {
-			FileChooser fileChooser = new FileChooser();
-
-			//Set extension filter
-			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-			fileChooser.getExtensionFilters().add(extFilter);
-
-			try {
-				//Show save file dialog
-				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-				if (file != null) {
-					FileWriter fileWriter = new FileWriter(file);
-					if (result.structure) {
-						fileWriter.write(database.exportStructure());
-					} else if (result.data) {
-						fileWriter.write(database.exportTablesData());
-					} else if (result.structureAndData) {
-						fileWriter.write(database.export());
-					}
-					fileWriter.close();
-				}
-			} catch (IOException | SQLException e) {
-				throw new UncheckedException(e);
-			}
+			//Show save file dialog
+			Popup.fileChooser("Export", sqlartan.getPrimaryStage(), new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql"))
+			     .ifPresent(file -> {
+				     try {
+					     FileWriter fileWriter = new FileWriter(file);
+					     if (result.structure) {
+						     fileWriter.write(database.exportStructure());
+					     } else if (result.data) {
+						     fileWriter.write(database.exportTablesData());
+					     } else if (result.structureAndData) {
+						     fileWriter.write(database.export());
+					     }
+					     fileWriter.close();
+				     } catch (IOException | SQLException e) {
+					     throw new UncheckedException(e);
+				     }
+			     });
 		});
 	}
 

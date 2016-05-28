@@ -1,6 +1,9 @@
 package sqlartan.gui.util;
 
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
+import java.io.File;
 import java.util.Optional;
 
 /**
@@ -72,5 +75,13 @@ public class Popup {
 		dialog.setContentText(message);
 		dialog.setHeaderText(null);
 		return dialog.showAndWait();
+	}
+
+
+	public static Optional<File> fileChooser(String title, Window window, FileChooser.ExtensionFilter filter){
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle(title);
+		fileChooser.setSelectedExtensionFilter(filter);
+		return Optional.ofNullable(fileChooser.showSaveDialog(window));
 	}
 }
