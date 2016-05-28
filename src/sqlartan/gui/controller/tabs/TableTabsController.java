@@ -19,8 +19,7 @@ import static sqlartan.gui.util.ActionButtons.actionButton;
 
 
 /**
- * TODO JAVADOC
- * Created by julien on 29.04.16.
+ * Controller of TableTabs.fxml. Controller of the tabs of a table.
  */
 public class TableTabsController extends PersistentStructureTabsController {
 
@@ -98,7 +97,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 
 	/**
-	 * TODO
+	 * Insert the data in the table
 	 *
 	 * @throws SQLException
 	 */

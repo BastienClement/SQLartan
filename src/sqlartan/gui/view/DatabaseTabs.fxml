@@ -14,7 +14,7 @@
               <columns>
                 <TableColumn fx:id="colName" prefWidth="75.0" text="Name" />
 	              <TableColumn fx:id="colType" prefWidth="75.0" text="Type" />
-                  <TableColumn fx:id="colLignes" prefWidth="75.0" text="Lignes" />
+                  <TableColumn fx:id="colLignes" prefWidth="75.0" text="Lines" />
                 <TableColumn fx:id="colRename" text="" />
                   <TableColumn fx:id="colDelete" text="" />
               </columns>

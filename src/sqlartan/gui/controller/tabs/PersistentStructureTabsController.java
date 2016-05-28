@@ -17,10 +17,7 @@ import sqlartan.gui.util.Popup;
 import java.io.IOException;
 
 /**
- * Projet : SQLartan
- * Créé le 26.05.2016.
- *
- * @author Adriano Ruberto
+ * Abstract class to factorize the code for the table and view controllers.
  */
 public abstract class PersistentStructureTabsController extends TabsController {
 	@FXML
@@ -33,6 +30,7 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	@FXML
 	protected TableColumn<PersistentStructureModel, String> colNull;
 
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -44,6 +42,8 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		colNo.setCellValueFactory(param -> param.getValue().no);
 		colNull.setCellValueFactory(param -> param.getValue().nullable);
 	}
+
+
 	/**
 	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
 	 */

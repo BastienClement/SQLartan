@@ -14,7 +14,7 @@ import java.io.IOException;
 import static sqlartan.gui.util.ActionButtons.actionButton;
 
 /**
- * Created by julien on 30.04.16.
+ * Controller of DatabaseTabs.fxml. Controller of the tabs of a database.
  */
 public class DatabaseTabsController extends TabsController {
 
@@ -26,7 +26,9 @@ public class DatabaseTabsController extends TabsController {
 	private TableColumn<DatabaseStructureModel, String> colDelete;
 	@FXML
 	private TableView<DatabaseStructureModel> structureTable;
+
 	private Database database;
+
 	private ObservableList<DatabaseStructureModel> dbStructs = FXCollections.observableArrayList();
 
 
@@ -58,6 +60,8 @@ public class DatabaseTabsController extends TabsController {
 
 		tabPane.getSelectionModel().clearSelection();
 	}
+
+
 	/**
 	 * Display the structure of the database
 	 */
@@ -70,14 +74,12 @@ public class DatabaseTabsController extends TabsController {
 		structureTable.setItems(dbStructs);
 	}
 
+
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @param newTab
 	 */
 	@Override
-	protected void refresh(Tab newTab) {
-		Tab selected = tabPane.getSelectionModel().getSelectedItem();
+	protected void refresh(Tab selected) {
 		if (selected == structureTab) {
 			displayStructure();
 		}
@@ -85,7 +87,7 @@ public class DatabaseTabsController extends TabsController {
 
 
 	/**
-	 * Set the database wich will be used in this tab
+	 * Set the database which will be used in this tab
 	 *
 	 * @param database the database to work on
 	 */

@@ -3,9 +3,7 @@ package sqlartan.gui.controller.tabs;
 import javafx.scene.control.Tab;
 
 /**
- * Projet : SQLartan
- * Créé le 24.05.16.
- * @author Adriano Ruberto
+ * Controller of ViewTabs.fxml. Controller of the tabs of a view
  */
 public class ViewTabsController extends PersistentStructureTabsController {
 

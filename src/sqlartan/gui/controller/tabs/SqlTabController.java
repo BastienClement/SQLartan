@@ -1,9 +1,4 @@
 package sqlartan.gui.controller.tabs;
-/*
- * Projet : SQLartan
- * Créé le 29.04.2016.
- * Auteur : Adriano Ruberto
- */
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -19,7 +14,7 @@ import sqlartan.gui.util.DataTableView;
 import java.sql.SQLException;
 
 /**
- * TODO
+ * Controller of sqlTab.fxml. Represent the SQL tab.
  */
 public class SqlTabController extends Tab {
 
@@ -30,13 +25,16 @@ public class SqlTabController extends Tab {
 	@FXML
 	StackPane userQueryView;
 
+	/**
+	 * Add a table view
+	 */
 	@FXML
 	private void initialize() {
 		userQueryView.getChildren().add(new TableView<>());
 	}
 
 	/**
-	 * Execute the query
+	 * Execute the query set in the SQLTextQuery
 	 */
 	public void executeQuery() {
 		Database db = Sqlartan.getInstance().getController().database();
@@ -57,7 +55,7 @@ public class SqlTabController extends Tab {
 	/**
 	 * Set the specific request
 	 *
-	 * @param request
+	 * @param request the request
 	 */
 	public void setRequest(String request) {
 		SQLTextQuery.setText(request);
