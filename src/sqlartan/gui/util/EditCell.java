@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import sqlartan.core.Affinity;
 import sqlartan.core.util.UncheckedSQLException;
 
 /**
@@ -57,9 +58,9 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 		textField.setOnKeyReleased(t -> {
 			if (t.getCode() == KeyCode.ENTER) {
 				try {
-					getItem().row.update(getItem().column, textField.getText());
+					getItem().row.update(getItem().column, Affinity.forType(getItem().column.type()).type.convert(textField.getText()));
 					commitEdit(getItem().update(textField.getText()));
-				} catch (UncheckedSQLException e) {
+				} catch (java.lang.IllegalArgumentException | UncheckedSQLException e) {
 					cancelEdit();
 					throw e;
 				}
