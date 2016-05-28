@@ -66,7 +66,7 @@ public class AttachedChooserController {
 		}
 		else
 		{
-			Popup.error("Invalid Entry","The informations for the path and/or the database name are empty");
+			Popup.error("Invalid Entry","Informations for the path and/or the database name are empty");
 		}
 
 	}
@@ -76,7 +76,7 @@ public class AttachedChooserController {
 	{
 		String oldPath = path.getText();
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Selecte database to attached");
+		fileChooser.setTitle("Select database to attach");
 		file = fileChooser.showOpenDialog(attachedPane.getScene().getWindow());
 
 		if (file != null) {
