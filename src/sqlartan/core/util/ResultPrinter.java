@@ -73,7 +73,8 @@ abstract public class ResultPrinter {
 	}
 
 	/**
-	 * String padding helper.
+	 * Appends the padding char at the end of the string so that its
+	 * lengths is equals to the requested length.
 	 *
 	 * @param str     the stream to pad
 	 * @param width   the target width

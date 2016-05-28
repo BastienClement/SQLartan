@@ -1,12 +1,12 @@
 package sqlartan.core;
 
 /**
- * Defines a column
+ * A column from a structure.
  */
 public abstract class Column {
 	/**
 	 * Defines the properties of a column.
-	 * A column has a name, a type and can be null or not.
+	 * A column has a name, a type and can be nullable or not.
 	 */
 	interface Properties {
 		String name();
@@ -20,45 +20,43 @@ public abstract class Column {
 	private Properties props;
 
 	/**
-	 * Constructs a column with the given properties.
-	 *
-	 * @param props
+	 * @param props the properties of the column
 	 */
 	protected Column(Properties props) {
 		this.props = props;
 	}
 
 	/**
-	 * Get the name of a column.
+	 * Returns the name of the column.
 	 *
-	 * @return the name
+	 * @return the name of the column
 	 */
 	public String name() {
 		return props.name();
 	}
 
 	/**
-	 * Get the type of the column.
+	 * Returns the type of the column.
 	 *
-	 * @return the type
+	 * @return the type of the column
 	 */
 	public String type() {
 		return props.type();
 	}
 
 	/**
-	 * Get the affinity of the column.
+	 * Returns the affinity associated with the type of the column.
 	 *
-	 * @return the affinity
+	 * @return the affinity associated with the type of the column
 	 */
 	public Affinity affinity() {
 		return Affinity.forType(props.type());
 	}
 
 	/**
-	 * Return true if the column is nullable or false.
+	 * Return whether this column is nullable or not.
 	 *
-	 * @return the property nullable
+	 * @return true if the column is nullable, false otherwise
 	 */
 	public boolean nullable() {
 		return props.nullable();

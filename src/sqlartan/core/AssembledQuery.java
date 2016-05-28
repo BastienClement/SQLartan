@@ -3,24 +3,23 @@ package sqlartan.core;
 import java.sql.SQLException;
 
 /**
- * Defines an assembled query for executing SQLITE on a database
+ * An assembled query that can be executed on the database.
+ * Result of the assemble() method from Database.
  */
 public class AssembledQuery {
 	/**
-	 * The database on which the queries will be executed
+	 * The database on which the query will be executed
 	 */
 	private final Database database;
 
 	/**
-	 * The String containing the query
+	 * The source SQL query
 	 */
 	private final String query;
 
 	/**
-	 * Construct a new assembled query for the specified database and with the given String.
-	 *
-	 * @param database  The database on which the queries will be executed
-	 * @param query     The String containing the query
+	 * @param database the database on which the query will be executed
+	 * @param query    the source SQL query
 	 */
 	AssembledQuery(Database database, String query) {
 		this.database = database;
@@ -28,19 +27,19 @@ public class AssembledQuery {
 	}
 
 	/**
-	 * Get the SQL of the query.
+	 * Returns the assembled SQL query.
 	 *
-	 * @return the String containing the SQL
+	 * @return the assembled SQL query
 	 */
 	public String query() {
 		return query;
 	}
 
 	/**
-	 * Prepare the query for the execution.
+	 * Transforms this assembled query to a prepared query.
 	 *
-	 * @return The prepared query
-	 * @throws SQLException
+	 * @return the prepared query
+	 * @throws SQLException if the SQL query is invalid
 	 */
 	public PreparedQuery prepare() throws SQLException {
 		return database.prepare(query);
@@ -49,7 +48,8 @@ public class AssembledQuery {
 	/**
 	 * Executes the query.
 	 *
-	 * @throws SQLException
+	 * @return the result set
+	 * @throws SQLException if the SQL query is invalid
 	 */
 	public Result execute() throws SQLException {
 		return database.execute(query);
@@ -59,7 +59,8 @@ public class AssembledQuery {
 	 * Executes a query with the given list of parameters.
 	 *
 	 * @param parameters the parameters of the query
-	 * @throws SQLException
+	 * @return the result set
+	 * @throws SQLException if the SQL query is invalid
 	 */
 	public Result execute(Object... parameters) throws SQLException {
 		return database.execute(query, parameters);

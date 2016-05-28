@@ -96,12 +96,12 @@ public abstract class QueryResolver {
 
 	/**
 	 * Resolves references to TableColumns from a select statement.
-	 *
+	 * <p>
 	 * This can only be done if the select is a simple select statement,
 	 * with no compound operators and exactly one source table. In addition,
 	 * the query must use only non-scoped wildcards ('*') and simple
 	 * column references.
-	 *
+	 * <p>
 	 * It is not possible to resolve columns of a select statement using
 	 * the sqlite_master table. Allowing this would create an infinite
 	 * loop since this function needs to query the table structure.

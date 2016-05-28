@@ -3,7 +3,7 @@ package sqlartan.core.util;
 /**
  * Utility object to convert objects returned by the SQLite driver
  * to objects used as return type for Row accessors.
- *
+ * <p>
  * This object is the bridge between the classes used by the
  * SQLite driver for the ResultSet.getObject method and the
  * types returned by the accessor in the Row object.

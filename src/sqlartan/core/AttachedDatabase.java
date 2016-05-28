@@ -5,7 +5,7 @@ import java.io.File;
 import java.sql.SQLException;
 
 /**
- * Defines a database attached to the main database.
+ * An attached database.
  */
 public class AttachedDatabase extends Database {
 	/**
@@ -14,11 +14,9 @@ public class AttachedDatabase extends Database {
 	private Database main;
 
 	/**
-	 * Constructs a new database and attach it to the name database
-	 *
-	 * @param main  the main database
-	 * @param path  the path to the file containing the attached database
-	 * @param name  the name of the attached database
+	 * @param main the main database
+	 * @param path the path to the file containing the attached database
+	 * @param name the name of the attached database
 	 * @throws SQLException
 	 */
 	AttachedDatabase(Database main, File path, String name) throws SQLException {
@@ -27,7 +25,7 @@ public class AttachedDatabase extends Database {
 	}
 
 	/**
-	 * Get the main database
+	 * Returns the main database.
 	 *
 	 * @return the main database
 	 */
@@ -36,7 +34,10 @@ public class AttachedDatabase extends Database {
 	}
 
 	/**
-	 * Detach the attached database from the main database
+	 * Detaches this attached database from the main database.
+	 * <p>
+	 * Once detached, queries can not longer be executed on this database.
+	 * It is not possible to detach a database with result set still open.
 	 */
 	void detach() {
 		try {
@@ -47,12 +48,17 @@ public class AttachedDatabase extends Database {
 	}
 
 	/**
-	 * Close the attached database by detaching it
+	 * Closes the attached database by detaching it.
+	 * <p>
+	 * The underlying JDBC Connection object is the same for the attached
+	 * database and the main one and cannot be closed here. The attached
+	 * database is detached instead.
+	 * <p>
+	 * Once detached, queries can not longer be executed on this database.
+	 * It is not possible to detach a database with result set still open.
 	 */
 	@Override
 	public void close() {
-		// We must not call .close() on the Connection from a child Database
-		// Instead detach self
 		main.detach(name());
 	}
 }

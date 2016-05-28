@@ -10,7 +10,7 @@ import java.util.stream.*;
 /**
  * Mixin interface that implements the IterableStream interface on
  * instances of Streamable.
- *
+ * <p>
  * Proxy methods that does not return an IterableStream will also call
  * close() on the stream returned by the stream() method.
  */

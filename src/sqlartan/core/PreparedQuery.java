@@ -125,6 +125,6 @@ public class PreparedQuery {
 	 * @throws SQLException
 	 */
 	public Result execute() throws SQLException {
-		return database.notifyListeners(sql, Result.fromPreparedStatement(database, stmt, sql));
+		return database.notifyListeners(Result.fromPreparedStatement(database, stmt, sql));
 	}
 }

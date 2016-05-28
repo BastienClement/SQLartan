@@ -3,12 +3,9 @@ package sqlartan.core;
 import java.util.TreeMap;
 
 /**
- * Defines the different types
+ * SQLite affinities
  */
 public enum Affinity {
-	/**
-	 * All the types available in SQLITE
-	 */
 	Text(Type.Text),
 	Numeric(Type.Real),
 	Integer(Type.Integer),
@@ -16,30 +13,29 @@ public enum Affinity {
 	Blob(Type.Blob);
 
 	/**
-	 * The type of the affinity
+	 * The underlying type of the affinity
 	 */
 	public final Type type;
 
 	/**
-	 * Constructs a new affinity with the given type.
-	 *
-	 * @param type  the type of the affinity
+	 * @param type the type of the affinity
 	 */
 	Affinity(Type type) {
 		this.type = type;
 	}
 
 	/**
-	 * Cache for the affinities
+	 * Cache of affinity for a each types
 	 */
 	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
 
 	/**
-	 * Returns a new affinity with the specified type in String.
-	 * Put it in the cache if it wasn't in it.
+	 * Returns the affinity associated to the given type.
+	 * <p>
+	 * This method is memoized.
 	 *
-	 * @param type  the type of the affinity in a String
-	 * @return the new affinity
+	 * @param type the column type
+	 * @return the affinity associated with he given type
 	 */
 	public static Affinity forType(String type) {
 		type = type.toUpperCase().trim();
@@ -54,11 +50,10 @@ public enum Affinity {
 	}
 
 	/**
-	 * Transform a String to an affinity.
-	 * Returns a numeric if the type wasn't found.
+	 * Transforms a type name to an affinity.
 	 *
-	 * @param type
-	 * @return
+	 * @param type the column type
+	 * @return the affinity associated with the given type
 	 */
 	private static Affinity parseType(String type) {
 		// https://www.sqlite.org/datatype3.html

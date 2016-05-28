@@ -276,7 +276,7 @@ public class SqlartanController {
 		try {
 			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
 			if (f != null) {
-				database.importfromFile(f);
+				database.importFromFile(f);
 			}
 			refreshView();
 		} catch (SQLException | IOException | TokenizeException e) {
@@ -519,7 +519,7 @@ public class SqlartanController {
 	 */
 	public void addTable(Database database, String name) {
 		try {
-			database.addTable(name);
+			database.createTable(name);
 			refreshView();
 		} catch (SQLException e) {
 			throw new UncheckedException(e);

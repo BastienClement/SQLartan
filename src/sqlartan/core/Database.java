@@ -21,53 +21,71 @@ import static sqlartan.core.ast.Operator.SEMICOLON;
 import static sqlartan.util.Matching.match;
 
 /**
- * Defines a SQLITE database.
+ * An SQLite database.
  */
 public class Database implements AutoCloseable {
 	/**
-	 * Constructs a new ephemeral database.
+	 * Creates a new ephemeral database.
+	 * <p>
+	 * Ephemeral databases are in-memory databases with no associated data
+	 * file. Once closed, their content is lost.
+	 * <p>
+	 * In SQLite, this is achieved by using ':memory:' as the file path when
+	 * opening a database.
 	 *
-	 * @throws SQLException
+	 * @throws SQLException if an error occurs while creating the database
 	 */
 	public static Database createEphemeral() throws SQLException {
 		return open(":memory:");
 	}
 
 	/**
-	 * Opens a database file.
+	 * Opens a database from a file path.
+	 * <p>
+	 * If the file does not exists, it is created and the database will be
+	 * empty. If the file is not a valid SQLite3 database, an exception
+	 * is thrown.
 	 *
 	 * @param path the path to the database file
-	 * @throws SQLException
+	 * @throws SQLException if an error occurs while opening the database
+	 *                      or if the given file is not a valid SQLite3
+	 *                      database.
 	 */
 	public static Database open(String path) throws SQLException {
 		return open(new File(path));
 	}
 
 	/**
-	 * Opens a database file.
+	 * Opens a database from a file.
+	 * <p>
+	 * If the file does not exists, it is created and the database will be
+	 * empty. If the file is not a valid SQLite3 database, an exception
+	 * is thrown.
 	 *
-	 * @param file the path to the database file
-	 * @throws SQLException
+	 * @param file the database file
+	 * @throws SQLException if an error occurs while opening the database
+	 *                      or if the given file is not a valid SQLite3
+	 *                      database.
 	 */
 	public static Database open(File file) throws SQLException {
 		return new Database(file, "main", null);
 	}
 
 	/**
-	 * Logical name of this database
-	 * This is always "main" for the first database in a SQLite Connection.
-	 * Additional databases loaded with ATTACH have user-defined names.
+	 * The logical name of this database
+	 * This is always "main" for the first database.
+	 * Additional databases opened with ATTACH have user-defined names.
 	 */
 	private String name;
 
 	/**
-	 * File path to this database
-	 * For a memory-only database, this is an abstract file named ":memory:".
+	 * The file path to this database
+	 * For a memory-only database, this is an abstract file named ':memory:'.
 	 */
 	private File path;
 
 	/**
-	 * Set of attached database
+	 * The Set of attached database
 	 */
 	private HashMap<String, AttachedDatabase> attached = new HashMap<>();
 
@@ -82,46 +100,13 @@ public class Database implements AutoCloseable {
 	private Set<Consumer<ReadOnlyResult>> executeListeners = new HashSet<>();
 
 	/**
-	 * Constructs a new empty database in memory.
-	 *
-	 * @throws SQLException
-	 * @deprecated Use Database.createEphemeral() instead
-	 */
-	@Deprecated
-	public Database() throws SQLException {
-		this(new File(":memory:"), "main", null);
-	}
-
-	/**
-	 * Load a database from a file in the given path.
-	 *
-	 * @throws SQLException
-	 * @deprecated Use Database.open(path) instead
-	 */
-	@Deprecated
-	public Database(String path) throws SQLException {
-		this(new File(path), "main", null);
-	}
-
-	/**
-	 * Load a database from a file.
-	 *
-	 * @throws SQLException
-	 * @deprecated Use Database.open(path) instead
-	 */
-	@Deprecated
-	public Database(File path) throws SQLException {
-		this(path, "main", null);
-	}
-
-	/**
-	 * Opens a database file with a specific name.
-	 *
 	 * @param path       the path to the database file
 	 * @param name       the logical name of the database
-	 * @param connection the connection to use for this database
-	 *                   if null is given a new connection will be created
-	 * @throws SQLException
+	 * @param connection the connection to use for this database, if null is
+	 *                   given a new connection will be created
+	 * @throws SQLException if an error occurs while opening the database
+	 *                      or if the given file is not a valid SQLite3
+	 *                      database.
 	 */
 	protected Database(File path, String name, Connection connection) throws SQLException {
 		this.name = name;
@@ -130,9 +115,9 @@ public class Database implements AutoCloseable {
 		if (connection == null) {
 			this.connection = DriverManager.getConnection("jdbc:sqlite:" + path.getPath());
 
-			// If the given file is not a database, SQLite will not complain until executing
-			// the first query. Do that here so that opening a database triggers an exception
-			// if the file is not a database.
+			// If the given file is not a database, SQLite will not complain
+			// until executing the first query. Do that here so that opening
+			// a database triggers an exception if the file is not a database.
 			try {
 				execute("SELECT * FROM sqlite_master LIMIT 1").close();
 			} catch (SQLException e) {
@@ -146,8 +131,10 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * Returns the logical name of this database.
-	 * The name of a database opened with the new operator is always "main".
-	 * An attached database will have the name given to attach().
+	 * <p>
+	 * The name of a database opened with the static methods from this class
+	 * is always "main". An attached database will have the name given to
+	 * attach().
 	 *
 	 * @return the name of the database
 	 */
@@ -157,7 +144,9 @@ public class Database implements AutoCloseable {
 
 	/**
 	 * Returns the file path of this database.
-	 * If this is a temporary in-memory database, returns an abstract File named ":memory:".
+	 * <p>
+	 * If this is a temporary in-memory database, returns an abstract File
+	 * named ":memory:".
 	 *
 	 * @return the file containing the database
 	 */
@@ -166,63 +155,75 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Register a new listener of the class Consumer<ReadOnlyResul>.
+	 * Registers a new execute listener.
+	 * <p>
+	 * Executes listeners are called each time a query is executed on the
+	 * database. They receive a read only view of the result, allowing them
+	 * to retrieve the source SQL query and updated row count, but not consume
+	 * the results themselves.
 	 *
-	 * @param listener
+	 * @param listener a function to call when executing a query on the
+	 *                 database
 	 */
 	public void registerListener(Consumer<ReadOnlyResult> listener) {
 		executeListeners.add(listener);
 	}
 
 	/**
-	 * Remove a listener from the database.
+	 * Removes a registered listener from the database.
 	 *
-	 * @param listener
+	 * @param listener the callback function, previously given to register,
+	 *                 to remove.
 	 */
 	public void removeListener(Consumer<ReadOnlyResult> listener) {
 		executeListeners.remove(listener);
 	}
 
 	/**
-	 * TODO
+	 * Returns a list of structures of the given type from this database.
+	 * <p>
+	 * Used to list Tables and Views from this database.
 	 *
-	 * @param type
-	 * @param builder
-	 * @param <T>
-	 * @return
+	 * @param type    the type of structure to list
+	 * @param builder the builder function, constructing a concrete instance
+	 *                of the structure from its name
+	 * @param <T>     the class of the structures in the list
+	 * @return a list of structure from this table
 	 */
 	private <T> IterableStream<T> listStructures(String type, Function<String, T> builder) {
 		try {
 			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? ORDER BY name ASC")
-					.execute(type)
-					.map(Row::getString)
-					.map(builder);
+				.execute(type)
+				.map(Row::getString)
+				.map(builder);
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
 	}
 
 	/**
-	 * TODO
+	 * Finds a structure with the given type and name in this database.
 	 *
-	 * @param type      the type of the structure
-	 * @param name      the name of the structure
-	 * @param builder
-	 * @param <T>
+	 * @param type    the type of the structure
+	 * @param name    the name of the structure
+	 * @param builder the builder function, constructing a concrete instance
+	 *                of the structure from its name
+	 * @param <T>     the class of the structure
+	 * @return the matching structure, an empty optional if not found
 	 */
 	private <T> Optional<T> findStructure(String type, String name, Function<String, T> builder) {
 		try {
 			return assemble("SELECT name FROM ", name(), ".sqlite_master WHERE type = ? AND name = ?")
-					.execute(type, name)
-					.mapFirstOptional(Row::getString)
-					.map(builder);
+				.execute(type, name)
+				.mapFirstOptional(Row::getString)
+				.map(builder);
 		} catch (SQLException e) {
 			throw new UncheckedSQLException(e);
 		}
 	}
 
 	/**
-	 * Returns every tables in this database.
+	 * Returns a stream of every tables in this database.
 	 *
 	 * @return a stream of tables
 	 */
@@ -235,24 +236,25 @@ public class Database implements AutoCloseable {
 	 * If the table does not exist, an empty Optional is returned.
 	 *
 	 * @param name the name of the table
-	 * @return the optional table
+	 * @return the table with the given name, if it exists
 	 */
 	public Optional<Table> table(String name) {
 		return findStructure("table", name, n -> new Table(this, n));
 	}
 
 	/**
-	 * Add a new empty table.
+	 * Creates a new empty table.
 	 *
 	 * @param name the name of the new table
 	 * @throws SQLException
 	 */
-	public void addTable(String name) throws SQLException {
-		assemble("CREATE TABLE ", name, "(id INTEGER PRIMARY KEY);").execute();
+	public Table createTable(String name) throws SQLException {
+		assemble("CREATE TABLE ", name(), ".", name, " (id INTEGER PRIMARY KEY)").execute();
+		return table(name).orElseThrow(IllegalStateException::new);
 	}
 
 	/**
-	 * Returns every views in the database.
+	 * Returns a stream of every views in the database.
 	 *
 	 * @return a stream of views
 	 */
@@ -265,14 +267,17 @@ public class Database implements AutoCloseable {
 	 * If the view does not exist, an empty Optional is returned.
 	 *
 	 * @param name the name of the view
-	 * @return the optional view
+	 * @return the view with the given name, if it exists
 	 */
 	public Optional<View> view(String name) {
 		return findStructure("view", name, n -> new View(this, n));
 	}
 
 	/**
-	 * Returns every persistent structures of the database.
+	 * Returns a list of every persistent structures of the database.
+	 * <p>
+	 * This method returns the concatenation of the tables() and views()
+	 * streams.
 	 *
 	 * @return a stream of persistent structures
 	 */
@@ -292,7 +297,7 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Clean up the database by rebuilding it entirely.
+	 * Performs a VACUUM operation on the database, rebuilding it entirely.
 	 */
 	public void vacuum() {
 		try {
@@ -305,10 +310,8 @@ public class Database implements AutoCloseable {
 	/**
 	 * Closes the underlying JDBC Connection object.
 	 * Once this method is called, this object must no longer be used.
-	 *
+	 * <p>
 	 * Also closes all attached databases.
-	 *
-	 * @throws SQLException
 	 */
 	public void close() {
 		if (this.connection != null) {
@@ -340,27 +343,11 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * @deprecated Use assemble instead
-	 */
-	@Deprecated
-	public String format(String... parts) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < parts.length; i++) {
-			if (i % 2 == 0) {
-				sb.append(parts[i]);
-			} else {
-				sb.append("[");
-				sb.append(parts[i]);
-				sb.append("]");
-			}
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * TODO
+	 * Assembles the given query fragments by escaping every even-position
+	 * argument and concatenating them.
 	 *
-	 * @param parts
+	 * @param parts the query fragments
+	 * @return an assembled query bound to this database
 	 */
 	public AssembledQuery assemble(String... parts) {
 		StringBuilder query = new StringBuilder();
@@ -379,13 +366,16 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * TODO
+	 * Notifies registered execute listeners.
+	 * <p>
+	 * This method returns the given result set allowing it to be used in a
+	 * return statement without requiring an additional variable to hold the
+	 * result set.
 	 *
-	 * @param query
-	 * @param res
-	 * @return
+	 * @param res the result set generated by the executed query.
+	 * @return the given result set
 	 */
-	Result notifyListeners(String query, Result res) {
+	Result notifyListeners(Result res) {
 		for (Consumer<ReadOnlyResult> listener : executeListeners) {
 			try {
 				listener.accept(res);
@@ -397,20 +387,32 @@ public class Database implements AutoCloseable {
 	/**
 	 * Executes a query on the database.
 	 *
-	 * @param query the String containing the query
-	 * @return the result of the query
-	 * @throws SQLException
+	 * @param query the SQL query to execute
+	 * @return the result set of the query
+	 * @throws SQLException if the query is invalid
 	 */
 	public Result execute(String query) throws SQLException {
-		return notifyListeners(query, Result.fromQuery(this, connection, query));
+		return notifyListeners(Result.fromQuery(this, connection, query));
 	}
 
 	/**
-	 * Executes a String containing multiple queries on the database.
+	 * Executes a query containing multiple statements on the database.
+	 * <p>
+	 * The JDBC SQLite driver does not support executing a query composed
+	 * of multiple statement. This method handle the task of splitting the
+	 * query into independent statement that can be executed one by one
+	 * on the database.
+	 * <p>
+	 * These statements are executed independently, this method does not
+	 * start a transaction.
+	 * <p>
+	 * This methods returns a stream of result set instances. Care must be
+	 * taken to properly close each of theses result set to prevent a
+	 * resource leak.
 	 *
-	 * @param query the String containing the queries
+	 * @param query the multiple-statement query to execute
 	 * @return a stream of results
-	 * @throws SQLException
+	 * @throws SQLException if the query is invalid
 	 */
 	public IterableStream<Result> executeMulti(String query) throws SQLException, TokenizeException {
 		TokenSource tokens = TokenSource.from(query);
@@ -476,10 +478,10 @@ public class Database implements AutoCloseable {
 	/**
 	 * Executes a query with placeholders.
 	 *
-	 * @param query
-	 * @param parameters
-	 * @return
-	 * @throws SQLException
+	 * @param query      the SQL query to execute
+	 * @param parameters a list of values for the placeholders
+	 * @return the result set generated by the query
+	 * @throws SQLException if the query is invalid
 	 */
 	public Result execute(String query, Object... parameters) throws SQLException {
 		PreparedQuery pq = prepare(query);
@@ -498,16 +500,14 @@ public class Database implements AutoCloseable {
 	public void executeTransaction(String[] queries) throws SQLException {
 		try {
 			connection.setAutoCommit(false);
-			for(String query : queries) {
+			for (String query : queries) {
 				execute(query).close();
 			}
 			connection.commit();
-		}
-		catch (SQLException e){
+		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
-		}
-		finally {
+		} finally {
 			connection.setAutoCommit(true);
 		}
 	}
@@ -515,18 +515,18 @@ public class Database implements AutoCloseable {
 	/**
 	 * Prepares a query for execution.
 	 *
-	 * @param query
-	 * @throws SQLException
+	 * @param query the query to execute, can contain placeholders
+	 * @throws SQLException if the query is invalid
 	 */
 	public PreparedQuery prepare(String query) throws SQLException {
 		return new PreparedQuery(this, connection, query);
 	}
 
 	/**
-	 * Attaches a database with the name passed in parameters.
+	 * Attaches a database to this one.
 	 *
-	 * @param file
-	 * @param name
+	 * @param file the database file to open
+	 * @param name the logical name of the attached database
 	 * @return the attached database
 	 */
 	public AttachedDatabase attach(File file, String name) throws SQLException {
@@ -537,10 +537,10 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Attaches a database with the name passed in parameters.
+	 * Attaches a database to this one.
 	 *
-	 * @param file
-	 * @param name
+	 * @param file the database file path to open
+	 * @param name the logical name of the attached database
 	 * @return the attached database
 	 */
 	public AttachedDatabase attach(String file, String name) throws SQLException {
@@ -548,7 +548,7 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Returns the hashmap containing the attachedDatabases.
+	 * Returns an unmodifiable map of every attached database.
 	 *
 	 * @return the attached databases
 	 */
@@ -557,24 +557,25 @@ public class Database implements AutoCloseable {
 	}
 
 	/**
-	 * Returns a attached database with a specific name.
+	 * Returns the attached database with a specific name.
 	 *
-	 * @param name
-	 * @return the attached database contained in the hashmap under the key name, null if it doesn't exist
+	 * @param name the attached database name
+	 * @return the attached database with the requested name, an empty
+	 * optional if it does not exist.
 	 */
 	public Optional<AttachedDatabase> attached(String name) {
 		return Optional.ofNullable(attached.get(name));
 	}
 
 	/**
-	 * Detach an attached database with a specific name.
+	 * Detaches the attached database with a specific name.
 	 *
-	 * @param name
+	 * @param name the name of the attached database to detach
+	 * @throws NoSuchElementException if there is no attached database
+	 *                                with the given name
 	 */
 	public void detach(String name) {
-		AttachedDatabase db = attached(name)
-				.orElseThrow(() -> new NoSuchElementException("'" + name + "' is not an attached database"));
-		db.detach();
+		attached(name).orElseThrow(NoSuchElementException::new).detach();
 		attached.remove(name);
 	}
 
@@ -596,7 +597,7 @@ public class Database implements AutoCloseable {
 	 * @throws IOException
 	 */
 
-	public void importfromFile(File file) throws SQLException, IOException, TokenizeException {
+	public void importFromFile(File file) throws SQLException, IOException, TokenizeException {
 		executeMulti(new String(Files.readAllBytes(file.toPath()))).forEach(Result::close);
 	}
 
@@ -607,7 +608,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public String export() throws SQLException{
+	public String export() throws SQLException {
 		return createSQLTransaction(getTablesSQL() + getTablesDataSQL() + getViewsSQL() + getTriggersSQL());
 	}
 
@@ -618,7 +619,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public String exportTablesData() throws SQLException{
+	public String exportTablesData() throws SQLException {
 		return createSQLTransaction(getTablesDataSQL());
 	}
 
@@ -629,7 +630,7 @@ public class Database implements AutoCloseable {
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public String exportStructure() throws SQLException{
+	public String exportStructure() throws SQLException {
 		return createSQLTransaction(getTablesSQL() + getViewsSQL() + getTriggersSQL());
 	}
 
@@ -641,9 +642,9 @@ public class Database implements AutoCloseable {
 	 */
 	private String createSQLTransaction(String sql) {
 		return "PRAGMA foreign_keys=OFF;\n" +
-			   "BEGIN TRANSACTION;\n" +
-				sql +
-				"COMMIT;";
+			"BEGIN TRANSACTION;\n" +
+			sql +
+			"COMMIT;";
 	}
 
 	/**
@@ -652,7 +653,7 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 * @throws SQLException
 	 */
-	private String getTablesSQL() throws SQLException{
+	private String getTablesSQL() throws SQLException {
 		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'table'")
 			.execute()
 			.map(Row::getString)
@@ -665,7 +666,7 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 * @throws SQLException
 	 */
-	private String getViewsSQL() throws SQLException{
+	private String getViewsSQL() throws SQLException {
 		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'view'")
 			.execute()
 			.map(Row::getString)
@@ -678,7 +679,7 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 * @throws SQLException
 	 */
-	private String getTriggersSQL() throws SQLException{
+	private String getTriggersSQL() throws SQLException {
 		return assemble("SELECT sql FROM ", name, ".sqlite_master WHERE type = 'trigger'")
 			.execute()
 			.map(Row::getString)
@@ -691,19 +692,19 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 * @throws SQLException
 	 */
-	private String getTablesDataSQL() throws SQLException{
+	private String getTablesDataSQL() throws SQLException {
 		String sql = "";
 
 		// Get every values from tables
-		for(Table table : tables()){
-			if(assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
+		for (Table table : tables()) {
+			if (assemble("SELECT COUNT(*) FROM ", table.fullName()).execute().mapFirst(Row::getInt) > 0) {
 				String insertSQL = "INSERT INTO " + table.fullName() + " VALUES ";
 				insertSQL += assemble("SELECT * FROM ", table.fullName())
 					.execute()
 					.map(row -> {
 						String s = "(";
 						for (int i = 1; i <= row.size(); i++) {
-							if(i != 1) s += ", ";
+							if (i != 1) s += ", ";
 							s += match(row.getObject(i))
 								.when(String.class, str -> "'" + str.replace("'", "''") + "'")
 								.when(Number.class, n -> n.toString())
