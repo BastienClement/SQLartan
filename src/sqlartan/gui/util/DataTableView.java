@@ -9,16 +9,17 @@ import sqlartan.core.Result;
 import sqlartan.core.ResultColumn;
 
 /**
- * Created by julien on 29.04.16.
+ * Represent the data in a TableView
  */
 public class DataTableView {
 	/**
-	 * Return a table view for any result
+	 * Return a table view for any result.
+	 * The cells of the table can be edit by clicking on them. A text field will be created if the cell is editable
 	 *
 	 * @param result the result
-	 * @return the table gui
+	 * @return the table view
 	 */
-	public static TableView getTableView(Result result) {
+	public static TableView<ObservableList<EditModel>> getTableView(Result result) {
 		TableView<ObservableList<EditModel>> tableView = new TableView<>();
 
 		// Create columns

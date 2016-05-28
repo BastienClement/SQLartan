@@ -57,7 +57,7 @@ public class AttachedChooserController {
 	private void browse() {
 		String oldPath = path.getText();
 
-		Popup.fileChooser("Select database to attach", attachedPane.getScene().getWindow(), null)
+		Popup.browse("Select database to attach", attachedPane.getScene().getWindow(), null)
 		     .ifPresent(file -> {
 			     if (dbName.getText().isEmpty() || (!oldPath.isEmpty() && fileName(new File(oldPath)).equals(dbName.getText()))) {
 				     dbName.setText(fileName(file));

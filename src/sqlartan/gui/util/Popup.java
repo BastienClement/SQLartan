@@ -1,18 +1,20 @@
 package sqlartan.gui.util;
 
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import java.io.File;
 import java.util.Optional;
 
 /**
- * Created by Adriano on 04.05.2016.
+ * A popup utility class
  */
 public class Popup {
 
 	/**
-	 * A private function to factore the public alert.
+	 * Create an alert with a specific type.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -62,12 +64,12 @@ public class Popup {
 	}
 
 	/**
-	 * A inputDialog popup
+	 * create an TextInputDialog and show it
 	 *
 	 * @param title       the title
 	 * @param message     the message
 	 * @param placeholder the placeholder
-	 * @return An optional of the inputed string
+	 * @return An optional of the inputed text
 	 */
 	public static Optional<String> input(String title, String message, String placeholder) {
 		TextInputDialog dialog = new TextInputDialog(placeholder);
@@ -78,10 +80,44 @@ public class Popup {
 	}
 
 
-	public static Optional<File> fileChooser(String title, Window window, FileChooser.ExtensionFilter filter){
+	/**
+	 * Create a FileChooser
+	 *
+	 * @param title  the title of the window
+	 * @param filter the filter to be applied on the file chooser
+	 * @return The created file chooser
+	 */
+	private static FileChooser file(String title, FileChooser.ExtensionFilter filter) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(title);
 		fileChooser.setSelectedExtensionFilter(filter);
-		return Optional.ofNullable(fileChooser.showSaveDialog(window));
+		return fileChooser;
 	}
+
+
+	/**
+	 * Show a save dialog file chooser.
+	 *
+	 * @param title  the title of the window
+	 * @param window the owner window of the displayed file dialog
+	 * @param filter the filter to be applied on the file chooser
+	 * @return An optional of the file choosed by the user
+	 */
+	public static Optional<File> save(String title, Window window, FileChooser.ExtensionFilter filter) {
+		return Optional.ofNullable(file(title, filter).showSaveDialog(window));
+	}
+
+
+	/**
+	 * Show a browse dialog file chooser.
+	 *
+	 * @param title  the title of the window
+	 * @param window the owner window of the displayed file dialog
+	 * @param filter the filter to be applied on the file chooser
+	 * @return An optional of the file choosed by the user
+	 */
+	public static Optional<File> browse(String title, Window window, FileChooser.ExtensionFilter filter) {
+		return Optional.ofNullable(file(title, filter).showOpenDialog(window));
+	}
+
 }

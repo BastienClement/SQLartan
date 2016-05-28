@@ -20,7 +20,7 @@
           <Menu mnemonicParsing="false" text="File">
             <items>
                   <MenuItem mnemonicParsing="false" onAction="#createDatabase" text="New Database..." />
-                  <MenuItem mnemonicParsing="false" onAction="#openSQLiteDatabase" text="Open Database..." />
+                  <MenuItem mnemonicParsing="false" onAction="#openDatabase" text="Open Database..." />
               <MenuItem mnemonicParsing="false" onAction="#close" text="Quit" />
             </items>
           </Menu>

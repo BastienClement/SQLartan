@@ -186,7 +186,7 @@ public class SqlartanController {
 	 */
 	@FXML
 	private void createDatabase() throws SQLException {
-		Popup.fileChooser("Create a new database", sqlartan.getPrimaryStage(), null)
+		Popup.save("Create a new database", sqlartan.getPrimaryStage(), null)
 		     .ifPresent(file -> {
 			     if (database != null && (!database.isClosed())) {
 				     attachDatabase(file, file.getName().split("\\.")[0]);
@@ -253,7 +253,7 @@ public class SqlartanController {
 	 */
 	@FXML
 	public void importDatabase(Database database) {
-		Popup.fileChooser("Import SQLite database", sqlartan.getPrimaryStage(), null)
+		Popup.browse("Import SQLite database", sqlartan.getPrimaryStage(), null)
 		     .ifPresent(file -> {
 			     try {
 				     database.importfromFile(file);
@@ -326,6 +326,10 @@ public class SqlartanController {
 	}
 
 
+	public void openDatabase() {
+		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
+	}
+
 	/**
 	 * Open de main database
 	 *
@@ -358,8 +362,7 @@ public class SqlartanController {
 			ButtonType buttonRetry = new ButtonType("Retry");
 			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
 			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> Popup.fileChooser("Open SQLite database", sqlartan.getPrimaryStage(), null)
-			                          .ifPresent(this::openDatabase));
+			     .ifPresent(b -> openDatabase());
 		}
 	}
 
@@ -642,7 +645,7 @@ public class SqlartanController {
 
 		dialog.showAndWait().ifPresent(result -> {
 			//Show save file dialog
-			Popup.fileChooser("Export", sqlartan.getPrimaryStage(), new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql"))
+			Popup.save("Export", sqlartan.getPrimaryStage(), new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql"))
 			     .ifPresent(file -> {
 				     try {
 					     FileWriter fileWriter = new FileWriter(file);
