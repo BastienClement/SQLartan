@@ -248,9 +248,10 @@ public class SqlartanController {
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDB() {
+	private void closeDatabase() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
+		detachMenu.getItems().clear();
 		database.close();
 		databaseMenu.setDisable(true);
 	}
@@ -329,8 +330,13 @@ public class SqlartanController {
 				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
 			}
 
-			treeView.getSelectionModel().select(selected);
+
+			treeView.getSelectionModel().select(Math.min(selected, count(mainTreeItem)));
 		}
+	}
+
+	private int count(TreeItem<?> node) {
+		return 1 + node.getChildren().stream().mapToInt(this::count).sum();
 	}
 
 
@@ -476,17 +482,9 @@ public class SqlartanController {
 	public void attachDatabase(File file, String dbName) {
 		try {
 			database.attach(file, dbName);
-
 			MenuItem newMenuItem = new MenuItem(dbName);
-			newMenuItem.setOnAction(event -> {
-				database.detach(newMenuItem.getText());
-				detachMenu.getItems().removeAll(newMenuItem);
-				refreshView();
-
-			});
-
+			newMenuItem.setOnAction(event -> database.attached(newMenuItem.getText()).ifPresent(this::detachDatabase));
 			detachMenu.getItems().add(newMenuItem);
-
 			refreshView();
 		} catch (SQLException e) {
 			Popup.error("Problem while attaching database", e.getMessage());
@@ -592,6 +590,11 @@ public class SqlartanController {
 	 */
 	public void detachDatabase(AttachedDatabase attachedDatabase) {
 		database.detach(attachedDatabase.name());
+		detachMenu.getItems()
+		          .forEach(menuItem -> {
+			          if (menuItem.getText().equals(attachedDatabase.name()))
+				          Platform.runLater(() -> detachMenu.getItems().remove(menuItem));
+		          });
 		refreshView();
 	}
 
