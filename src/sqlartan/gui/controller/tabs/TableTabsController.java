@@ -10,8 +10,8 @@ import sqlartan.Sqlartan;
 import sqlartan.core.InsertRow;
 import sqlartan.core.Table;
 import sqlartan.gui.controller.tabs.model.InsertRowModel;
-import sqlartan.gui.controller.tabs.model.StructureModel;
 import sqlartan.gui.controller.tabs.model.PersistentStructureModel;
+import sqlartan.gui.controller.tabs.model.StructureModel;
 import sqlartan.gui.util.Popup;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -52,17 +52,12 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			StructureModel tableStruct = self.getTableView().getItems().get(self.getIndex());
-			Popup.input("Rename", "Rename " + tableStruct.name.get() + " into : ", tableStruct.name.get()).ifPresent(name -> {
-				if (name.length() > 0 && !tableStruct.name.get().equals(name)) {
-					Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.name.get(), name);
-				}
-			});
+			Sqlartan.getInstance().getController().renameColumn((Table) structure, tableStruct.name.get());
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			StructureModel tableStruct = self.getTableView().getItems().get(self.getIndex());
-			((Table) structure).column(tableStruct.name.get()).ifPresent(sqlartan.core.TableColumn::drop);
-			Sqlartan.getInstance().getController().refreshView();
+			Sqlartan.getInstance().getController().dropColumn((Table) structure, tableStruct.name.get());
 		}));
 
 		insertTable.setEditable(true); // TODO test false

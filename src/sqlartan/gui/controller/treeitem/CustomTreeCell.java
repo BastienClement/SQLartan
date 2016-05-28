@@ -1,15 +1,13 @@
 package sqlartan.gui.controller.treeitem;
 
 import javafx.scene.control.TreeCell;
-import sqlartan.gui.controller.SqlartanController;
 
+/**
+ * The custom tree cell, add the right click contextual menu on a TreeCell
+ */
 public class CustomTreeCell extends TreeCell<CustomTreeItem> {
 
-	protected SqlartanController sqlartanController;
-
-	public CustomTreeCell(SqlartanController sqlartanController) {
-		this.sqlartanController = sqlartanController;
-	}
+	/** {@inheritDoc} */
 	@Override
 	public void updateItem(CustomTreeItem item, boolean empty) {
 		super.updateItem(item, empty);

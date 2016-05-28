@@ -4,10 +4,15 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import sqlartan.core.Database;
 import sqlartan.gui.controller.SqlartanController;
-import sqlartan.gui.util.Popup;
 
+/**
+ * Used when the TreeItem is a database, the context menu is
+ * - Add Table
+ * - Export
+ * - Import
+ * - Vacuum
+ */
 public class DatabaseTreeItem extends CustomTreeItem {
-
 
 	public DatabaseTreeItem(String name, SqlartanController controller, Database database) {
 		super(name, controller, database);
@@ -17,8 +22,8 @@ public class DatabaseTreeItem extends CustomTreeItem {
 
 
 	/**
+	 * add vacuum and table menu
 	 * {@inheritDoc}
-	 * add a vacuum and a add table menu
 	 */
 	@Override
 	public ContextMenu getMenu() {
@@ -28,13 +33,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		MenuItem importItem = new MenuItem("Import");
 
 		vacuum.setOnAction(event -> controller.vacuum(database));
-		addTable.setOnAction(event -> {
-			Popup.input("Add table", "Name : ", "").ifPresent(name -> {
-				if (name.length() > 0) {
-					controller.addTable(database, name);
-				}
-			});
-		});
+		addTable.setOnAction(event -> controller.addTable(database));
 		export.setOnAction(event -> controller.export(database));
 		importItem.setOnAction(event -> controller.importDatabase(database));
 

@@ -95,7 +95,7 @@ public class SqlartanController {
 	@FXML
 	private void initialize() throws IOException {
 
-		treeView.setCellFactory(param -> new CustomTreeCell(this));
+		treeView.setCellFactory(param -> new CustomTreeCell());
 
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/DatabaseTabs.fxml"));
 		databaseTabPane = loader.load();
@@ -478,8 +478,14 @@ public class SqlartanController {
 	 * @param structure structure to drop
 	 */
 	public void dropStructure(PersistentStructure<?> structure) {
-		structure.drop();
-		refreshView();
+		ButtonType yes = new ButtonType("Yes");
+		ButtonType no = new ButtonType("No");
+		Popup.warning("Drop " + structure.name(), "Are you sure to drop the " + structure.name(), yes, no)
+		     .filter(b -> b == yes)
+		     .ifPresent(b -> {
+			     structure.drop();
+			     refreshView();
+		     });
 	}
 
 
@@ -487,67 +493,138 @@ public class SqlartanController {
 	 * Rename a table or a gui
 	 *
 	 * @param structure
-	 * @param name
 	 */
-	public void renameStructure(PersistentStructure<?> structure, String name) {
-		structure.rename(name);
-		refreshView();
+	public void renameStructure(PersistentStructure<?> structure) {
+		Popup.input("Rename", "Rename " + structure.name() + " into :", structure.name()).ifPresent(name -> {
+			if (name.length() > 0 && !structure.name().equals(name)) {
+				structure.rename(name);
+				refreshView();
+			} else {
+				Popup.error("Rename error", "The name is already used or don't have enough chars");
+			}
+		});
 	}
 
 
 	/**
 	 * Add a table to the specified database
 	 *
-	 * @param database
-	 * @param name
+	 * @param database the database in where the datable will be added
 	 */
-	public void addTable(Database database, String name) {
-		try {
-			database.addTable(name);
-			refreshView();
-		} catch (SQLException e) {
-			throw new UncheckedException(e);
-		}
+	public void addTable(Database database) {
+		Popup.input("Add table", "Name : ", "").ifPresent(name -> {
+			if (name.length() > 0) {
+				try {
+					database.addTable(name);
+					refreshView();
+				} catch (SQLException e) {
+					throw new UncheckedException(e);
+				}
+			}
+		});
 	}
 
 	/**
 	 * Add a column to the specified table
 	 *
 	 * @param table
-	 * @param name
-	 * @param type
 	 */
-	public void addColumn(Table table, String name, String type, boolean unique, boolean primaryKey, boolean nullable) {
-		TableColumn column = new TableColumn(table, new TableColumn.Properties() {
-			@Override
-			public boolean unique() {
-				return unique;
+	public void addColumn(Table table) {
+		class AddColumnResult {
+			private String name, type;
+			private boolean unique, primary, nullable;
+
+			public AddColumnResult(String name, String type, boolean unique, boolean primary, boolean nullable) {
+				this.name = name;
+				this.type = type;
+				//this.check = check == "" ? null : check;
+				this.unique = unique;
+				this.primary = primary;
+				this.nullable = nullable;
 			}
-			@Override
-			public boolean primaryKey() {
-				return primaryKey;
+		}
+
+		// Create the custom dialog.
+		Dialog<AddColumnResult> dialog = new Dialog<>();
+		dialog.setTitle("Add column");
+		dialog.setHeaderText(null);
+
+		// Set the button types.
+		ButtonType okButtonType = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		// Create the two labels and fields
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+
+		TextField name = new TextField();
+
+		ChoiceBox type = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+		type.getSelectionModel().selectFirst();
+
+		CheckBox unique = new CheckBox();
+		CheckBox primary = new CheckBox();
+		CheckBox nullable = new CheckBox();
+
+		//TextField check = new TextField();
+
+		grid.add(new Label("Name : "), 0, 0);
+		grid.add(name, 1, 0);
+		grid.add(new Label("Type : "), 0, 1);
+		grid.add(type, 1, 1);
+		grid.add(new Label("Unique : "), 0, 2);
+		grid.add(unique, 1, 2);
+		grid.add(new Label("Primary : "), 0, 3);
+		grid.add(primary, 1, 3);
+		grid.add(new Label("Nullable : "), 0, 4);
+		grid.add(nullable, 1, 4);
+		//grid.add(new Label("Check : "), 0, 5);
+		//grid.add(check, 1, 5);
+
+		dialog.getDialogPane().setContent(grid);
+
+
+		// Convert the result to a username-password-pair when the button is clicked.
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButtonType) {
+				return new AddColumnResult(name.getText(), type.getValue().toString(), unique.isSelected(), primary.isSelected(), nullable.isSelected());
 			}
-			@Override
-			public String check() {
-				return null;
-			}
-			@Override
-			public String name() {
-				return name;
-			}
-			@Override
-			public String type() {
-				return type;
-			}
-			@Override
-			public boolean nullable() {
-				return nullable;
-			}
+			return null;
 		});
-		AlterTable alter = table.alter();
-		alter.addColumn(column);
-		alter.execute();
-		refreshView();
+
+		dialog.showAndWait().ifPresent(addColumnResult -> {
+			AlterTable alter = table.alter();
+			alter.addColumn(new TableColumn(table, new TableColumn.Properties() {
+				@Override
+				public boolean unique() {
+					return addColumnResult.unique;
+				}
+				@Override
+				public boolean primaryKey() {
+					return addColumnResult.primary;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+				@Override
+				public String name() {
+					return addColumnResult.name;
+				}
+				@Override
+				public String type() {
+					return addColumnResult.type;
+				}
+				@Override
+				public boolean nullable() {
+					return addColumnResult.nullable;
+				}
+			}));
+			alter.execute();
+			refreshView();
+		});
 	}
 
 
@@ -555,13 +632,34 @@ public class SqlartanController {
 	 * Rename the specified column from the table
 	 *
 	 * @param structure
-	 * @param newName
+	 * @param name
 	 */
-	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name, String newName) {
-		structure.column(name).ifPresent(c -> c.rename(newName));
-		refreshView();
+	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name) {
+		Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(newName -> {
+			if (newName.length() > 0 && !structure.name().equals(newName)) {
+				structure.column(name).ifPresent(c -> c.rename(newName));
+				refreshView();
+			}
+		});
 	}
 
+
+	/**
+	 * @param structure
+	 * @param columnName
+	 */
+	public void dropColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
+		structure.column(columnName).ifPresent(c -> {
+			ButtonType yes = new ButtonType("Yes");
+			ButtonType no = new ButtonType("No");
+			Popup.warning("Drop " + columnName, "Are you sure to drop the column " + columnName + " of " + structure.name(), yes, no)
+			     .filter(b -> b == yes)
+			     .ifPresent(b -> {
+				     c.drop();
+				     refreshView();
+			     });
+		});
+	}
 
 	/**
 	 * Detach a attachedDatabase from the main attachedDatabase
@@ -669,4 +767,24 @@ public class SqlartanController {
 		Popup.information("Vacuum", "The database " + database.name() + " get vacuumed");
 	}
 
+	public void duplicate(PersistentStructure<?> structure) {
+		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
+			if (name.length() > 0 && !structure.name().equals(name)) {
+				structure.duplicate(name);
+				refreshView();
+			} else {
+				Popup.error("Duplicate error", "The name is already used or don't have enough chars");
+			}
+		});
+	}
+	public void truncate(Table table) {
+		ButtonType yes = new ButtonType("Yes");
+		ButtonType no = new ButtonType("No");
+		Popup.warning("Truncate " + table.name(), "Are you sure to truncate " + table.name(), yes, no)
+		     .filter(b -> b == yes)
+		     .ifPresent(b -> {
+			     table.truncate();
+			     refreshView();
+		     });
+	}
 }

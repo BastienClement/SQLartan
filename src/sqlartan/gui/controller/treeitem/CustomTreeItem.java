@@ -5,6 +5,9 @@ import javafx.scene.control.TreeItem;
 import sqlartan.core.Database;
 import sqlartan.gui.controller.SqlartanController;
 
+/**
+ * A custom TreeItem with a contextual right click menu
+ */
 public abstract class CustomTreeItem extends TreeItem {
 
 	protected SqlartanController controller;
@@ -27,6 +30,9 @@ public abstract class CustomTreeItem extends TreeItem {
 	 */
 	public abstract Type type();
 
+	/**
+	 * @return the database used by the TreeItem
+	 */
 	public Database database() {
 		return database;
 	}

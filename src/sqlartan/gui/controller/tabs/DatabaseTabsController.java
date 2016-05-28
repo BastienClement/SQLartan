@@ -9,7 +9,6 @@ import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.gui.controller.tabs.model.DatabaseStructureModel;
-import sqlartan.gui.util.Popup;
 import java.io.IOException;
 import static sqlartan.gui.util.ActionButtons.actionButton;
 
@@ -45,17 +44,12 @@ public class DatabaseTabsController extends TabsController {
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
-			String structName = dbStruct.name.get();
-			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
-				if (name.length() > 0 && !structName.equals(name)) {
-					database.structure(structName).ifPresent(s -> Sqlartan.getInstance().getController().renameStructure(s, name));
-				}
-			});
+			database.structure(dbStruct.name.get()).ifPresent(Sqlartan.getInstance().getController()::renameStructure);
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
-			database.structure(dbStruct.name.get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
+			database.structure(dbStruct.name.get()).ifPresent(Sqlartan.getInstance().getController()::dropStructure);
 		}));
 
 		tabPane.getSelectionModel().clearSelection();

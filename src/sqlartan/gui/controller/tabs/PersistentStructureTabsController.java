@@ -62,7 +62,10 @@ public abstract class PersistentStructureTabsController extends TabsController {
 				ButtonType cancel = new ButtonType("Cancel");
 				Popup.warning("Error while displaying " + structure.name(), e.getMessage(), ok, cancel)
 				     .filter(d -> d == ok)
-				     .ifPresent(d -> Sqlartan.getInstance().getController().dropStructure(structure));
+				     .ifPresent(d -> {
+					     structure.drop();
+					     Sqlartan.getInstance().getController().refreshView();
+				     });
 				Sqlartan.getInstance().getController().selectTreeIndex(0);
 			});
 		}
