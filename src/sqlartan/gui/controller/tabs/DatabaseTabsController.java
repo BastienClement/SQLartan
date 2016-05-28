@@ -41,7 +41,7 @@ public class DatabaseTabsController extends TabsController {
 	protected void initialize() throws IOException {
 		super.initialize();
 
-		colLignes.setCellValueFactory(param -> param.getValue().lignes);
+		colLignes.setCellValueFactory(param -> param.getValue().lines);
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());

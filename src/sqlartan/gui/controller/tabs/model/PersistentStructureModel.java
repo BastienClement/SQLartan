@@ -7,19 +7,15 @@ import javafx.beans.property.StringProperty;
 import sqlartan.core.Column;
 
 /**
- *
+ * Represent the model of the structure tab of a PersistentStructure
  */
 public class PersistentStructureModel extends StructureModel {
 	public final IntegerProperty no;
 	public final StringProperty nullable;
-	public final StringProperty defaultValue;
-	public final StringProperty comment;
 
 	public PersistentStructureModel(Column column, int ID) {
 		super(column.name(), column.type());
 		this.no = new SimpleIntegerProperty(ID);
 		this.nullable = new SimpleStringProperty(column.nullable() ? "True" : "False");
-		this.defaultValue = new SimpleStringProperty(); // TODO
-		this.comment = new SimpleStringProperty(); // TODO
 	}
 }
