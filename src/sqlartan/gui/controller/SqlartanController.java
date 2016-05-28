@@ -270,7 +270,7 @@ public class SqlartanController {
 	 * Import in the current open database
 	 */
 	@FXML
-	public void importFX() {
+	public void importDatabase(Database database) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Import SQLite database");
 		try {
@@ -278,10 +278,10 @@ public class SqlartanController {
 			if (f != null) {
 				database.importfromFile(f);
 			}
+			refreshView();
 		} catch (SQLException | IOException | TokenizeException e) {
 			throw new UncheckedException(e);
 		}
-		refreshView();
 	}
 
 	/**
