@@ -7,7 +7,7 @@ import java.util.Stack;
 
 /**
  * A tokens stream with transactional capabilities.
- *
+ * <p>
  * Sources are immutable collection of tokens and must be built using the
  * TokenSource.Builder helper class.
  */
@@ -146,7 +146,7 @@ public class TokenSource {
 	 * Consumes the current token and move the source cursor one token forward.
 	 *
 	 * @throws IllegalStateException if consume() is called and the current
-	 * token is EndOfStream.
+	 *                               token is EndOfStream.
 	 */
 	public void consume() {
 		if (current instanceof Token.EndOfStream) {
@@ -167,6 +167,7 @@ public class TokenSource {
 
 	/**
 	 * Commits the current transactional consumption.
+	 *
 	 * @return the offset of the corresponding begin() call
 	 */
 	public int commit() {

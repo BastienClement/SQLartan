@@ -25,7 +25,7 @@ public class ParseException extends Exception {
 
 	/**
 	 * A generic "Unexpected current token" exception
-	 *
+	 * <p>
 	 * This should be thrown to indicates that the current token could not be handled by the
 	 * parser method. It will materialize to a UnexpectedTokenException with the current
 	 * parser token.

@@ -39,6 +39,7 @@ public class AssembledQuery {
 	 * Transforms this assembled query to a prepared query.
 	 *
 	 * @return the prepared query
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	public PreparedQuery prepare() throws SQLException {
@@ -49,6 +50,7 @@ public class AssembledQuery {
 	 * Executes the query.
 	 *
 	 * @return the result set
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	public Result execute() throws SQLException {
@@ -60,6 +62,7 @@ public class AssembledQuery {
 	 *
 	 * @param parameters the parameters of the query
 	 * @return the result set
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	public Result execute(Object... parameters) throws SQLException {

@@ -6,12 +6,12 @@ import java.util.Optional;
 
 /**
  * A parser function returning a T from a ParserContext.
- *
+ * <p>
  * Each parsing function is responsible for parsing a subset of the SQL
  * language. The most general one, Statement::parse is responsible for
  * disambiguating between the different type of statement and call the
  * appropriate sub-parser function.
- *
+ * <p>
  * This implementation also make it trivial to handle recursive cases
  * in the SQL language.
  *
@@ -29,11 +29,11 @@ public interface Parser<T> {
 
 	/**
 	 * Helper method for parsing SQL.
-	 *
+	 * <p>
 	 * The parser can be either Statement::parse or a more specific parser
 	 * if the type of the query being parsed is known. If a more specific
 	 * parser is given, the return type of this function is adapted accordingly.
-	 *
+	 * <p>
 	 * Unless the partial argument is true, the input query must be fully
 	 * consumed by the parser. If the next token available in the stream of
 	 * tokens is not EndOfStream, an ParseException is thrown.

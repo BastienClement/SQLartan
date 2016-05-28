@@ -1,7 +1,6 @@
 package sqlartan.core;
 
 import sqlartan.core.alter.AlterTable;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -9,7 +8,9 @@ import java.util.Optional;
  */
 public class TableColumn extends Column {
 	/**
-	 * TODO
+	 * The properties of a table column.
+	 * In addition to the properties of a Column, a table column can be
+	 * unique, primaryKey and have a check constraint.
 	 */
 	public interface Properties extends Column.Properties {
 		boolean unique();
@@ -18,19 +19,18 @@ public class TableColumn extends Column {
 	}
 
 	/**
-	 * TODO
+	 * The parent table
 	 */
 	private Table parent;
+
 	/**
-	 * TODO
+	 * The column properties
 	 */
 	private Properties props;
 
 	/**
-	 * TODO
-	 *
-	 * @param table
-	 * @param props
+	 * @param table the parent table
+	 * @param props the column properties
 	 */
 	public TableColumn(Table table, Properties props) {
 		super(props);
@@ -39,36 +39,41 @@ public class TableColumn extends Column {
 	}
 
 	/**
-	 * TODO
+	 * Returns the parent table.
 	 *
-	 * @return
+	 * @return the parent table
 	 */
-	public Table parentTable() {
+	public Table table() {
 		return parent;
 	}
 
 	/**
-	 * TODO
+	 * Checks whether this column is part of a PRIMARY KEY or UNIQUE index.
+	 * <p>
+	 * All columns that are parts of a multiple-columns index are considered
+	 * unique. When manipulating such index, care should be taken to ensure
+	 * that every column of the index are present since a single column, while
+	 * being consider unique by this method, is not necessary unique by itself.
 	 *
-	 * @return
+	 * @return true if this column is unique, false otherwise
 	 */
 	public boolean unique() {
 		return props.unique();
 	}
 
 	/**
-	 * TODO
+	 * Returns the check constraint expression of this column.
 	 *
-	 * @return
+	 * @return the check constraint
 	 */
 	public Optional<String> check() {
 		return Optional.ofNullable(props.check());
 	}
 
 	/**
-	 * TODO
+	 * Checks whether this column is a part of the table PRIMARY KEY index.
 	 *
-	 * @return
+	 * @return true if the column is part of the primary key
 	 */
 	public boolean primaryKey() {
 		return props.primaryKey();
@@ -77,7 +82,7 @@ public class TableColumn extends Column {
 	/**
 	 * Rename the column.
 	 *
-	 * @param name
+	 * @param name the new name of the column
 	 */
 	public void rename(String name) {
 		boolean unique = props.unique();
@@ -86,33 +91,33 @@ public class TableColumn extends Column {
 		boolean nullable = props.nullable();
 		boolean pk = props.primaryKey();
 
-		TableColumn column = new TableColumn(parentTable(), new Properties() {
-				@Override
-				public boolean unique() {
-					return unique;
-				}
-				@Override
-				public boolean primaryKey() {
-					return pk;
-				}
-				@Override
-				public String check() {
-					return check;
-				}
-				@Override
-				public String name() {
-					return name;
-				}
-				@Override
-				public String type() {
-					return type;
-				}
-				@Override
-				public boolean nullable() {
-					return nullable;
-				}
+		TableColumn column = new TableColumn(table(), new Properties() {
+			@Override
+			public boolean unique() {
+				return unique;
+			}
+			@Override
+			public boolean primaryKey() {
+				return pk;
+			}
+			@Override
+			public String check() {
+				return check;
+			}
+			@Override
+			public String name() {
+				return name;
+			}
+			@Override
+			public String type() {
+				return type;
+			}
+			@Override
+			public boolean nullable() {
+				return nullable;
+			}
 		});
-		AlterTable alter = parentTable().alter();
+		AlterTable alter = table().alter();
 		alter.modifyColumn(name(), column);
 		alter.execute();
 	}
@@ -121,36 +126,8 @@ public class TableColumn extends Column {
 	 * Drop the column.
 	 */
 	public void drop() {
-		AlterTable alter = parentTable().alter();
+		AlterTable alter = table().alter();
 		alter.dropColumn(this);
 		alter.execute();
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @param obj
-	 * @return
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		} else if (obj instanceof TableColumn) {
-			TableColumn col = (TableColumn) obj;
-			return parentTable().equals(col.parentTable()) && name().equals(col.name());
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @return
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(parent, name());
 	}
 }

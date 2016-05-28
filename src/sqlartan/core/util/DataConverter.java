@@ -15,6 +15,9 @@ public abstract class DataConverter {
 	 * @param value  the Object value from ResultSet.getObject
 	 * @param tClass the target class to convert to
 	 * @param <T>    the type of the result
+	 * @return the converted value
+	 *
+	 * @throws UnsupportedOperationException if the conversion is not supported
 	 */
 	public static <T> T convert(Object value, Class<T> tClass) {
 		// Find the converted to use for the requested class

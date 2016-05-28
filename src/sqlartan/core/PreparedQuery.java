@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Defines a prepared query
+ * A prepared query with data placeholder.
  */
 public class PreparedQuery {
 	/**
@@ -15,22 +15,20 @@ public class PreparedQuery {
 	private Database database;
 
 	/**
-	 * Contains the SQL of the query
+	 * The source SQL query
 	 */
 	private String sql;
 
 	/**
-	 * Prepared statement for executing the query
+	 * The JDBC prepared statement used
 	 */
 	private PreparedStatement stmt;
 
 	/**
-	 * Constructs a prepared query with the given database, connection and SQL
-	 *
-	 * @param database
-	 * @param connection
-	 * @param sql
-	 * @throws SQLException
+	 * @param database   the database on which the query will be executed
+	 * @param connection the JDBC connection to use
+	 * @param sql        the source SQL query
+	 * @throws SQLException if the query is invalid
 	 */
 	PreparedQuery(Database database, Connection connection, String sql) throws SQLException {
 		this.database = database;
@@ -39,11 +37,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Defines the integer value of a placeholder.
 	 *
-	 * @param idx
-	 * @param value
-	 * @return
+	 * @param idx   the placeholder index, 1-based
+	 * @param value the value to use for the placeholder
+	 * @return this object
 	 */
 	public PreparedQuery set(int idx, int value) {
 		try {
@@ -55,11 +53,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Defines the long integer value of a placeholder.
 	 *
-	 * @param idx
-	 * @param value
-	 * @return
+	 * @param idx   the placeholder index, 1-based
+	 * @param value the value to use for the placeholder
+	 * @return this object
 	 */
 	public PreparedQuery set(int idx, long value) {
 		try {
@@ -71,11 +69,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Defines the double value of a placeholder.
 	 *
-	 * @param idx
-	 * @param value
-	 * @return
+	 * @param idx   the placeholder index, 1-based
+	 * @param value the value to use for the placeholder
+	 * @return this object
 	 */
 	public PreparedQuery set(int idx, double value) {
 		try {
@@ -87,11 +85,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Defines the string value of a placeholder.
 	 *
-	 * @param idx
-	 * @param value
-	 * @return
+	 * @param idx   the placeholder index, 1-based
+	 * @param value the value to use for the placeholder
+	 * @return this object
 	 */
 	public PreparedQuery set(int idx, String value) {
 		try {
@@ -103,11 +101,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Defines the generic object value of a placeholder.
 	 *
-	 * @param idx
-	 * @param value
-	 * @return
+	 * @param idx   the placeholder index, 1-based
+	 * @param value the value to use for the placeholder
+	 * @return this object
 	 */
 	public PreparedQuery set(int idx, Object value) {
 		try {
@@ -119,10 +117,11 @@ public class PreparedQuery {
 	}
 
 	/**
-	 * TODO
+	 * Executes the prepared query.
 	 *
-	 * @return
-	 * @throws SQLException
+	 * @return the result set
+	 *
+	 * @throws SQLException if the query is invalid
 	 */
 	public Result execute() throws SQLException {
 		return database.notifyListeners(Result.fromPreparedStatement(database, stmt, sql));

@@ -7,7 +7,7 @@ import static sqlartan.core.ast.token.Tokenizer.State.*;
 
 /**
  * SQL tokenizer.
- *
+ * <p>
  * This class is responsible for turning an SQL query String to a TokenSource
  * consumable by the parser function to parse the SQL language.
  */

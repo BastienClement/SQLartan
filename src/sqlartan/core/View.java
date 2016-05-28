@@ -9,14 +9,12 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 /**
- * Defines the view of a table
+ * A view in a database.
  */
 public class View extends PersistentStructure<GeneratedColumn> implements Structure<GeneratedColumn> {
 	/**
-	 * Constructs a new view on the given database and with the given name.
-	 *
-	 * @param database
-	 * @param name
+	 * @param database the parent database
+	 * @param name     the view name
 	 */
 	protected View(Database database, String name) {
 		super(database, name);
@@ -25,11 +23,11 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 	/**
 	 * Duplicates the view.
 	 *
-	 * @param newName
-	 * @return
+	 * @param target the new name for this view
+	 * @return the duplicated view
 	 */
 	@Override
-	public View duplicate(String newName) {
+	public View duplicate(String target) {
 		try {
 			// retrieve the view creation sql
 			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'view' AND name = ?")
@@ -38,7 +36,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 
 			// Modify the create statement
 			CreateViewStatement create = Parser.parse(sql, CreateViewStatement::parse);
-			create.name = newName;
+			create.name = target;
 			create.schema = Optional.of(database.name());
 
 			// Execute the new sql, add the new view
@@ -49,9 +47,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 			throw new UncheckedException(e);
 		}
 
-		// Gets the new view, without inspection
-		// noinspection OptionalGetWithoutIsPresent
-		return database.view(newName).get();
+		return database.view(target).orElseThrow(IllegalStateException::new);
 	}
 
 	/**
@@ -67,10 +63,10 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 	}
 
 	/**
-	 * TODO
+	 * Builds a GeneratedColumn for a given Row of the table_info PRAGMA.
 	 *
-	 * @param row the row from table_info()
-	 * @return
+	 * @param row a row from a PRAGMA table_info query
+	 * @return a GeneratedColumn representing the column described by the row
 	 */
 	@Override
 	protected GeneratedColumn columnBuilder(Row row) {

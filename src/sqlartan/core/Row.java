@@ -3,37 +3,50 @@ package sqlartan.core;
 import sqlartan.core.stream.ImmutableList;
 import sqlartan.core.util.DataConverter;
 import sqlartan.core.util.UncheckedSQLException;
+import sqlartan.util.Lazy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
+import static sqlartan.util.Lazy.lazy;
 
 /**
- * A results row.
+ * A results set row.
+ * <p>
+ * The row data is read once from the JDBC result set and are kept for the
+ * lifespan of the instance.
+ * <p>
+ * Rows have an internal column cursor allowing to consume data in a stream
+ * like fashion. Each call of a reader method will return the next column
+ * from the row. Care must be taken when using the same instance of the row
+ * in multiple places.
+ * <p>
+ * A new view of the row can be created to create a new row instance with
+ * an independent cursor. The actual row data will be shared between the
+ * original row and its view.
  */
 public class Row implements Structure<ResultColumn> {
 	/**
-	 * TODO
+	 * The parent result set
 	 */
 	private Result.QueryResult res;
 
 	/**
-	 * TODO
+	 * The data in this row
 	 */
 	private RowData data;
 
 	/**
-	 * TODO
+	 * The current column cursor
 	 */
 	private int currentColumn = 1;
 
 	/**
-	 * TODO
-	 *
-	 * @param res
-	 * @param rs
+	 * @param res the parent result set
+	 * @param rs  the JDBC result set from which data must be read
 	 */
 	Row(Result.QueryResult res, ResultSet rs) {
 		this.res = res;
@@ -41,10 +54,10 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
-	 * TODO
+	 * View constructor.
 	 *
-	 * @param res
-	 * @param rd
+	 * @param res the parent result set
+	 * @param rd  the row data object to use
 	 */
 	private Row(Result.QueryResult res, RowData rd) {
 		this.res = res;
@@ -52,68 +65,78 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
-	 * TODO
+	 * Resets the internal column cursor.
 	 */
 	public void reset() {
 		currentColumn = 1;
 	}
 
 	/**
-	 * TODO
-	 *
-	 * @param columns
-	 * @return
+	 * A list of unique columns in this row that can be used as keys for
+	 * updating it. Each columns in the resulting list can be used to uniquely
+	 * identify the corresponding row in the source table.
+	 * <p>
+	 * Such a list can only be computed if the list of unique columns from the
+	 * result set can be computed, that is, if the source query in a simple
+	 * SELECT query using only a single table and column references.
+	 * <p>
+	 * In addition, columns that are NULL in this row are excluded from the
+	 * list as well as columns for which no corresponding PRIMARY KEY or
+	 * UNIQUE index is fully contained in the result set.
+	 * <p>
+	 * For example, if only one column of a two-columns PRIMARY KEY index
+	 * is selected in the result set, the resulting rows are not editable
+	 * despite the selected column being considered "unique".
 	 */
-	private Function<Table, ImmutableList<ResultColumn>> updatePartialFilter(ImmutableList<ResultColumn> columns) {
-		return table -> {
-			ImmutableList<Index> indices = table.indices();
-			return columns.filter(
-				col -> (col.type().equals("INTEGER") && col.sourceColumn().orElseThrow(IllegalStateException::new).primaryKey()) || indices.exists(
-					index -> index.columns().allMatch(
-						name -> columns.exists(
-							c -> c.sourceColumn().orElseThrow(IllegalStateException::new).name().equals(name)
+	private Lazy<Optional<ImmutableList<ResultColumn>>> updateKeys = lazy(() -> {
+		Function<ImmutableList<ResultColumn>, Function<Table, ImmutableList<ResultColumn>>> updatePartialFilter =
+			columns -> table -> {
+				ImmutableList<Index> indices = table.indices();
+				return columns.filter(
+					col -> (col.type().equals("INTEGER") && col.sourceColumn().orElseThrow(IllegalStateException::new).primaryKey()) || indices.exists(
+						index -> index.columns().allMatch(
+							name -> columns.exists(
+								c -> c.sourceColumn().orElseThrow(IllegalStateException::new).name().equals(name)
+							)
 						)
 					)
-				)
-			);
-		};
-	}
+				);
+			};
 
-	/**
-	 * TODO
-	 *
-	 * @return
-	 */
-	private Optional<ImmutableList<ResultColumn>> updateKeys() {
 		return res.uniqueColumns()
 		          .map(list -> list.filter(col -> getObject(col.index()) != null))
 		          .flatMap(list -> list.findFirst()
-		                           .map(GeneratedColumn::sourceTable)
-		                           .map(ot -> ot.orElseThrow(IllegalStateException::new))
-		                           .map(updatePartialFilter(list))
+		                               .map(GeneratedColumn::sourceTable)
+		                               .map(ot -> ot.orElseThrow(IllegalStateException::new))
+		                               .map(updatePartialFilter.apply(list))
 		          );
-	}
+	});
 
 	/**
-	 * TODO
+	 * Checks if this row is editable.
+	 * <p>
+	 * A row is editable if at least one unique column is present in the
+	 * result set and is not NULL in the current row.
 	 *
-	 * @return
+	 * @return true if this row can be edited
 	 */
 	public boolean editable() {
-		return updateKeys().map(l -> !l.isEmpty()).orElse(false);
+		return updateKeys.get().map(l -> !l.isEmpty()).orElse(false);
 	}
 
 	/**
-	 * TODO
+	 * Updates the value of a column of the row.
 	 *
-	 * @param column
-	 * @param value
-	 * @return
+	 * @param column the column to update
+	 * @param value  the new value of the column for this row
+	 * @return the result set of the update query
+	 *
+	 * @throws UnsupportedOperationException if the row is not editable
 	 */
 	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	public Result update(ResultColumn column, Object value) {
-		if (!editable()) throw new UnsupportedOperationException("Column is not editable");
-		ImmutableList<ResultColumn> keys = updateKeys().get();
+		if (!editable()) throw new UnsupportedOperationException("Row is not editable");
+		ImmutableList<ResultColumn> keys = updateKeys.get().get();
 
 		Table table = column.sourceTable().get();
 		TableColumn target = column.sourceColumn().get();
@@ -136,32 +159,32 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
-	 * TODO
+	 * Update the value of the column with the given index.
 	 *
-	 * @param index
-	 * @param value
-	 * @return
+	 * @param index the column index, 0-based
+	 * @param value the new value of the column for this row
+	 * @return the result set of the update statement
 	 */
-	public Optional<Result> update(int index, Object value) {
-		return column(index).map(c -> update(c, value));
+	public Result update(int index, Object value) {
+		return update(column(index).orElseThrow(IndexOutOfBoundsException::new), value);
 	}
 
 	/**
-	 * TODO
+	 * Update the value of the column with the given label.
 	 *
-	 * @param label
-	 * @param value
-	 * @return
+	 * @param label the column label
+	 * @param value the new value of the column for this row
+	 * @return the result set of the update statement
 	 */
-	public Optional<Result> update(String label, Object value) {
-		return column(label).map(c -> update(c, value));
+	public Result update(String label, Object value) {
+		return update(column(label).orElseThrow(NoSuchElementException::new), value);
 	}
 
 	/**
 	 * Returns a new view of this row with an independent currentColumn counter.
 	 * Both Rows are backed by the same data object.
 	 *
-	 * @return
+	 * @return a new view of this row
 	 */
 	public Row view() {
 		return new Row(res, data);
@@ -170,16 +193,16 @@ public class Row implements Structure<ResultColumn> {
 	/**
 	 * Returns the number of columns of this row.
 	 *
-	 * @return
+	 * @return the number of column of this row
 	 */
 	public int size() {
 		return data.values.length;
 	}
 
 	/**
-	 * TODO
+	 * Returns a string representation of the row.
 	 *
-	 * @return
+	 * @return a string representation of the row
 	 */
 	@Override
 	public String toString() {
@@ -197,14 +220,8 @@ public class Row implements Structure<ResultColumn> {
 		return sb.toString();
 	}
 
-	//###################################################################
-	// Column proxy
-	//###################################################################
-
 	/**
-	 * TODO
-	 *
-	 * @return
+	 * {@inheritDoc}
 	 */
 	@Override
 	public ImmutableList<ResultColumn> columns() {
@@ -212,10 +229,7 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
-	 * TODO
-	 *
-	 * @param name the name of the column
-	 * @return
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Optional<ResultColumn> column(String name) {
@@ -223,10 +237,7 @@ public class Row implements Structure<ResultColumn> {
 	}
 
 	/**
-	 * TODO
-	 *
-	 * @param idx the index of the column
-	 * @return
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Optional<ResultColumn> column(int idx) {
@@ -238,75 +249,79 @@ public class Row implements Structure<ResultColumn> {
 	//###################################################################
 
 	/**
-	 * TODO
+	 * Returns the object value of the column with the given label.
+	 * The returned object will have the same class as the actual type of data
+	 * stored in the database.
 	 *
-	 * @param label
-	 * @return
+	 * @param label the column label
+	 * @return the value of the column
 	 */
 	public Object getObject(String label) {
 		return data.valuesIndex.get(label);
 	}
 
 	/**
-	 * TODO
+	 * Returns the value of the column with the given label.
+	 * The actual value type will be converted to the requested type.
 	 *
-	 * @param label
-	 * @param tClass
-	 * @param <T>
-	 * @return
+	 * @param label  the column label
+	 * @param tClass the requested value type
+	 * @param <T>    the type of the returned value
+	 * @return the value of the column
+	 *
+	 * @throws UnsupportedOperationException if the value cannot be converted
+	 *                                       to the requested type.
 	 */
 	public <T> T getObject(String label, Class<T> tClass) {
 		return DataConverter.convert(getObject(label), tClass);
 	}
 
 	/**
-	 * TODO
+	 * Returns the integer value of the column with the given label.
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param label
-	 * @return
+	 * @param label the column label
+	 * @return the value of the column
 	 */
 	public Integer getInt(String label) {
 		return getObject(label, Integer.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the long value of the column with the given label.
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param label
-	 * @return
+	 * @param label the column label
+	 * @return the value of the column
 	 */
 	public Long getLong(String label) {
 		return getObject(label, Long.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the double value of the column with the given label.
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param label
-	 * @return
+	 * @param label the column label
+	 * @return the value of the column
 	 */
 	public Double getDouble(String label) {
 		return getObject(label, Double.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the string value of the column with the given label.
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param label
-	 * @return
+	 * @param label the column label
+	 * @return the value of the column
 	 */
 	public String getString(String label) {
 		return getObject(label, String.class);
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @param label
-	 * @return
-	 */
-	public byte[] getBytes(String label) {
-		throw new UnsupportedOperationException();
 	}
 
 	//###################################################################
@@ -314,75 +329,85 @@ public class Row implements Structure<ResultColumn> {
 	//###################################################################
 
 	/**
-	 * TODO
+	 * Returns the object value of the column with the given index.
+	 * <p>
+	 * The returned object will have the same class as the actual type of data
+	 * stored in the database.
 	 *
-	 * @param index
-	 * @return
+	 * @param index the column index
+	 * @return the value of the column
 	 */
 	public Object getObject(int index) {
 		return (index > 0 && index <= data.values.length) ? data.values[index - 1] : null;
 	}
 
 	/**
-	 * TODO
+	 * Returns the value of the column with the given index.
+	 * <p>
+	 * The actual value type will be converted to the requested type.
 	 *
-	 * @param index
-	 * @param tClass
-	 * @param <T>
-	 * @return
+	 * @param index  the column index
+	 * @param tClass the requested value type
+	 * @param <T>    the type of the returned value
+	 * @return the value of the column
+	 *
+	 * @throws UnsupportedOperationException if the value cannot be converted
+	 *                                       to the requested type.
 	 */
 	public <T> T getObject(int index, Class<T> tClass) {
 		return DataConverter.convert(getObject(index), tClass);
 	}
 
 	/**
-	 * TODO
+	 * Returns the integer value of the column with the given index.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param index
-	 * @return
+	 * @param index the column index
+	 * @return the value of the column
 	 */
 	public Integer getInt(int index) {
 		return getObject(index, Integer.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the long value of the column with the given index.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param index
-	 * @return
+	 * @param index the column index
+	 * @return the value of the column
 	 */
 	public Long getLong(int index) {
 		return getObject(index, Long.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the double value of the column with the given index.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param index
-	 * @return
+	 * @param index the column index
+	 * @return the value of the column
 	 */
 	public Double getDouble(int index) {
 		return getObject(index, Double.class);
 	}
 
 	/**
-	 * TODO
+	 * Returns the string value of the column with the given index.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
 	 *
-	 * @param index
-	 * @return
+	 * @param index the column index
+	 * @return the value of the column
 	 */
 	public String getString(int index) {
 		return getObject(index, String.class);
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @param index
-	 * @return
-	 */
-	public byte[] getBytes(int index) {
-		throw new UnsupportedOperationException();
 	}
 
 	//###################################################################
@@ -390,68 +415,91 @@ public class Row implements Structure<ResultColumn> {
 	//###################################################################
 
 	/**
-	 * TODO
+	 * Returns the object value of the next column.
+	 * <p>
+	 * The returned object will have the same class as the actual type of data
+	 * stored in the database.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @return
+	 * @return the value of the next column
 	 */
 	public Object getObject() {
 		return getObject(currentColumn++);
 	}
 
 	/**
-	 * TODO
+	 * Returns the value of the column with the given index.
+	 * <p>
+	 * The actual value type will be converted to the requested type.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @param tClass
-	 * @param <T>
-	 * @return
+	 * @param tClass the requested value type
+	 * @param <T>    the type of the returned value
+	 * @return the value of the next column
+	 *
+	 * @throws UnsupportedOperationException if the value cannot be converted
+	 *                                       to the requested type.
 	 */
 	public <T> T getObject(Class<T> tClass) {
 		return getObject(currentColumn++, tClass);
 	}
 
 	/**
-	 * TODO
+	 * Returns the integer value of the next column.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @return
+	 * @return the value of the next column
 	 */
 	public Integer getInt() {
 		return getInt(currentColumn++);
 	}
 
 	/**
-	 * TODO
+	 * Returns the long value of the next column.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @return
+	 * @return the value of the next column
 	 */
 	public Long getLong() {
 		return getLong(currentColumn++);
 	}
 
 	/**
-	 * TODO
+	 * Returns the double value of the next column.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @return
+	 * @return the value of the next column
 	 */
 	public Double getDouble() {
 		return getDouble(currentColumn++);
 	}
 
 	/**
-	 * TODO
+	 * Returns the string value of the next column.
+	 * <p>
+	 * If the requested type does not match the one stored in the database,
+	 * the value will be automatically converted to the requested type.
+	 * <p>
+	 * This method will move the internal cursor one column forward.
 	 *
-	 * @return
+	 * @return the value of the next column
 	 */
 	public String getString() {
 		return getString(currentColumn++);
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @return
-	 */
-	public byte[] getBytes() {
-		return getBytes(currentColumn++);
 	}
 
 	//###################################################################
@@ -459,24 +507,25 @@ public class Row implements Structure<ResultColumn> {
 	//###################################################################
 
 	/**
-	 * TODO
+	 * Internal row data storage.
+	 * <p>
+	 * A single instances of this class is shared between all views of the
+	 * row, thus implementing the flyweight pattern.
 	 */
 	private class RowData {
 		/**
-		 * TODO
+		 * The values of each columns in this row
 		 */
 		private Object[] values;
 
 		/**
-		 * TODO
+		 * Index of values by column name
 		 */
 		private TreeMap<String, Object> valuesIndex = new TreeMap<>();
 
 		/**
-		 * TODO
-		 *
-		 * @param res
-		 * @param rs
+		 * @param res the result set
+		 * @param rs  the JDBC result set to read
 		 */
 		private RowData(Result.QueryResult res, ResultSet rs) {
 			List<ResultColumn> columns = res.columns();

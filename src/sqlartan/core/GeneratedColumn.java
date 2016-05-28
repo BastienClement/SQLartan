@@ -3,11 +3,13 @@ package sqlartan.core;
 import java.util.Optional;
 
 /**
- * TODO
+ * A structure column generated from query.
  */
 public class GeneratedColumn extends Column {
 	/**
-	 * TODO
+	 * Generated column properties.
+	 * In addition to the properties of a generic column, this interface
+	 * also defines an optional source table and source column.
 	 */
 	interface Properties extends Column.Properties {
 		Optional<Table> sourceTable();
@@ -15,14 +17,12 @@ public class GeneratedColumn extends Column {
 	}
 
 	/**
-	 * TODO
+	 * The properties of this column
 	 */
 	private Properties props;
 
 	/**
-	 * TODO
-	 *
-	 * @param props
+	 * @param props the properties of the column
 	 */
 	GeneratedColumn(Properties props) {
 		super(props);
@@ -30,16 +30,17 @@ public class GeneratedColumn extends Column {
 	}
 
 	/**
-	 * TODO
+	 * Returns the source table if it is known.
 	 *
-	 * @return
+	 * @return the source table if it is known.
 	 */
 	public Optional<Table> sourceTable() { return props.sourceTable(); }
 
 	/**
-	 * TODO
+	 * Returns the source column from which this column was generated,
+	 * if it is known
 	 *
-	 * @return
+	 * @return the source column of this one, if it is known
 	 */
 	public Optional<TableColumn> sourceColumn() {
 		return props.sourceColumn();
