@@ -69,7 +69,7 @@ public class Popup {
 	 * @param title       the title
 	 * @param message     the message
 	 * @param placeholder the placeholder
-	 * @return An optional of the inputed text
+	 * @return An optional of the inputted text
 	 */
 	public static Optional<String> input(String title, String message, String placeholder) {
 		TextInputDialog dialog = new TextInputDialog(placeholder);
@@ -101,7 +101,7 @@ public class Popup {
 	 * @param title  the title of the window
 	 * @param window the owner window of the displayed file dialog
 	 * @param filter the filter to be applied on the file chooser
-	 * @return An optional of the file choosed by the user
+	 * @return An optional of the file chosen by the user
 	 */
 	public static Optional<File> save(String title, Window window, FileChooser.ExtensionFilter filter) {
 		return Optional.ofNullable(file(title, filter).showSaveDialog(window));
@@ -114,7 +114,7 @@ public class Popup {
 	 * @param title  the title of the window
 	 * @param window the owner window of the displayed file dialog
 	 * @param filter the filter to be applied on the file chooser
-	 * @return An optional of the file choosed by the user
+	 * @return An optional of the file chosen by the user
 	 */
 	public static Optional<File> browse(String title, Window window, FileChooser.ExtensionFilter filter) {
 		return Optional.ofNullable(file(title, filter).showOpenDialog(window));

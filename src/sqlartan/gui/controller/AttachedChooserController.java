@@ -13,7 +13,7 @@ import java.io.File;
  */
 public class AttachedChooserController {
 
-	File file = null;
+	private File file = null;
 	@FXML
 	private Button ok;
 	@FXML
@@ -27,9 +27,6 @@ public class AttachedChooserController {
 	@FXML
 	private TextField dbName;
 	private SqlartanController controller;
-	@FXML
-	private void initialize() {
-	}
 
 	@FXML
 	private void close() {
@@ -41,7 +38,7 @@ public class AttachedChooserController {
 	}
 
 	@FXML
-	private void validate() {
+	protected void validate() {
 		file = new File(path.getText());
 
 		if (!file.getPath().isEmpty() && !dbName.getText().isEmpty()) {
@@ -54,7 +51,7 @@ public class AttachedChooserController {
 	}
 
 	@FXML
-	private void browse() {
+	protected void browse() {
 		String oldPath = path.getText();
 
 		Popup.browse("Select database to attach", attachedPane.getScene().getWindow(), null)

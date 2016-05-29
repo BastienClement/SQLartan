@@ -89,11 +89,9 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 	/**
 	 * Insert the data in the table
-	 *
-	 * @throws SQLException
 	 */
 	@FXML
-	private void submitNewData() throws SQLException {
+	protected void submitNewData() {
 		try {
 			Object objects[] = InsertRowModel.toArray(insertTable.getItems());
 			InsertRow insertRow = ((Table) structure).insert();

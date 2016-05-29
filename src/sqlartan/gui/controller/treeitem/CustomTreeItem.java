@@ -10,9 +10,9 @@ import sqlartan.gui.controller.SqlartanController;
  */
 public abstract class CustomTreeItem extends TreeItem {
 
-	protected SqlartanController controller;
+	protected final SqlartanController controller;
+	private final String name;
 	protected Database database;
-	private String name;
 
 	public CustomTreeItem(String name, SqlartanController controller, Database database) {
 		this.name = name;

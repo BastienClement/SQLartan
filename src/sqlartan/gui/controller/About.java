@@ -18,7 +18,7 @@ public class About {
 
 	/**
 	 * First method call when FXML loaded
-	 * Used to disable mouse action on the description textAera
+	 * Used to disable mouse action on the description textArea
 	 */
 	@FXML
 	private void initialize() {

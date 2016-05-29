@@ -182,7 +182,7 @@ public class SqlartanController {
 	 * to create a new database and open or attache it
 	 */
 	@FXML
-	protected void createDatabase() throws SQLException {
+	protected void createDatabase() {
 		Popup.save("Create a new database", sqlartan.getPrimaryStage(), null)
 		     .ifPresent(file -> {
 			     if (database != null && (!database.isClosed())) {
@@ -237,7 +237,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Close the entery application
+	 * Close the entry application
 	 */
 	@FXML
 	protected void close() {
@@ -338,7 +338,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Open a popup with à FileChooser, asking wich database to open
+	 * Open a popup with à FileChooser, asking which database to open
 	 */
 	public void openDatabase() {
 		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
@@ -362,9 +362,9 @@ public class SqlartanController {
 				database.registerListener(readOnlyResult -> {
 					request.setItems(requests);
 
-					String resultat = readOnlyResult.query();
+					String result = readOnlyResult.query();
 
-					if (!resultat.startsWith("PRAGMA") || displayPragma.isSelected())
+					if (!result.startsWith("PRAGMA") || displayPragma.isSelected())
 						requests.add(0, readOnlyResult.query());
 				});
 
@@ -384,7 +384,7 @@ public class SqlartanController {
 	/**
 	 * CellFactory for the history listedView
 	 *
-	 * @return the new listcell
+	 * @return the new ListCell
 	 */
 	private ListCell<String> setCellFactoryHistory() {
 		ListCell<String> cells = new ListCell<>();
@@ -424,7 +424,7 @@ public class SqlartanController {
 	/**
 	 * Called by the mainApp to set the link to the mainApp
 	 *
-	 * @param sqlartan set the referance to the main class
+	 * @param sqlartan set the reference to the main class
 	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
@@ -687,7 +687,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Set active the index element in the treeview
+	 * Set active the index element in the TreeView
 	 *
 	 * @param index to set active
 	 */
@@ -706,7 +706,7 @@ public class SqlartanController {
 		class Result {
 			private boolean structure, data, structureAndData;
 
-			public Result(boolean structure, boolean data, boolean structureAndData) {
+			private Result(boolean structure, boolean data, boolean structureAndData) {
 				this.structure = structure;
 				this.data = data;
 				this.structureAndData = structureAndData;

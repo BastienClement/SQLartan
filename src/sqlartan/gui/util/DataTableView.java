@@ -32,7 +32,7 @@ public class DataTableView {
 			tableView.getColumns().add(col);
 		}
 
-		// Add datas
+		// Add data
 		ObservableList<ObservableList<EditModel>> rows = FXCollections.observableArrayList();
 		result.forEach(row -> rows.add(FXCollections.observableArrayList(
 			result.columns().map(c -> new EditModel(row, c, row.getString())))

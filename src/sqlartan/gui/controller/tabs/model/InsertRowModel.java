@@ -43,13 +43,12 @@ public class InsertRowModel {
 
 
 	/**
-	 * Make an object table with the good typs for the sql insertion
+	 * Make an object table with the good type for the sql insertion
 	 *
-	 * @param list
+	 * @param list the list of InsertRowModel to get in array
 	 * @return the object table
-	 * @throws Exception
 	 */
-	public static Object[] toArray(ObservableList<InsertRowModel> list) throws Exception {
+	public static Object[] toArray(ObservableList<InsertRowModel> list) {
 		List<Object> lk = new LinkedList<>();
 
 		for (InsertRowModel irs : list) {
