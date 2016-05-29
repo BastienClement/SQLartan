@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * TODO
+ * Represent the data to be insert in a new row of a table.
  */
 public class InsertRowModel {
 	public final StringProperty name;
