@@ -48,7 +48,7 @@
             </GridPane>
          </children>
       </Pane>
-      <TextArea fx:id="description" editable="false" layoutX="113.0" layoutY="195.0" mouseTransparent="true" prefHeight="73.0" prefWidth="236.0" styleClass="text-area-about" stylesheets="@../MainTheme.css" text="SQLartan is an SQL administration&#10;tool, made by HEIG-VD students&#10;for a semester group project.">
+      <TextArea fx:id="description" editable="false" layoutX="113.0" layoutY="195.0" mouseTransparent="true" prefHeight="90.0" prefWidth="236.0" styleClass="text-area-about" stylesheets="@../MainTheme.css" text="SQLartan is an SQL administration&#10;tool, made by HEIG-VD students&#10;for a semester group project.&#10;March to May 2016">
          <cursor>
             <Cursor fx:constant="DEFAULT" />
          </cursor>
