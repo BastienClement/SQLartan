@@ -1,10 +1,10 @@
 <component name="ArtifactManager">
-  <artifact type="javafx" name="SQLartan">
+  <artifact type="javafx" build-on-make="true" name="SQLartan">
     <output-path>$PROJECT_DIR$/out/artifacts/SQLartan</output-path>
     <properties id="javafx-properties">
       <options>
-        <option name="appClass" value="" />
-        <option name="description" value="" />
+        <option name="appClass" value="sqlartan.Sqlartan" />
+        <option name="description" value="SQLartan is an SQL administration tool, made by HEIG-VD students for a semester group project.&#13;&#10;March to May 2016" />
         <option name="htmlParamFile" value="" />
         <option name="paramFile" value="" />
         <option name="title" value="SQLartan" />
