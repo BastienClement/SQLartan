@@ -641,7 +641,7 @@ public class SqlartanController {
 	 * @param columnName the name of the column
 	 */
 	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
-		Popup.input("Rename " + structure.name(), "Rename " + structure.name() + " into : ", structure.name(), "Column rename" + WARNING_COST)
+		Popup.input("Rename column " + columnName, "Rename " + columnName + " into : ", columnName, "Column rename" + WARNING_COST)
 		     .ifPresent(newName -> {
 			     if (newName.length() > 0 && !structure.name().equals(newName)) {
 				     structure.column(columnName).ifPresent(c -> c.rename(newName));
