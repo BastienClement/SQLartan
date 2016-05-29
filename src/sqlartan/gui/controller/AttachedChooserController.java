@@ -10,12 +10,11 @@ import java.io.File;
 
 /**
  * Controller for the AttachedChooser fxml file.
- * Used to give the user an inferface to attache a database
- * to the main one.
+ * Used to give the user an inferface to attache a database to the main one.
  */
 public class AttachedChooserController {
 
-	File file = null;
+	private File file = null;
 	private SqlartanController controller;
 
 	@FXML
@@ -40,6 +39,11 @@ public class AttachedChooserController {
 		((Stage) attachedPane.getScene().getWindow()).close();
 	}
 
+	/**
+	 * Set the controller
+	 *
+	 * @param controller the controller
+	 */
 	public void setController(SqlartanController controller) {
 		this.controller = controller;
 	}
@@ -77,6 +81,10 @@ public class AttachedChooserController {
 		     });
 	}
 
+	/**
+	 * @param file the file
+	 * @return the name of the file without his extension
+	 */
 	private String fileName(File file) {
 		return file.getName().split("\\.")[0];
 	}
