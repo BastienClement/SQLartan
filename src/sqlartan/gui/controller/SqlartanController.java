@@ -282,7 +282,7 @@ public class SqlartanController {
 
 
 	/**
-	 * To call to refresh the gui of the tree
+	 * To call to refresh the GUI
 	 */
 	public void refreshView() {
 		if (database != null) {
@@ -292,7 +292,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Refresh de attached database menu
+	 * Refresh the attached database menu
 	 */
 	private void refreshAttachedDatabase() {
 		detachMenu.getItems().clear();
@@ -436,6 +436,7 @@ public class SqlartanController {
 	 * Create the tree for a specific database
 	 *
 	 * @param database the database
+	 * @return the number of item in the created tree
 	 */
 	private int tree(Database database) {
 
