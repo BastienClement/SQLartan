@@ -5,19 +5,49 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Defines a trigger of a database
+ */
 public class Trigger
 {
+	/**
+	 * The table containing the trigger
+	 */
 	private final Table table;
+
+	/**
+	 * The name of the trigger
+	 */
 	private String name;
+
+	/**
+	 * TODO
+	 */
 	private String content;
+
+	/**
+	 * TODO
+	 */
 	private List<TableColumn> columns = new LinkedList<>();
 
+	/**
+	 * Constructs a new trigger on the given table and with the given name and content.
+	 *
+	 * @param table
+	 * @param name
+	 * @param content
+	 */
 	public Trigger(Table table, String name, String content) {
 		this.table = table;
 		this.name = name;
 		this.content = content;
 	}
 
+	/**
+	 * Rename the trigger.
+	 *
+	 * @param newName
+	 */
 	public void rename(String newName) {
 		try {
 			// Replace the name in the trigger creation sql
@@ -35,6 +65,9 @@ public class Trigger
 		}
 	}
 
+	/**
+	 * Drop the trigger.
+	 */
 	public void drop() {
 		try {
 			table.database().assemble("DROP TRIGGER ", table.database().name(), ".", name).execute();
@@ -43,10 +76,20 @@ public class Trigger
 		}
 	}
 
+	/**
+	 * Get the name of the trigger
+	 *
+	 * @return the name
+	 */
 	public String getName(){
 		return name;
 	}
 
+	/**
+	 * Get the content of the trigger
+	 *
+	 * @return the content
+	 */
 	public String getContent(){
 		return content;
 	}

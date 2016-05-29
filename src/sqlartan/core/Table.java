@@ -11,13 +11,12 @@ import sqlartan.core.util.UncheckedSQLException;
 import sqlartan.util.Lazy;
 import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Optional;
 import static sqlartan.util.Lazy.lazy;
 import static sqlartan.util.Matching.match;
 
 /**
- * A table in a database
+ * Defines a table in a database
  */
 public class Table extends PersistentStructure<TableColumn> {
 	/**
@@ -142,14 +141,11 @@ public class Table extends PersistentStructure<TableColumn> {
 
 					String columnCheck = check.map(c -> c.expression.toSQL()).orElse(null);
 
-					// Check the integer primary key case
-					boolean integerPrimaryKey =
-						col.type.map(t -> t.name.equals("INTEGER")).orElse(false)
-						&& IterableStream.from(col.constraints).exists(c -> c instanceof ColumnConstraint.PrimaryKey);
-
 					// Whether this column is unique or not
-					Lazy<Boolean> columnUnique = lazy(
-						() -> indices().filter(i -> i.unique() && i.columns().contains(columnName)).exists()
+					Lazy<Boolean> columnUnique = lazy(() ->
+						(col.type.map(t -> t.name.equals("INTEGER")).orElse(false)
+							&& IterableStream.from(col.constraints).exists(c -> c instanceof ColumnConstraint.PrimaryKey))
+							|| indices().filter(i -> i.unique() && i.columns().contains(columnName)).exists()
 					);
 
 					return new TableColumn(this, new TableColumn.Properties() {
@@ -158,7 +154,7 @@ public class Table extends PersistentStructure<TableColumn> {
 						@Override
 						public String type() { return columnType; }
 						@Override
-						public boolean unique() { return integerPrimaryKey || columnUnique.get(); }
+						public boolean unique() { return columnUnique.get(); }
 						@Override
 						public boolean primaryKey() { return columnPrimaryKey; }
 						@Override
@@ -236,7 +232,7 @@ public class Table extends PersistentStructure<TableColumn> {
 	}
 
 	/**
-	 * Returns the list of trigggers associated with this table.
+	 * Returns the list of triggers associated with this table.
 	 */
 	public IterableStream<Trigger> triggers() {
 		return triggersInfo().map(this::triggerBuilder);
@@ -279,38 +275,9 @@ public class Table extends PersistentStructure<TableColumn> {
 	/**
 	 * Inserts new data in this table.
 	 *
-	 * @return a instance of InsertRow allowing to add data in this table
+	 * @return an instance of InsertRow allowing to add data in this table
 	 */
 	public InsertRow insert() {
 		return new InsertRow(this);
-	}
-
-	/**
-	 * Two tables are equals if they both have the same parent database and
-	 * the same name.
-	 *
-	 * @param obj the object to test for equality
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) {
-			return true;
-		} else if (obj instanceof Table) {
-			Table table = (Table) obj;
-			return database == table.database && name.equals(table.name);
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Generates a hash code for this table.
-	 * Since tables can be renamed, we can not use its name for hash code
-	 * computation. This means that every table in the same database will
-	 * have the same hashcode and are very bad keys in hash structures.
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(database, Table.class);
 	}
 }

@@ -12,7 +12,7 @@ import static sqlartan.util.Matching.dispatch;
 
 /**
  * The SQL Generator helper.
- *
+ * <p>
  * This class wraps a StringBuilder object and provides utility functions for
  * appending Node and lists. Most methods of this class returns the object
  * itself, allowing the calls to be chained.
@@ -123,7 +123,7 @@ public class Builder {
 
 	/**
 	 * Appends a list of elements to the output, separated by the given separator.
-	 *
+	 * <p>
 	 * The given adapter will be called on each elements of the list to convert it
 	 * to a Buildable instance.
 	 *

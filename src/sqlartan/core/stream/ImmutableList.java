@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 /**
  * An immutable List of elements that directly supports Stream operations.
- *
+ * <p>
  * Stream operations preserves the ImmutableList type and are strict, creating a
  * complete copy of transformed elements at each step.
  *
@@ -73,7 +73,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 
 	/**
 	 * Returns an IterableStream over this list.
-	 *
+	 * <p>
 	 * The intended usage is to create transform pipeline that do not construct intermediate
 	 * immutable list at each step.
 	 */

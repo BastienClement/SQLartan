@@ -11,6 +11,8 @@ import java.sql.SQLException;
  */
 public class AddColumnAction extends AlterColumnAction {
 	/**
+	 * TODO
+	 *
 	 * @param table
 	 * @param column
 	 * @throws TokenizeException

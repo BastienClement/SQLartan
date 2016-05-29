@@ -3,7 +3,7 @@ package sqlartan.core.util;
 /**
  * Utility object to convert objects returned by the SQLite driver
  * to objects used as return type for Row accessors.
- *
+ * <p>
  * This object is the bridge between the classes used by the
  * SQLite driver for the ResultSet.getObject method and the
  * types returned by the accessor in the Row object.
@@ -15,6 +15,9 @@ public abstract class DataConverter {
 	 * @param value  the Object value from ResultSet.getObject
 	 * @param tClass the target class to convert to
 	 * @param <T>    the type of the result
+	 * @return the converted value
+	 *
+	 * @throws UnsupportedOperationException if the conversion is not supported
 	 */
 	public static <T> T convert(Object value, Class<T> tClass) {
 		// Find the converted to use for the requested class

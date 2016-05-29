@@ -14,7 +14,7 @@ import static sqlartan.core.ast.Operator.DOT;
 
 /**
  * A parsing context, keeping state between parsers functions.
- *
+ * <p>
  * An instance of this class is used as the unique parameter to Parser::parse
  * functions. It provides everything required to parse the input in a single
  * object.
@@ -107,12 +107,12 @@ public class ParserContext {
 	/**
 	 * Begin a transactional consumption of the token source.
 	 * The current state of the source will be saved and can be later restored.
-	 *
+	 * <p>
 	 * This is used when disambiguating between multiple cases cannot be done
 	 * at the branching location. In this case, the actual branch must be
 	 * guessed and in case of failure, the source is reverted back to the state
 	 * before the consumption started to attempt the alternative choice.
-	 *
+	 * <p>
 	 * Each begin() must be followed by a commit() or rollback(). It is an
 	 * error to have a modified stack at the end of a parsing function.
 	 */
@@ -138,7 +138,7 @@ public class ParserContext {
 	/**
 	 * Resets the current transaction by moving the restore point to the
 	 * current position.
-	 *
+	 * <p>
 	 * It does not close nor open a new translation, the markers stack if left
 	 * with the same number of elements, with the last one now moved to the
 	 * current location.
@@ -202,7 +202,7 @@ public class ParserContext {
 
 	/**
 	 * Consumes an identifier token.
-	 *
+	 * <p>
 	 * If a Literal.Text token is encountered instead, it will be transformed
 	 * to an identifier
 	 */
@@ -212,7 +212,7 @@ public class ParserContext {
 
 	/**
 	 * Consumes a string literal token.
-	 *
+	 * <p>
 	 * If an Identifier token is encountered instead, it will be transformed to
 	 * a Literal.Text
 	 */
@@ -243,10 +243,10 @@ public class ParserContext {
 
 	/**
 	 * Attempts to consume a chain of tokens.
-	 *
+	 * <p>
 	 * If the first token is a match, then every following tokens must also be
 	 * a match and tryConsume() returns true.
-	 *
+	 * <p>
 	 * If the first token is not a match, the next tokens are not consumed and
 	 * tryConsume() returns false.
 	 *
@@ -262,7 +262,7 @@ public class ParserContext {
 
 	/**
 	 * Attempts to consume an identifier.
-	 *
+	 * <p>
 	 * If a Literal.Text token is encountered instead, it will be transformed
 	 * to an identifier
 	 *
@@ -274,7 +274,7 @@ public class ParserContext {
 
 	/**
 	 * Attempts to consume a string literal.
-	 *
+	 * <p>
 	 * If an Identifier token is encountered instead, it will be transformed to
 	 * a Literal.Text
 	 *
@@ -316,7 +316,7 @@ public class ParserContext {
 
 	/**
 	 * Optionally consumes an identifier.
-	 *
+	 * <p>
 	 * If a Literal.Text token is encountered instead, it will be transformed
 	 * to an identifier
 	 *
@@ -334,7 +334,7 @@ public class ParserContext {
 
 	/**
 	 * Optionally consumes a string literal.
-	 *
+	 * <p>
 	 * If an Identifier token is encountered instead, it will be transformed to
 	 * a Literal.Text
 	 *
@@ -432,9 +432,9 @@ public class ParserContext {
 	/**
 	 * Parses a list of nodes in the given list, using a comma as separator.
 	 *
-	 * @param list the list to put the nodes in
+	 * @param list   the list to put the nodes in
 	 * @param parser the parser producing list items
-	 * @param <N> the type of nodes produced by the parser
+	 * @param <N>    the type of nodes produced by the parser
 	 * @return true if at least one node was produced, false otherwise
 	 */
 	public <N> boolean parseList(List<N> list, Parser<N> parser) {
@@ -500,7 +500,7 @@ public class ParserContext {
 
 	/**
 	 * Binds a Parser to this ParserContext.
-	 *
+	 * <p>
 	 * Each call of the returned Supplier object will execute the parser on
 	 * this context and return the result.
 	 *

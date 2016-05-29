@@ -3,7 +3,7 @@ package sqlartan.core;
 import java.util.TreeMap;
 
 /**
- * Defines the different types
+ * SQLite affinities
  */
 public enum Affinity {
 	Text(Type.Text),
@@ -12,18 +12,30 @@ public enum Affinity {
 	Real(Type.Real),
 	Blob(Type.Blob);
 
+	/**
+	 * The underlying type of the affinity
+	 */
 	public final Type type;
 
+	/**
+	 * @param type the type of the affinity
+	 */
 	Affinity(Type type) {
 		this.type = type;
 	}
 
+	/**
+	 * Cache of affinity for a each types
+	 */
 	private static TreeMap<String, Affinity> affinityCache = new TreeMap<>();
 
 	/**
+	 * Returns the affinity associated to the given type.
+	 * <p>
+	 * This method is memoized.
 	 *
-	 * @param type
-	 * @return
+	 * @param type the column type
+	 * @return the affinity associated with he given type
 	 */
 	public static Affinity forType(String type) {
 		type = type.toUpperCase().trim();
@@ -38,10 +50,10 @@ public enum Affinity {
 	}
 
 	/**
+	 * Transforms a type name to an affinity.
 	 *
-	 *
-	 * @param type
-	 * @return
+	 * @param type the column type
+	 * @return the affinity associated with the given type
 	 */
 	private static Affinity parseType(String type) {
 		// https://www.sqlite.org/datatype3.html

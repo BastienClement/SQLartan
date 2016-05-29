@@ -25,7 +25,7 @@ public interface Structure<T extends Column> {
 	/**
 	 * Returns the i-th column from this structure, it it exists
 	 *
-	 * @param idx the index of the column
+	 * @param idx the index of the column, 0-based
 	 */
 	Optional<T> column(int idx);
 }

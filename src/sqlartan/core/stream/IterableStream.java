@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 /**
  * A sequence of elements that implements both Stream and Iterable.
- *
+ * <p>
  * Some instances of IterableStream can be iterated or consumed multiple
  * times if the underlying source allows it.
- *
+ * <p>
  * If a class already implements Streamable, this interface can be implemented
  * by implementing StreamableAdapter instead.
- *
+ * <p>
  * If a class already implements Iterable, this interface can be implemented
  * by implementing IterableAdapter instead.
  *
@@ -67,7 +67,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Concatenates two IterableStream.
-	 *
+	 * <p>
 	 * The resulting stream will contain every elements from the first stream
 	 * followed by elements from the second.
 	 *
@@ -86,10 +86,10 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Returns a reiterable copy of this IterableStream.
-	 *
+	 * <p>
 	 * If this stream is already reiterable the same object is returned,
 	 * else a new IterableStream is constructed.
-	 *
+	 * <p>
 	 * Calling this method on a non-reiterable IterableStream will consume
 	 * the original stream and constructs an ImmutableList containing every
 	 * elements from the stream.
@@ -100,7 +100,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Transforms this IterableStream to an ImmutableList.
-	 *
+	 * <p>
 	 * ImmutableList also implements the IterableStream but is guaranteed
 	 * to be reiterable, implements the List interface and offers random
 	 * access to elements.
@@ -111,7 +111,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Returns a view of this object.
-	 *
+	 * <p>
 	 * A view is guaranteed to be backed by a Stream pipeline and not a List.
 	 * If called on a Stream, returns itself.
 	 */
@@ -124,7 +124,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	/**
 	 * Performs a reduction on the elements of this stream, using the provided
 	 * identity and accumulation functions.
-	 *
+	 * <p>
 	 * This function is an alternative to the `T reduce(T, BinaryOperator<T>)`
 	 * method with a different type for the result but no combiner function.
 	 *
@@ -137,12 +137,12 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Performs a map/filter in a single operation.
-	 *
+	 * <p>
 	 * The mapping function must returns Optionals of the intended result type
 	 * that either contains a value or are empty. Empty optionals are then
 	 * filtered and the remaining values are unwrapped to produce the result
 	 * stream.
-	 *
+	 * <p>
 	 * Combination of map(), filter(Optional::isPresent), map(Optional::get).
 	 *
 	 * @param mapper the mapping function
@@ -153,7 +153,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	/**
 	 * Returns the first element of this stream after applying the mapper
 	 * function to it, if any.
-	 *
+	 * <p>
 	 * Combination of findFirst(), map().
 	 *
 	 * @param mapper the mapping function
@@ -164,7 +164,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	/**
 	 * Returns the first element of this stream after applying the mapper
 	 * function to it. If the stream is empty, an exception is thrown.
-	 *
+	 * <p>
 	 * Combination of findFirst(), map() and Optional::get()
 	 *
 	 * @param mapper the mapping function

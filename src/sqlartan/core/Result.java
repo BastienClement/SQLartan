@@ -12,7 +12,7 @@ import static sqlartan.util.Lazy.lazy;
 
 /**
  * The result of a database query.
- *
+ * <p>
  * This class represents both the result of SELECT-type query and the result
  * of an UPDATE-type query. But the actual type of the result can only be one
  * of the two sub-types for a given query.
@@ -24,6 +24,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param connection the connection on which the query must be executed
 	 * @param query      the SQL query
 	 * @return the result set returned by the database
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	static Result fromQuery(Database database, Connection connection, String query) throws SQLException {
@@ -36,6 +37,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 *
 	 * @param statement the prepared statement to execute
 	 * @return the result set returned by the database
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	static Result fromPreparedStatement(Database database, PreparedStatement statement, String sql) throws SQLException {
@@ -50,6 +52,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	 * @param query     a flag indicating if the request is a SELECT
 	 *                  or an UPDATE statement
 	 * @return the result set returned by the database
+	 *
 	 * @throws SQLException if the SQL query is invalid
 	 */
 	private static Result from(Database database, Statement statement, boolean query, String sql) throws SQLException {
@@ -72,8 +75,6 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	private String sql;
 
 	/**
-	 * Constructs a Result for the given query.
-	 *
 	 * @param database  the parent database
 	 * @param statement the statement on which the query was executed
 	 * @param sql       the source SQL query
@@ -94,39 +95,34 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	}
 
 	/**
-	 * Returns the SQL query that generated this result set.
-	 *
-	 * @return the source SQL query
+	 * {@inheritDoc}
 	 */
+	@Override
 	public String query() {
 		return sql;
 	}
 
 	/**
-	 * Checks if this object is a list of results from a SELECT query.
-	 *
-	 * @return true if this object is a query result
+	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isQueryResult() { return false; }
 
 	/**
-	 * Checks if this object is a result of an UPDATE or DELETE query.
-	 *
-	 * Also returns true if the query was a DDL statement, but updateCount()
-	 * will always be 0 in this case.
-	 *
-	 * @return true if this object is an update result
+	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isUpdateResult() { return false; }
 
 	/**
 	 * Closes the Results, freeing the underlying ResultSet if applicable.
-	 *
+	 * <p>
 	 * If this Results is fully consumed by an Iterator or a Stream, this
 	 * function will automatically be called. You should not rely on this
 	 * behavior if it is possible for the iteration to be stopped before
 	 * having consumed the whole data set.
 	 */
+	@Override
 	public void close() {
 		if (statement != null) {
 			try {
@@ -144,22 +140,13 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		return statement == null;
 	}
 
-	//###################################################################
-	// Update result methods
-	//###################################################################
-
 	/**
-	 * Returns the number of rows updated by the query.
-	 *
-	 * @return the number of rows updated
+	 * {@inheritDoc}
 	 */
+	@Override
 	public int updateCount() {
 		throw new UnsupportedOperationException("This Result is not an UpdateResult");
 	}
-
-	//###################################################################
-	// Query result methods
-	//###################################################################
 
 	/**
 	 * {@inheritDoc}
@@ -249,8 +236,9 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		/**
 		 * A list of the TableColumn composing this result set.
 		 */
-		private Lazy<Optional<ImmutableList<TableColumn>>> columnRefs =
-			lazy(() -> QueryResolver.resolveColumns(database(), query()));
+		private Lazy<Optional<ImmutableList<TableColumn>>> columnRefs = lazy(
+			() -> QueryResolver.resolveColumns(database(), query())
+		);
 
 		/**
 		 * Returns the source table column for a given column in the
@@ -304,7 +292,10 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 		/**
 		 * Constructs an iterator allowing to iterate over the rows of
 		 * this Results set. Only one such iterator can be created.
+		 *
+		 * @return an iterator over every row from this result set
 		 */
+		@Override
 		public Iterator<Row> iterator() {
 			if (isClosed()) throw new IllegalStateException("Result object is closed");
 			if (consumed) throw new IllegalStateException("Stream has already been consumed");
@@ -426,7 +417,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	/**
 	 * The result of an UPDATE-like statement.
 	 * This also includes every DDL statements.
-	 *
+	 * <p>
 	 * This kind of result set automatically closes every underlying JDBC resources
 	 * once created. There is no need to call .close() on it.
 	 */
