@@ -9,11 +9,15 @@ import sqlartan.gui.util.Popup;
 import java.io.File;
 
 /**
- * Created by julien on 02.05.16.
+ * Controller for the AttachedChooser fxml file.
+ * Used to give the user an inferface to attache a database
+ * to the main one.
  */
 public class AttachedChooserController {
 
-	private File file = null;
+	File file = null;
+	private SqlartanController controller;
+
 	@FXML
 	private Button ok;
 	@FXML
@@ -26,8 +30,11 @@ public class AttachedChooserController {
 	private Pane attachedPane;
 	@FXML
 	private TextField dbName;
-	private SqlartanController controller;
 
+
+	/**
+	 * Close the window
+	 */
 	@FXML
 	private void close() {
 		((Stage) attachedPane.getScene().getWindow()).close();
@@ -37,6 +44,10 @@ public class AttachedChooserController {
 		this.controller = controller;
 	}
 
+
+	/**
+	 * Method called by the validate button
+	 */
 	@FXML
 	protected void validate() {
 		file = new File(path.getText());
@@ -47,9 +58,12 @@ public class AttachedChooserController {
 		} else {
 			Popup.error("Invalid Entry", "Informations for the path and/or the database name are empty");
 		}
-
 	}
 
+	/**
+	 * Method called by the browse button
+	 * To browse and check the path the user has set
+	 */
 	@FXML
 	protected void browse() {
 		String oldPath = path.getText();
