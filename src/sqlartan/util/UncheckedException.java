@@ -1,13 +1,11 @@
 package sqlartan.util;
 
 /**
- * TODO
+ * An exception wrapped in a RuntimeException.
  */
 public class UncheckedException extends RuntimeException {
 	/**
-	 * TODO
-	 *
-	 * @param cause
+	 * @param cause the original exception
 	 */
 	public UncheckedException(Throwable cause) {
 		super(cause);
