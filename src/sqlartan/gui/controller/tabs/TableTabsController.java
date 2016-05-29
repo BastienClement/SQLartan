@@ -14,7 +14,6 @@ import sqlartan.gui.controller.tabs.model.PersistentStructureModel;
 import sqlartan.gui.controller.tabs.model.StructureModel;
 import sqlartan.gui.util.Popup;
 import java.io.IOException;
-import java.sql.SQLException;
 import static sqlartan.gui.util.ActionButtons.actionButton;
 
 
@@ -99,7 +98,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 			insertRow.set(objects);
 
 			insertRow.execute();
-
+			Popup.information("Insertion in" + structure.name(), "The data are successfully inserted");
 		} catch (Exception e) {
 			Popup.error("Error while inserting data", e.getMessage());
 		}
