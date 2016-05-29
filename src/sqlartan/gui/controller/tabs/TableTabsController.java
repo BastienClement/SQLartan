@@ -60,8 +60,6 @@ public class TableTabsController extends PersistentStructureTabsController {
 			Sqlartan.getInstance().getController().dropColumn((Table) structure, tableStruct.name.get());
 		}));
 
-		insertTable.setEditable(true); // TODO test false
-
 		insertColName.setCellValueFactory(param -> param.getValue().name);
 		insertColType.setCellValueFactory(param -> param.getValue().type);
 
@@ -76,8 +74,6 @@ public class TableTabsController extends PersistentStructureTabsController {
 			param.getValue().nullable.bindBidirectional(cb.getValue().selectedProperty());
 			return cb;
 		});
-
-		insertColValue.setEditable(true);
 	}
 
 
