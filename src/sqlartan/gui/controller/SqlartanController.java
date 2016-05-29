@@ -89,7 +89,7 @@ public class SqlartanController {
 
 
 	/**
-	 * First methode call when FXML loaded
+	 * First method call when FXML loaded
 	 * Load all the tabs and create the history pane
 	 */
 	@FXML

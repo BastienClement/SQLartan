@@ -17,7 +17,7 @@ public class About {
 	private Pane mainPane;
 
 	/**
-	 * First methode call when FXML loaded
+	 * First method call when FXML loaded
 	 * Used to disable mouse action on the description textAera
 	 */
 	@FXML
