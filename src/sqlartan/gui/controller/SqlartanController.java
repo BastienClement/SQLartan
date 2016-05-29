@@ -42,14 +42,13 @@ import static sqlartan.util.Matching.match;
 public class SqlartanController {
 
 
+	private final String WARNING_COST = " operation is a emulated operation, it can be expensive if the table contains a large volume of data";
 	/**************
 	 * ATTRIBUTES *
 	 **************/
 	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
-
-
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
 	@FXML
@@ -58,8 +57,6 @@ public class SqlartanController {
 	private Menu detachMenu;
 	@FXML
 	private Button reloadButton;
-
-
 	// TextArea for the request history
 	@FXML
 	private ListView<String> request;
@@ -67,17 +64,14 @@ public class SqlartanController {
 	@FXML
 	private TitledPane historyPane;
 	private CheckBox displayPragma = new CheckBox("PRAGMA");
-
 	// TablePanes
 	private TabPane databaseTabPane;
 	private TabPane tableTabPane;
 	private TabPane viewTabPane;
-
 	// TabsPaneController
 	private DatabaseTabsController databaseTabsController;
 	private TableTabsController tableTabController;
 	private ViewTabsController viewTabsController;
-
 	@FXML
 	private Menu databaseMenu;
 
@@ -647,12 +641,13 @@ public class SqlartanController {
 	 * @param columnName the name of the column
 	 */
 	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
-		Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(newName -> {
-			if (newName.length() > 0 && !structure.name().equals(newName)) {
-				structure.column(columnName).ifPresent(c -> c.rename(newName));
-				refreshView();
-			}
-		});
+		Popup.input("Rename " + structure.name(), "Rename " + structure.name() + " into : ", structure.name(), "Column rename" + WARNING_COST)
+		     .ifPresent(newName -> {
+			     if (newName.length() > 0 && !structure.name().equals(newName)) {
+				     structure.column(columnName).ifPresent(c -> c.rename(newName));
+				     refreshView();
+			     }
+		     });
 	}
 
 
@@ -666,7 +661,8 @@ public class SqlartanController {
 		structure.column(columnName).ifPresent(c -> {
 			ButtonType yes = new ButtonType("Yes");
 			ButtonType no = new ButtonType("No");
-			Popup.warning("Drop " + columnName, "Are you sure to drop the column " + columnName + " of " + structure.name(), yes, no)
+			Popup.warning("Drop " + columnName, "The drop column" + WARNING_COST, "Are you sure to drop the column " +
+				columnName + " of " + structure.name(), yes, no)
 			     .filter(b -> b == yes)
 			     .ifPresent(b -> {
 				     c.drop();
