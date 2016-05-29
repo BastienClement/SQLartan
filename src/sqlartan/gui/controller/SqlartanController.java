@@ -33,8 +33,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static sqlartan.util.Matching.match;
 
@@ -54,8 +52,6 @@ public class SqlartanController {
 
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
-	@FXML
-	private BorderPane borderPane;
 	@FXML
 	private StackPane stackPane;
 	@FXML
@@ -186,7 +182,7 @@ public class SqlartanController {
 	 * to create a new database and open or attache it
 	 */
 	@FXML
-	private void createDatabase() throws SQLException {
+	protected void createDatabase() throws SQLException {
 		Popup.save("Create a new database", sqlartan.getPrimaryStage(), null)
 		     .ifPresent(file -> {
 			     if (database != null && (!database.isClosed())) {
@@ -203,7 +199,7 @@ public class SqlartanController {
 	 * to attache a database
 	 */
 	@FXML
-	private void attachButton() {
+	protected void attachButton() {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
@@ -231,7 +227,7 @@ public class SqlartanController {
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDatabase() {
+	protected void closeDatabase() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		detachMenu.getItems().clear();
@@ -244,7 +240,7 @@ public class SqlartanController {
 	 * Close the entery application
 	 */
 	@FXML
-	private void close() {
+	protected void close() {
 		Platform.exit();
 	}
 
@@ -270,7 +266,7 @@ public class SqlartanController {
 	 * to display the about window
 	 */
 	@FXML
-	private void displayAbout() {
+	protected void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
 
@@ -318,7 +314,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * TODO
+	 * Refresh de attached database menu
 	 */
 	private void refreshAttachedDatabase() {
 		detachMenu.getItems().clear();
@@ -342,7 +338,7 @@ public class SqlartanController {
 
 
 	/**
-	 * TODO
+	 * Open a popup with à FileChooser, asking wich database to open
 	 */
 	public void openDatabase() {
 		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
@@ -505,9 +501,9 @@ public class SqlartanController {
 
 
 	/**
-	 * Rename a table or a gui
+	 * Ask the user the new name of the structure
 	 *
-	 * @param structure
+	 * @param structure the structure to rename
 	 */
 	public void renameStructure(PersistentStructure<?> structure) {
 		Popup.input("Rename", "Rename " + structure.name() + " into :", structure.name()).ifPresent(name -> {
@@ -540,16 +536,16 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Add a column to the specified table
+	 * Ask the user to specified the column to add, and add it
 	 *
-	 * @param table
+	 * @param table the table where adding a column
 	 */
 	public void addColumn(Table table) {
 		class AddColumnResult {
 			private String name, type;
 			private boolean unique, primary, nullable;
 
-			public AddColumnResult(String name, String type, boolean unique, boolean primary, boolean nullable) {
+			private AddColumnResult(String name, String type, boolean unique, boolean primary, boolean nullable) {
 				this.name = name;
 				this.type = type;
 				//this.check = check == "" ? null : check;
@@ -644,15 +640,16 @@ public class SqlartanController {
 
 
 	/**
-	 * Rename the specified column from the table
+	 * Ask the user the new name of the column, if the name is more than 0 characters and isn't the same of the
+	 * structure, rename the specified column from the structure
 	 *
-	 * @param structure
-	 * @param name
+	 * @param structure  the structure where the column is
+	 * @param columnName the name of the column
 	 */
-	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name) {
+	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
 		Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(newName -> {
 			if (newName.length() > 0 && !structure.name().equals(newName)) {
-				structure.column(name).ifPresent(c -> c.rename(newName));
+				structure.column(columnName).ifPresent(c -> c.rename(newName));
 				refreshView();
 			}
 		});
@@ -660,8 +657,10 @@ public class SqlartanController {
 
 
 	/**
-	 * @param structure
-	 * @param columnName
+	 * Ask the user if he's sure to drop the column of a structure, if it's yes, drop the column.
+	 *
+	 * @param structure  the structure where the column is
+	 * @param columnName the name of the column
 	 */
 	public void dropColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
 		structure.column(columnName).ifPresent(c -> {
@@ -679,7 +678,7 @@ public class SqlartanController {
 	/**
 	 * Detach a attachedDatabase from the main attachedDatabase
 	 *
-	 * @param attachedDatabase
+	 * @param attachedDatabase the attached database to detach
 	 */
 	public void detachDatabase(AttachedDatabase attachedDatabase) {
 		database.detach(attachedDatabase.name());
@@ -698,9 +697,9 @@ public class SqlartanController {
 
 
 	/**
-	 * TODO
+	 * Export the database, ask the user what it would like to export (structure, data, or both)
 	 *
-	 * @param database
+	 * @param database the database to export
 	 */
 	@FXML
 	public void export(Database database) {
@@ -779,9 +778,9 @@ public class SqlartanController {
 
 
 	/**
-	 * TODO
+	 * Vacuum the database and inform the user with a popup
 	 *
-	 * @param database
+	 * @param database the database to vacuum
 	 */
 	public void vacuum(Database database) {
 		database.vacuum();
@@ -790,9 +789,9 @@ public class SqlartanController {
 
 
 	/**
-	 * TODO
+	 * Ask the user the name of the duplicate structure
 	 *
-	 * @param structure
+	 * @param structure the structure to duplicate
 	 */
 	public void duplicate(PersistentStructure<?> structure) {
 		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
@@ -807,9 +806,9 @@ public class SqlartanController {
 
 
 	/**
-	 * TODO
+	 * Ask the user if it would like to truncate the database, if it's yes, truncate the table
 	 *
-	 * @param table
+	 * @param table the table to truncate
 	 */
 	public void truncate(Table table) {
 		ButtonType yes = new ButtonType("Yes");
