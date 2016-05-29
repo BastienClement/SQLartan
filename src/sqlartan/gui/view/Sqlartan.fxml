@@ -13,14 +13,14 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1135.0" styleClass="background" stylesheets="@../MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.gui.controller.SqlartanController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1135.0" styleClass="background" stylesheets="@../MainTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sqlartan.gui.controller.SqlartanController">
    <top>
       <MenuBar minHeight="0.0" minWidth="0.0" BorderPane.alignment="CENTER">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
                   <MenuItem mnemonicParsing="false" onAction="#createDatabase" text="New Database..." />
-                  <MenuItem mnemonicParsing="false" onAction="#openSQLiteDatabase" text="Open Database..." />
+                  <MenuItem mnemonicParsing="false" onAction="#openDatabase" text="Open Database..." />
               <MenuItem mnemonicParsing="false" onAction="#close" text="Quit" />
             </items>
           </Menu>

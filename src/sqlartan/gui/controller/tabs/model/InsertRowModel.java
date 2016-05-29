@@ -12,12 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Projet : SQLartan
- * Créé le 21.05.16.
- *
- * @author Julien leroy
- *
- * TODO
+ * Represent the data to be insert in a new row of a table.
  */
 public class InsertRowModel {
 	public final StringProperty name;
@@ -48,16 +43,15 @@ public class InsertRowModel {
 
 
 	/**
-	 * Make an object table with the good typs for the sql insertion
+	 * Make an object table with the good type for the sql insertion
 	 *
-	 * @param liste
+	 * @param list the list of InsertRowModel to get in array
 	 * @return the object table
-	 * @throws Exception
 	 */
-	public static Object[] toArray(ObservableList<InsertRowModel> liste) throws Exception {
+	public static Object[] toArray(ObservableList<InsertRowModel> list) {
 		List<Object> lk = new LinkedList<>();
 
-		for (InsertRowModel irs : liste) {
+		for (InsertRowModel irs : list) {
 			Object obj;
 
 			switch (irs.typed) {

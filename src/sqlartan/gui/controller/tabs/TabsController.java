@@ -11,10 +11,8 @@ import sqlartan.gui.controller.tabs.model.StructureModel;
 import java.io.IOException;
 
 /**
- * Projet : SQLartan
- * Créé le 24.05.16.
- *
- * @author Julien Leroy
+ * Super abstract class to refactor code.
+ * Represent a tab controller with a least a structure tab and a sql tab.
  */
 public abstract class TabsController {
 

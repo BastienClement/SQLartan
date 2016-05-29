@@ -9,24 +9,25 @@ import javafx.scene.control.TableView;
 import sqlartan.Sqlartan;
 import sqlartan.core.Database;
 import sqlartan.gui.controller.tabs.model.DatabaseStructureModel;
-import sqlartan.gui.util.Popup;
 import java.io.IOException;
 import static sqlartan.gui.util.ActionButtons.actionButton;
 
 /**
- * Created by julien on 30.04.16.
+ * Controller of DatabaseTabs.fxml. Controller of the tabs of a database.
  */
 public class DatabaseTabsController extends TabsController {
 
 	@FXML
-	private TableColumn<DatabaseStructureModel, Number> colLignes;
+	private TableColumn<DatabaseStructureModel, Number> colLines;
 	@FXML
 	private TableColumn<DatabaseStructureModel, String> colRename;
 	@FXML
 	private TableColumn<DatabaseStructureModel, String> colDelete;
 	@FXML
 	private TableView<DatabaseStructureModel> structureTable;
+
 	private Database database;
+
 	private ObservableList<DatabaseStructureModel> dbStructs = FXCollections.observableArrayList();
 
 
@@ -39,25 +40,22 @@ public class DatabaseTabsController extends TabsController {
 	protected void initialize() throws IOException {
 		super.initialize();
 
-		colLignes.setCellValueFactory(param -> param.getValue().lignes);
+		colLines.setCellValueFactory(param -> param.getValue().lines);
 
 		colRename.setCellFactory(actionButton("Rename", (self, event) -> {
 			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
-			String structName = dbStruct.name.get();
-			Popup.input("Rename", "Rename " + structName + " into : ", structName).ifPresent(name -> {
-				if (name.length() > 0 && !structName.equals(name)) {
-					database.structure(structName).ifPresent(s -> Sqlartan.getInstance().getController().renameStructure(s, name));
-				}
-			});
+			database.structure(dbStruct.name.get()).ifPresent(Sqlartan.getInstance().getController()::renameStructure);
 		}));
 
 		colDelete.setCellFactory(actionButton("Drop", (self, event) -> {
 			DatabaseStructureModel dbStruct = self.getTableView().getItems().get(self.getIndex());
-			database.structure(dbStruct.name.get()).ifPresent(s -> Sqlartan.getInstance().getController().dropStructure(s));
+			database.structure(dbStruct.name.get()).ifPresent(Sqlartan.getInstance().getController()::dropStructure);
 		}));
 
 		tabPane.getSelectionModel().clearSelection();
 	}
+
+
 	/**
 	 * Display the structure of the database
 	 */
@@ -70,14 +68,12 @@ public class DatabaseTabsController extends TabsController {
 		structureTable.setItems(dbStructs);
 	}
 
+
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @param newTab
 	 */
 	@Override
-	protected void refresh(Tab newTab) {
-		Tab selected = tabPane.getSelectionModel().getSelectedItem();
+	protected void refresh(Tab selected) {
 		if (selected == structureTab) {
 			displayStructure();
 		}
@@ -85,7 +81,7 @@ public class DatabaseTabsController extends TabsController {
 
 
 	/**
-	 * Set the database wich will be used in this tab
+	 * Set the database which will be used in this tab
 	 *
 	 * @param database the database to work on
 	 */

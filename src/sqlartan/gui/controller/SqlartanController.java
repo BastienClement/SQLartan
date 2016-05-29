@@ -33,17 +33,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 import static sqlartan.util.Matching.match;
 
 /**
- * SqlartanController
+ * Controller for the Sqlartan.fxml.
  */
 public class SqlartanController {
 
 
-	/***********
-	 * ATRIBUTS*
-	 ***********/
+	/**************
+	 * ATTRIBUTES *
+	 **************/
 	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
@@ -51,8 +52,6 @@ public class SqlartanController {
 
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
-	@FXML
-	private BorderPane borderPane;
 	@FXML
 	private StackPane stackPane;
 	@FXML
@@ -84,17 +83,16 @@ public class SqlartanController {
 
 
 	/*****************************
-	 * METHODES called by the GUI*
+	 * METHODS called by the GUI*
 	 *****************************/
-
-
 	/**
-	 * First methode call when FXML loaded
+	 * First method call when FXML loaded
+	 * Load all the tabs and create the history pane
 	 */
 	@FXML
 	private void initialize() throws IOException {
 
-		treeView.setCellFactory(param -> new CustomTreeCell(this));
+		treeView.setCellFactory(param -> new CustomTreeCell());
 
 		FXMLLoader loader = new FXMLLoader(Sqlartan.class.getResource("gui/view/DatabaseTabs.fxml"));
 		databaseTabPane = loader.load();
@@ -184,34 +182,15 @@ public class SqlartanController {
 	 * to create a new database and open or attache it
 	 */
 	@FXML
-	private void createDatabase() throws SQLException {
-		FileChooser fileChooser = new FileChooser();
-
-		//Show save file dialog
-		fileChooser.setTitle("Create a new database");
-		File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-
-		if (database != null && (!database.isClosed())) {
-			attachDatabase(file, file.getName().split("\\.")[0]);
-		} else {
-			openDatabase(file);
-		}
-	}
-
-
-	/**
-	 * Function called by the GUI
-	 * to open a database
-	 */
-	@FXML
-	private void openSQLiteDatabase() {
-		// Create the file popup
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open SQLite database");
-
-		File file = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-
-		openDatabase(file);
+	protected void createDatabase() {
+		Popup.save("Create a new database", sqlartan.getPrimaryStage(), null)
+		     .ifPresent(file -> {
+			     if (database != null && (!database.isClosed())) {
+				     attachDatabase(file, file.getName().split("\\.")[0]);
+			     } else {
+				     openDatabase(file);
+			     }
+		     });
 	}
 
 
@@ -220,7 +199,7 @@ public class SqlartanController {
 	 * to attache a database
 	 */
 	@FXML
-	private void attachButton() {
+	protected void attachButton() {
 
 		Stage stage = new Stage();
 		Pane attachedChooser;
@@ -248,7 +227,7 @@ public class SqlartanController {
 	 * Close the current database
 	 */
 	@FXML
-	private void closeDatabase() {
+	protected void closeDatabase() {
 		mainTreeItem.getChildren().clear();
 		stackPane.getChildren().clear();
 		detachMenu.getItems().clear();
@@ -258,10 +237,10 @@ public class SqlartanController {
 
 
 	/**
-	 * Close the entery application
+	 * Close the entry application
 	 */
 	@FXML
-	private void close() {
+	protected void close() {
 		Platform.exit();
 	}
 
@@ -271,17 +250,15 @@ public class SqlartanController {
 	 */
 	@FXML
 	public void importDatabase(Database database) {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Import SQLite database");
-		try {
-			File f = fileChooser.showOpenDialog(sqlartan.getPrimaryStage());
-			if (f != null) {
-				database.importFromFile(f);
-			}
-			refreshView();
-		} catch (SQLException | IOException | TokenizeException e) {
-			throw new UncheckedException(e);
-		}
+		Popup.browse("Import SQLite database", sqlartan.getPrimaryStage(), null)
+		     .ifPresent(file -> {
+			     try {
+				     database.importFromFile(file);
+				     refreshView();
+			     } catch (SQLException | IOException | TokenizeException e) {
+				     throw new UncheckedException(e);
+			     }
+		     });
 	}
 
 	/**
@@ -289,7 +266,7 @@ public class SqlartanController {
 	 * to display the about window
 	 */
 	@FXML
-	private void displayAbout() {
+	protected void displayAbout() {
 		Stage stage = new Stage();
 		Pane pane;
 
@@ -332,7 +309,21 @@ public class SqlartanController {
 
 
 			treeView.getSelectionModel().select(selected);
+			refreshAttachedDatabase();
 		}
+	}
+
+	/**
+	 * Refresh de attached database menu
+	 */
+	private void refreshAttachedDatabase() {
+		detachMenu.getItems().clear();
+		detachMenu.getItems().addAll(
+			database.attached().values().stream()
+			        .map(AttachedDatabase::name)
+			        .map(MenuItem::new)
+			        .peek(item -> item.setOnAction(event -> database.attached(item.getText()).ifPresent(this::detachDatabase)))
+			        .collect(Collectors.toList()));
 	}
 
 
@@ -345,6 +336,13 @@ public class SqlartanController {
 		return database;
 	}
 
+
+	/**
+	 * Open a popup with à FileChooser, asking which database to open
+	 */
+	public void openDatabase() {
+		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
+	}
 
 	/**
 	 * Open de main database
@@ -364,9 +362,9 @@ public class SqlartanController {
 				database.registerListener(readOnlyResult -> {
 					request.setItems(requests);
 
-					String resultat = readOnlyResult.query();
+					String result = readOnlyResult.query();
 
-					if (!resultat.startsWith("PRAGMA") || displayPragma.isSelected())
+					if (!result.startsWith("PRAGMA") || displayPragma.isSelected())
 						requests.add(0, readOnlyResult.query());
 				});
 
@@ -378,7 +376,7 @@ public class SqlartanController {
 			ButtonType buttonRetry = new ButtonType("Retry");
 			Popup.warning("Problem while opening database", "Error: " + e.getMessage(), buttonCancel, buttonRetry)
 			     .filter(b -> buttonRetry == b)
-			     .ifPresent(b -> openSQLiteDatabase());
+			     .ifPresent(b -> openDatabase());
 		}
 	}
 
@@ -386,7 +384,7 @@ public class SqlartanController {
 	/**
 	 * CellFactory for the history listedView
 	 *
-	 * @return the new listcell
+	 * @return the new ListCell
 	 */
 	private ListCell<String> setCellFactoryHistory() {
 		ListCell<String> cells = new ListCell<>();
@@ -426,7 +424,7 @@ public class SqlartanController {
 	/**
 	 * Called by the mainApp to set the link to the mainApp
 	 *
-	 * @param sqlartan set the referance to the main class
+	 * @param sqlartan set the reference to the main class
 	 */
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
@@ -478,9 +476,6 @@ public class SqlartanController {
 	public void attachDatabase(File file, String dbName) {
 		try {
 			database.attach(file, dbName);
-			MenuItem newMenuItem = new MenuItem(dbName);
-			newMenuItem.setOnAction(event -> database.attached(newMenuItem.getText()).ifPresent(this::detachDatabase));
-			detachMenu.getItems().add(newMenuItem);
 			refreshView();
 		} catch (SQLException e) {
 			Popup.error("Problem while attaching database", e.getMessage());
@@ -494,109 +489,205 @@ public class SqlartanController {
 	 * @param structure structure to drop
 	 */
 	public void dropStructure(PersistentStructure<?> structure) {
-		structure.drop();
-		refreshView();
+		ButtonType yes = new ButtonType("Yes");
+		ButtonType no = new ButtonType("No");
+		Popup.warning("Drop " + structure.name(), "Are you sure to drop the " + structure.name(), yes, no)
+		     .filter(b -> b == yes)
+		     .ifPresent(b -> {
+			     structure.drop();
+			     refreshView();
+		     });
 	}
 
 
 	/**
-	 * Rename a table or a gui
+	 * Ask the user the new name of the structure
 	 *
-	 * @param structure
-	 * @param name
+	 * @param structure the structure to rename
 	 */
-	public void renameStructure(PersistentStructure<?> structure, String name) {
-		structure.rename(name);
-		refreshView();
+	public void renameStructure(PersistentStructure<?> structure) {
+		Popup.input("Rename", "Rename " + structure.name() + " into :", structure.name()).ifPresent(name -> {
+			if (name.length() > 0 && !structure.name().equals(name)) {
+				structure.rename(name);
+				refreshView();
+			} else {
+				Popup.error("Rename error", "The name is already used or don't have enough chars");
+			}
+		});
 	}
 
 
 	/**
 	 * Add a table to the specified database
 	 *
-	 * @param database
-	 * @param name
+	 * @param database the database in where the datable will be added
 	 */
-	public void addTable(Database database, String name) {
-		try {
-			database.createTable(name);
-			refreshView();
-		} catch (SQLException e) {
-			throw new UncheckedException(e);
-		}
-	}
-
-	/**
-	 * Add a column to the specified table
-	 *
-	 * @param table
-	 * @param name
-	 * @param type
-	 */
-	public void addColumn(Table table, String name, String type, boolean unique, boolean primaryKey, boolean nullable) {
-		TableColumn column = new TableColumn(table, new TableColumn.Properties() {
-			@Override
-			public boolean unique() {
-				return unique;
-			}
-			@Override
-			public boolean primaryKey() {
-				return primaryKey;
-			}
-			@Override
-			public String check() {
-				return null;
-			}
-			@Override
-			public String name() {
-				return name;
-			}
-			@Override
-			public String type() {
-				return type;
-			}
-			@Override
-			public boolean nullable() {
-				return nullable;
+	public void addTable(Database database) {
+		Popup.input("Add table", "Name : ", "").ifPresent(name -> {
+			if (name.length() > 0) {
+				try {
+					database.createTable(name);
+					refreshView();
+				} catch (SQLException e) {
+					throw new UncheckedException(e);
+				}
 			}
 		});
-		AlterTable alter = table.alter();
-		alter.addColumn(column);
-		alter.execute();
-		refreshView();
+	}
+
+	/**
+	 * Ask the user to specified the column to add, and add it
+	 *
+	 * @param table the table where adding a column
+	 */
+	public void addColumn(Table table) {
+		class AddColumnResult {
+			private String name, type;
+			private boolean unique, primary, nullable;
+
+			private AddColumnResult(String name, String type, boolean unique, boolean primary, boolean nullable) {
+				this.name = name;
+				this.type = type;
+				//this.check = check == "" ? null : check;
+				this.unique = unique;
+				this.primary = primary;
+				this.nullable = nullable;
+			}
+		}
+
+		// Create the custom dialog.
+		Dialog<AddColumnResult> dialog = new Dialog<>();
+		dialog.setTitle("Add column");
+		dialog.setHeaderText(null);
+
+		// Set the button types.
+		ButtonType okButtonType = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		// Create the two labels and fields
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+
+		TextField name = new TextField();
+
+		ChoiceBox type = new ChoiceBox<>(FXCollections.observableArrayList("TEXT", "INTEGER", "NULL", "REAL", "BLOB"));
+		type.getSelectionModel().selectFirst();
+
+		CheckBox unique = new CheckBox();
+		CheckBox primary = new CheckBox();
+		CheckBox nullable = new CheckBox();
+
+		//TextField check = new TextField();
+
+		grid.add(new Label("Name : "), 0, 0);
+		grid.add(name, 1, 0);
+		grid.add(new Label("Type : "), 0, 1);
+		grid.add(type, 1, 1);
+		grid.add(new Label("Unique : "), 0, 2);
+		grid.add(unique, 1, 2);
+		grid.add(new Label("Primary : "), 0, 3);
+		grid.add(primary, 1, 3);
+		grid.add(new Label("Nullable : "), 0, 4);
+		grid.add(nullable, 1, 4);
+		//grid.add(new Label("Check : "), 0, 5);
+		//grid.add(check, 1, 5);
+
+		dialog.getDialogPane().setContent(grid);
+
+
+		// Convert the result to a username-password-pair when the button is clicked.
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButtonType) {
+				return new AddColumnResult(name.getText(), type.getValue().toString(), unique.isSelected(), primary.isSelected(), nullable.isSelected());
+			}
+			return null;
+		});
+
+		dialog.showAndWait().ifPresent(addColumnResult -> {
+			AlterTable alter = table.alter();
+			alter.addColumn(new TableColumn(table, new TableColumn.Properties() {
+				@Override
+				public boolean unique() {
+					return addColumnResult.unique;
+				}
+				@Override
+				public boolean primaryKey() {
+					return addColumnResult.primary;
+				}
+				@Override
+				public String check() {
+					return null;
+				}
+				@Override
+				public String name() {
+					return addColumnResult.name;
+				}
+				@Override
+				public String type() {
+					return addColumnResult.type;
+				}
+				@Override
+				public boolean nullable() {
+					return addColumnResult.nullable;
+				}
+			}));
+			alter.execute();
+			refreshView();
+		});
 	}
 
 
 	/**
-	 * Rename the specified column from the table
+	 * Ask the user the new name of the column, if the name is more than 0 characters and isn't the same of the
+	 * structure, rename the specified column from the structure
 	 *
-	 * @param structure
-	 * @param newName
+	 * @param structure  the structure where the column is
+	 * @param columnName the name of the column
 	 */
-	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String name, String newName) {
-		structure.column(name).ifPresent(c -> c.rename(newName));
-		refreshView();
+	public void renameColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
+		Popup.input("Rename", "Rename " + structure.name() + " into : ", structure.name()).ifPresent(newName -> {
+			if (newName.length() > 0 && !structure.name().equals(newName)) {
+				structure.column(columnName).ifPresent(c -> c.rename(newName));
+				refreshView();
+			}
+		});
 	}
 
+
+	/**
+	 * Ask the user if he's sure to drop the column of a structure, if it's yes, drop the column.
+	 *
+	 * @param structure  the structure where the column is
+	 * @param columnName the name of the column
+	 */
+	public void dropColumn(PersistentStructure<? extends TableColumn> structure, String columnName) {
+		structure.column(columnName).ifPresent(c -> {
+			ButtonType yes = new ButtonType("Yes");
+			ButtonType no = new ButtonType("No");
+			Popup.warning("Drop " + columnName, "Are you sure to drop the column " + columnName + " of " + structure.name(), yes, no)
+			     .filter(b -> b == yes)
+			     .ifPresent(b -> {
+				     c.drop();
+				     refreshView();
+			     });
+		});
+	}
 
 	/**
 	 * Detach a attachedDatabase from the main attachedDatabase
 	 *
-	 * @param attachedDatabase
+	 * @param attachedDatabase the attached database to detach
 	 */
 	public void detachDatabase(AttachedDatabase attachedDatabase) {
 		database.detach(attachedDatabase.name());
-		detachMenu.getItems()
-		          .forEach(menuItem -> {
-			          if (menuItem.getText().equals(attachedDatabase.name()))
-				          Platform.runLater(() -> detachMenu.getItems().remove(menuItem));
-		          });
 		refreshView();
 	}
 
 
 	/**
-	 * Set active the index element in the treeview
+	 * Set active the index element in the TreeView
 	 *
 	 * @param index to set active
 	 */
@@ -605,12 +696,17 @@ public class SqlartanController {
 	}
 
 
+	/**
+	 * Export the database, ask the user what it would like to export (structure, data, or both)
+	 *
+	 * @param database the database to export
+	 */
 	@FXML
 	public void export(Database database) {
 		class Result {
 			private boolean structure, data, structureAndData;
 
-			public Result(boolean structure, boolean data, boolean structureAndData) {
+			private Result(boolean structure, boolean data, boolean structureAndData) {
 				this.structure = structure;
 				this.data = data;
 				this.structureAndData = structureAndData;
@@ -660,35 +756,68 @@ public class SqlartanController {
 		});
 
 		dialog.showAndWait().ifPresent(result -> {
-			FileChooser fileChooser = new FileChooser();
-
-			//Set extension filter
-			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql");
-			fileChooser.getExtensionFilters().add(extFilter);
-
-			try {
-				//Show save file dialog
-				File file = fileChooser.showSaveDialog(sqlartan.getPrimaryStage());
-				if (file != null) {
-					FileWriter fileWriter = new FileWriter(file);
-					if (result.structure) {
-						fileWriter.write(database.exportStructure());
-					} else if (result.data) {
-						fileWriter.write(database.exportTablesData());
-					} else if (result.structureAndData) {
-						fileWriter.write(database.export());
-					}
-					fileWriter.close();
-				}
-			} catch (IOException | SQLException e) {
-				throw new UncheckedException(e);
-			}
+			//Show save file dialog
+			Popup.save("Export", sqlartan.getPrimaryStage(), new FileChooser.ExtensionFilter("SQL files (*.sql)", "*.sql"))
+			     .ifPresent(file -> {
+				     try {
+					     FileWriter fileWriter = new FileWriter(file);
+					     if (result.structure) {
+						     fileWriter.write(database.exportStructure());
+					     } else if (result.data) {
+						     fileWriter.write(database.exportTablesData());
+					     } else if (result.structureAndData) {
+						     fileWriter.write(database.export());
+					     }
+					     fileWriter.close();
+				     } catch (IOException | SQLException e) {
+					     throw new UncheckedException(e);
+				     }
+			     });
 		});
 	}
 
+
+	/**
+	 * Vacuum the database and inform the user with a popup
+	 *
+	 * @param database the database to vacuum
+	 */
 	public void vacuum(Database database) {
 		database.vacuum();
 		Popup.information("Vacuum", "The database " + database.name() + " get vacuumed");
 	}
 
+
+	/**
+	 * Ask the user the name of the duplicate structure
+	 *
+	 * @param structure the structure to duplicate
+	 */
+	public void duplicate(PersistentStructure<?> structure) {
+		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
+			if (name.length() > 0 && !structure.name().equals(name)) {
+				structure.duplicate(name);
+				refreshView();
+			} else {
+				Popup.error("Duplicate error", "The name is already used or don't have enough chars");
+			}
+		});
+	}
+
+
+	/**
+	 * Ask the user if it would like to truncate the database, if it's yes, truncate the table
+	 *
+	 * @param table the table to truncate
+	 */
+	public void truncate(Table table) {
+		ButtonType yes = new ButtonType("Yes");
+		ButtonType no = new ButtonType("No");
+		Popup.warning("Truncate " + table.name(), "Are you sure to truncate " + table.name(), yes, no)
+		     .filter(b -> b == yes)
+		     .ifPresent(b -> {
+			     table.truncate();
+			     refreshView();
+		     });
+	}
 }

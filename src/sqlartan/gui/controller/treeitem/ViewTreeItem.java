@@ -1,10 +1,10 @@
 package sqlartan.gui.controller.treeitem;
 
-import sqlartan.gui.controller.SqlartanController;
 import sqlartan.core.Database;
+import sqlartan.gui.controller.SqlartanController;
 
 /**
- * Created by Adriano on 04.05.2016.
+ * Used when the TreeItem is a table, the context menu is like the structure menu
  */
 public class ViewTreeItem extends StructureTreeItem {
 
@@ -12,12 +12,15 @@ public class ViewTreeItem extends StructureTreeItem {
 		super(name, controller, database);
 	}
 
+
+	/** {@inheritDoc} */
 	@Override
 	public Type type() {
 		return Type.VIEW;
 	}
 
-	public String toString(){
+
+	public String toString() {
 		return "V – " + super.toString();
 	}
 }

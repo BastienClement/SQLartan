@@ -9,21 +9,16 @@ import static sqlartan.util.Matching.match;
 
 
 /**
- * Projet : SQLartan
- * Créé le 17.05.2016.
- *
- * @author Julien Leroy
- *
- * Represent the structure tab of a database
+ * Represent the model of the structure tab of a database
  */
 public class DatabaseStructureModel extends StructureModel {
-	public final LongProperty lignes;
+	public final LongProperty lines;
 
 	public DatabaseStructureModel(PersistentStructure<?> structure) {
 		super(structure.name(), match(structure)
 			.when(Table.class, t -> "Table")
 			.when(View.class, v -> "View")
 			.orElse("Unknown"));
-		this.lignes = new SimpleLongProperty(structure.selectAll().count());
+		this.lines = new SimpleLongProperty(structure.selectAll().count());
 	}
 }
