@@ -5,9 +5,10 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.Pane;
 
 /**
- * Created by julien on 20.05.16.
+ * Controller for the About.fxml
  */
 public class About {
+
 
 	@FXML
 	private TextArea description;
@@ -15,6 +16,10 @@ public class About {
 	@FXML
 	private Pane mainPane;
 
+	/**
+	 * First methode call when FXML loaded
+	 * Used to disable mouse action on the description textAera
+	 */
 	@FXML
 	private void initialize() {
 		description.setFocusTraversable(false);
