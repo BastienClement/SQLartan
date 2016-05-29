@@ -284,25 +284,9 @@ public class SqlartanController {
 	/**
 	 * To call to refresh the gui of the tree
 	 */
-	@FXML
 	public void refreshView() {
 		if (database != null) {
-			int selected = treeView.getSelectionModel().getSelectedIndex();
-
-			boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
-			for (int i = 0; i < exp.length; ++i) {
-				exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
-			}
-
-			mainTreeItem.getChildren().clear();
-			tree(database);
-
-			for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
-				mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
-			}
-
-
-			treeView.getSelectionModel().select(selected);
+			refreshTree();
 			refreshAttachedDatabase();
 		}
 	}
@@ -318,6 +302,29 @@ public class SqlartanController {
 			        .map(MenuItem::new)
 			        .peek(item -> item.setOnAction(event -> database.attached(item.getText()).ifPresent(this::detachDatabase)))
 			        .collect(Collectors.toList()));
+	}
+
+
+	/**
+	 * Refresh the left tree
+	 */
+	private void refreshTree() {
+		int selected = treeView.getSelectionModel().getSelectedIndex();
+
+		boolean[] exp = new boolean[mainTreeItem.getChildren().size()];
+		for (int i = 0; i < exp.length; ++i) {
+			exp[i] = mainTreeItem.getChildren().get(i).isExpanded();
+		}
+
+		mainTreeItem.getChildren().clear();
+		int nbItem = tree(database);
+
+		for (int i = 0; i < exp.length && i < mainTreeItem.getChildren().size(); ++i) {
+			mainTreeItem.getChildren().get(i).setExpanded(exp[i]);
+		}
+
+
+		treeView.getSelectionModel().select(Math.min(selected, nbItem));
 	}
 
 
@@ -430,8 +437,9 @@ public class SqlartanController {
 	 *
 	 * @param database the database
 	 */
-	private void tree(Database database) {
+	private int tree(Database database) {
 
+		int nbItems;
 		// Main
 		TreeItem<CustomTreeItem> trees = new TreeItem<>(new DatabaseTreeItem(database.name(), this, database));
 
@@ -442,11 +450,12 @@ public class SqlartanController {
 			                                   .orElseThrow())
 		                                   .map(TreeItem::new)
 		                                   .toList());
+		nbItems = trees.getChildren().size();
 
 		mainTreeItem.getChildren().add(trees);
 
 		// Attached database
-		database.attached().values().forEach(adb -> {
+		for (AttachedDatabase adb : database.attached().values()) {
 			TreeItem<CustomTreeItem> tItems = new TreeItem<>(new AttachedDatabaseTreeItem(adb.name(), this, adb));
 			tItems.getChildren().addAll(
 				adb.structures().map(structure -> match(structure, CustomTreeItem.class)
@@ -455,9 +464,11 @@ public class SqlartanController {
 					.orElseThrow())
 				   .map(TreeItem::new)
 				   .toList());
-
+			nbItems += tItems.getChildren().size();
 			mainTreeItem.getChildren().add(tItems);
-		});
+		}
+
+		return nbItems;
 	}
 
 
