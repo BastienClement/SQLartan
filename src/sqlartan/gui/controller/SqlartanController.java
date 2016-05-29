@@ -253,7 +253,7 @@ public class SqlartanController {
 		Popup.browse("Import SQLite database", sqlartan.getPrimaryStage(), null)
 		     .ifPresent(file -> {
 			     try {
-				     database.importfromFile(file);
+				     database.importFromFile(file);
 				     refreshView();
 			     } catch (SQLException | IOException | TokenizeException e) {
 				     throw new UncheckedException(e);
@@ -526,7 +526,7 @@ public class SqlartanController {
 		Popup.input("Add table", "Name : ", "").ifPresent(name -> {
 			if (name.length() > 0) {
 				try {
-					database.addTable(name);
+					database.createTable(name);
 					refreshView();
 				} catch (SQLException e) {
 					throw new UncheckedException(e);

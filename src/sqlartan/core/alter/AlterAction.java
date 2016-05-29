@@ -18,16 +18,18 @@ import java.util.stream.Collectors;
  */
 public abstract class AlterAction {
 	/**
-	 *
+	 * TODO
 	 */
 	protected final Table table;
 
 	/**
-	 *
+	 * TODO
 	 */
 	private CreateTableStatement.Def oldTableDefinition;
 
 	/**
+	 * TODO
+	 *
 	 * @param table
 	 */
 	public AlterAction(Table table) {

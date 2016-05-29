@@ -65,7 +65,7 @@ public abstract class PersistentStructure<T extends Column> implements Structure
 
 	/**
 	 * Renames this structure.
-	 *
+	 * <p>
 	 * The default implementation duplicates the source structure and then
 	 * drops the old one. Subclasses may override this default implementation
 	 * and use a better mechanism to rename the structure.

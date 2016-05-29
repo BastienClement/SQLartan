@@ -1,26 +1,28 @@
 package sqlartan.core;
 
-import java.util.*;
-
 /**
- * TODO
+ * A column of a result set.
+ * <p>
+ * In addition to a generic GeneratedColumn, this kind of column possess an
+ * index in the result set columns list. This index is required to distinguish
+ * result columns with the same name.
  */
 public class ResultColumn extends GeneratedColumn {
 	/**
-	 * References to the Result instance
+	 * The parent result set
 	 */
 	private Result result;
 
 	/**
-	 * TODO
+	 * This column index in the result set
 	 */
 	private int index;
 
 	/**
-	 * TODO
+	 * @param result the parent result set
+	 * @param index  the index of the column
+	 * @param props  the properties of the column
 	 */
-	private Set<ResultColumn> updateKeys;
-
 	ResultColumn(Result result, int index, Properties props) {
 		super(props);
 		this.result = result;
@@ -28,61 +30,20 @@ public class ResultColumn extends GeneratedColumn {
 	}
 
 	/**
+	 * Returns the parent result set.
 	 *
-	 * @return
+	 * @return the parent result set
 	 */
-	public int index() {
-		return index;
+	public Result result() {
+		return result;
 	}
 
 	/**
-	 * TODO
+	 * Returns the index of this column in the result set
 	 *
-	 * @return
+	 * @return the index of this column
 	 */
-	public Set<ResultColumn> updateKeys() {
-		if (updateKeys == null) {
-			updateKeys = new HashSet<>();
-			Map<String, ResultColumn> seen = new HashMap<>();
-
-			result.columns().view()
-			      .peek(col -> {
-				      col.sourceColumn().ifPresent(source -> {
-					      seen.put(source.name(), col);
-					      if (source.unique()) {
-						      updateKeys.add(col);
-					      }
-				      });
-			      })
-			      .mapOptional(GeneratedColumn::sourceTable)
-			      .distinct()
-			      .forEach(table -> {
-				      try {
-					      table.primaryKey().get().columns().stream()
-					           .map(seen::get)
-					           .peek(col -> {
-						           if (col == null) throw new NoSuchElementException();
-					           })
-					           .forEach(updateKeys::add);
-				      } catch (NoSuchElementException ignored) {}
-			      });
-		}
-
-		return updateKeys;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof ResultColumn) {
-			ResultColumn col = (ResultColumn) obj;
-			return sourceColumn().equals(col.sourceColumn());
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return sourceColumn().map(col -> Objects.hash(ResultColumn.class, col.hashCode()))
-		                     .orElseGet(this::hashCode);
+	public int index() {
+		return index;
 	}
 }

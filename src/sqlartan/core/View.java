@@ -8,13 +8,26 @@ import sqlartan.util.UncheckedException;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/**
+ * A view in a database.
+ */
 public class View extends PersistentStructure<GeneratedColumn> implements Structure<GeneratedColumn> {
+	/**
+	 * @param database the parent database
+	 * @param name     the view name
+	 */
 	protected View(Database database, String name) {
 		super(database, name);
 	}
 
+	/**
+	 * Duplicates the view.
+	 *
+	 * @param target the new name for this view
+	 * @return the duplicated view
+	 */
 	@Override
-	public View duplicate(String newName) {
+	public View duplicate(String target) {
 		try {
 			// retrieve the view creation sql
 			String sql = database.assemble("SELECT sql FROM ", database.name(), ".sqlite_master WHERE type = 'view' AND name = ?")
@@ -23,7 +36,7 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 
 			// Modify the create statement
 			CreateViewStatement create = Parser.parse(sql, CreateViewStatement::parse);
-			create.name = newName;
+			create.name = target;
 			create.schema = Optional.of(database.name());
 
 			// Execute the new sql, add the new view
@@ -34,11 +47,12 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 			throw new UncheckedException(e);
 		}
 
-		// Gets the new view, without inspection
-		// noinspection OptionalGetWithoutIsPresent
-		return database.view(newName).get();
+		return database.view(target).orElseThrow(IllegalStateException::new);
 	}
 
+	/**
+	 * Drop the view.
+	 */
 	@Override
 	public void drop() {
 		try {
@@ -48,6 +62,12 @@ public class View extends PersistentStructure<GeneratedColumn> implements Struct
 		}
 	}
 
+	/**
+	 * Builds a GeneratedColumn for a given Row of the table_info PRAGMA.
+	 *
+	 * @param row a row from a PRAGMA table_info query
+	 * @return a GeneratedColumn representing the column described by the row
+	 */
 	@Override
 	protected GeneratedColumn columnBuilder(Row row) {
 		// TODO: implements sources

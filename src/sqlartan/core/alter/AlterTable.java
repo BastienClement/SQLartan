@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class AlterTable {
 	/**
-	 *
+	 * TODO
 	 */
 	private Table table;
 
@@ -26,11 +26,13 @@ public class AlterTable {
 	private HashMap<String, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
 
 	/**
-	 *
+	 * TODO
 	 */
 	private List<AlterAction> actions = new LinkedList<>();
 
 	/**
+	 * TODO
+	 *
 	 * @param table
 	 */
 	public AlterTable(Table table) {

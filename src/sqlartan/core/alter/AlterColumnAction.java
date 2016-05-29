@@ -15,10 +15,19 @@ import java.util.Optional;
  * TODO
  */
 public abstract class AlterColumnAction extends AlterAction {
+	/**
+	 * TODO
+	 */
 	private final TableColumn column;
+
+	/**
+	 * TODO
+	 */
 	protected final ColumnDefinition columnDefinition;
 
 	/**
+	 * TODO
+	 *
 	 * @param table
 	 * @param column
 	 * @throws TokenizeException
@@ -71,7 +80,7 @@ public abstract class AlterColumnAction extends AlterAction {
 			definition.constraints.add(ColumnConstraint.Check.parse(context));
 		}
 
-		Optional<Index> pk = column.parentTable().primaryKey();
+		Optional<Index> pk = column.table().primaryKey();
 		if (pk.isPresent() && pk.get().columns().contains(this) && pk.get().columns().size() == 1) {
 			ColumnConstraint.PrimaryKey constraint = new ColumnConstraint.PrimaryKey();
 			constraint.name = Optional.of(pk.get().name());

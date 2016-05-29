@@ -18,7 +18,6 @@ import static sqlartan.util.Matching.match;
 /**
  * Utility class for resolving query columns.
  */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 public abstract class QueryResolver {
 	/**
 	 * Checks that columns of a simple select statement are valid for
@@ -59,12 +58,12 @@ public abstract class QueryResolver {
 	 */
 	private static Stream<TableColumn> columnAsStream(Table table, Expression expr) {
 		Expression.ColumnReference ref = (Expression.ColumnReference) expr;
-		return Stream.of(table.column(ref.column).get());
+		return Stream.of(table.column(ref.column).orElseThrow(IllegalStateException::new));
 	}
 
 	/**
 	 * Creates a adapter function transforming ResultColumn to a stream of
-	 * TableColumm.
+	 * TableColumn.
 	 *
 	 * @param table the source table
 	 * @return a function transforming ResultColumn to a stream of TableColumn
@@ -85,7 +84,7 @@ public abstract class QueryResolver {
 	private static Function<SelectStatement.Simple, Optional<ImmutableList<TableColumn>>> injectColumns(Database database) {
 		return select -> {
 			try {
-				return resolveTable(database, (QualifiedTableName) select.from.get()).map(t ->
+				return resolveTable(database, (QualifiedTableName) select.from.orElseThrow(IllegalStateException::new)).map(t ->
 					ImmutableList.from(select.columns.stream().flatMap(columnAdapter(t)))
 				);
 			} catch (NoSuchElementException ignored) {
@@ -96,12 +95,12 @@ public abstract class QueryResolver {
 
 	/**
 	 * Resolves references to TableColumns from a select statement.
-	 *
+	 * <p>
 	 * This can only be done if the select is a simple select statement,
 	 * with no compound operators and exactly one source table. In addition,
 	 * the query must use only non-scoped wildcards ('*') and simple
 	 * column references.
-	 *
+	 * <p>
 	 * It is not possible to resolve columns of a select statement using
 	 * the sqlite_master table. Allowing this would create an infinite
 	 * loop since this function needs to query the table structure.
@@ -115,7 +114,7 @@ public abstract class QueryResolver {
 		             .filter(s -> s instanceof SelectStatement.Simple)
 		             .map(s -> (SelectStatement.Simple) s)
 		             .filter(s -> s.from.orElse(null) instanceof QualifiedTableName)
-		             .filter(s -> s.from.map(tn -> !((QualifiedTableName) tn).name.equals("sqlite_master")).get())
+		             .filter(s -> s.from.map(tn -> !((QualifiedTableName) tn).name.equals("sqlite_master")).orElse(false))
 		             .filter(QueryResolver::columnsAreValid)
 		             .flatMap(injectColumns(database));
 	}

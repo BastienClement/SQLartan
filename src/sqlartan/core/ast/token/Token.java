@@ -300,7 +300,7 @@ public abstract class Token implements Tokenizable<Token> {
 
 	/**
 	 * A token wrapping a distinguishing value.
-	 *
+	 * <p>
 	 * Two Wrapper tokens are considered equals if their wrapped value
 	 * are equals.
 	 *
