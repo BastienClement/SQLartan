@@ -33,6 +33,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import static sqlartan.util.Matching.match;
 
 /**
@@ -41,9 +44,9 @@ import static sqlartan.util.Matching.match;
 public class SqlartanController {
 
 
-	/************
-	 * ATRIBUTS *
-	 ************/
+	/**************
+	 * ATTRIBUTES *
+	 **************/
 	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
@@ -84,10 +87,8 @@ public class SqlartanController {
 
 
 	/*****************************
-	 * METHODES called by the GUI*
+	 * METHODS called by the GUI*
 	 *****************************/
-
-
 	/**
 	 * First method call when FXML loaded
 	 * Load all the tabs and create the history pane
@@ -312,7 +313,21 @@ public class SqlartanController {
 
 
 			treeView.getSelectionModel().select(selected);
+			refreshAttachedDatabase();
 		}
+	}
+
+	/**
+	 * TODO
+	 */
+	private void refreshAttachedDatabase() {
+		detachMenu.getItems().clear();
+		detachMenu.getItems().addAll(
+			database.attached().values().stream()
+			        .map(AttachedDatabase::name)
+			        .map(MenuItem::new)
+			        .peek(item -> item.setOnAction(event -> database.attached(item.getText()).ifPresent(this::detachDatabase)))
+			        .collect(Collectors.toList()));
 	}
 
 
@@ -326,6 +341,9 @@ public class SqlartanController {
 	}
 
 
+	/**
+	 * TODO
+	 */
 	public void openDatabase() {
 		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
 	}
@@ -462,9 +480,6 @@ public class SqlartanController {
 	public void attachDatabase(File file, String dbName) {
 		try {
 			database.attach(file, dbName);
-			MenuItem newMenuItem = new MenuItem(dbName);
-			newMenuItem.setOnAction(event -> database.attached(newMenuItem.getText()).ifPresent(this::detachDatabase));
-			detachMenu.getItems().add(newMenuItem);
 			refreshView();
 		} catch (SQLException e) {
 			Popup.error("Problem while attaching database", e.getMessage());
@@ -668,11 +683,6 @@ public class SqlartanController {
 	 */
 	public void detachDatabase(AttachedDatabase attachedDatabase) {
 		database.detach(attachedDatabase.name());
-		detachMenu.getItems()
-		          .forEach(menuItem -> {
-			          if (menuItem.getText().equals(attachedDatabase.name()))
-				          Platform.runLater(() -> detachMenu.getItems().remove(menuItem));
-		          });
 		refreshView();
 	}
 
@@ -687,6 +697,11 @@ public class SqlartanController {
 	}
 
 
+	/**
+	 * TODO
+	 *
+	 * @param database
+	 */
 	@FXML
 	public void export(Database database) {
 		class Result {
@@ -762,11 +777,23 @@ public class SqlartanController {
 		});
 	}
 
+
+	/**
+	 * TODO
+	 *
+	 * @param database
+	 */
 	public void vacuum(Database database) {
 		database.vacuum();
 		Popup.information("Vacuum", "The database " + database.name() + " get vacuumed");
 	}
 
+
+	/**
+	 * TODO
+	 *
+	 * @param structure
+	 */
 	public void duplicate(PersistentStructure<?> structure) {
 		Popup.input("Duplicate", "Name : ", structure.name()).ifPresent(name -> {
 			if (name.length() > 0 && !structure.name().equals(name)) {
@@ -777,6 +804,13 @@ public class SqlartanController {
 			}
 		});
 	}
+
+
+	/**
+	 * TODO
+	 *
+	 * @param table
+	 */
 	public void truncate(Table table) {
 		ButtonType yes = new ButtonType("Yes");
 		ButtonType no = new ButtonType("No");

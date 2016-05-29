@@ -45,8 +45,8 @@ public class SqlTabController extends Tab {
 				userQueryView.getChildren().add(DataTableView.getTableView(result));
 			} else {
 				userQueryView.getChildren().add(new Text(Long.toString(result.updateCount()) + " row(s) updated"));
-				Sqlartan.getInstance().getController().refreshView();
 			}
+			Sqlartan.getInstance().getController().refreshView();
 		} catch (SQLException e) {
 			userQueryView.getChildren().add(new Text(e.getMessage()));
 		}
