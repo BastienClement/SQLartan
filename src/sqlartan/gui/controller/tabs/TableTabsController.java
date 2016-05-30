@@ -16,7 +16,6 @@ import sqlartan.gui.util.Popup;
 import java.io.IOException;
 import static sqlartan.gui.util.ActionButtons.actionButton;
 
-
 /**
  * Controller of TableTabs.fxml. Controller of the tabs of a table.
  */
@@ -75,9 +74,8 @@ public class TableTabsController extends PersistentStructureTabsController {
 		});
 	}
 
-
 	/**
-	 * Display the insert tab
+	 * Display the insert tab.
 	 */
 	private void displayInsertTab() {
 		insertRows.clear();
@@ -85,9 +83,8 @@ public class TableTabsController extends PersistentStructureTabsController {
 		insertTable.setItems(insertRows);
 	}
 
-
 	/**
-	 * Insert the data in the table
+	 * Insert the data in the table.
 	 */
 	@FXML
 	protected void submitNewData() {
@@ -104,7 +101,6 @@ public class TableTabsController extends PersistentStructureTabsController {
 		}
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -118,5 +114,4 @@ public class TableTabsController extends PersistentStructureTabsController {
 			displayInsertTab();
 		}
 	}
-
 }

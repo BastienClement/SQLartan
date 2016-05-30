@@ -15,6 +15,7 @@ import sqlartan.gui.controller.SqlartanController;
 public abstract class StructureTreeItem extends CustomTreeItem {
 
 	protected PersistentStructure<?> structure;
+
 	public StructureTreeItem(String name, SqlartanController controller, Database database) {
 		super(name, controller, database);
 		database.structure(name).ifPresent(s -> structure = s);
@@ -23,9 +24,8 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 			throw new RuntimeException("The structure " + name + "doesn't exist in the database" + database.name());
 	}
 
-
 	/**
-	 * Add drop, rename and duplicate menu
+	 * Add drop, rename and duplicate menu.
 	 * {@inheritDoc}
 	 */
 	@Override

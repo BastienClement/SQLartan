@@ -7,7 +7,7 @@ import javafx.beans.property.StringProperty;
 import sqlartan.core.Column;
 
 /**
- * Represent the model of the structure tab of a PersistentStructure
+ * Represent the model of the structure tab of a PersistentStructure.
  */
 public class PersistentStructureModel extends StructureModel {
 	public final IntegerProperty no;

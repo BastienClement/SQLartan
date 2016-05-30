@@ -7,7 +7,9 @@ import javafx.scene.control.TreeCell;
  */
 public class CustomTreeCell extends TreeCell<CustomTreeItem> {
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void updateItem(CustomTreeItem item, boolean empty) {
 		super.updateItem(item, empty);

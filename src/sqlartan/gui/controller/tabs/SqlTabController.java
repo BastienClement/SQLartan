@@ -26,7 +26,7 @@ public class SqlTabController extends Tab {
 	StackPane userQueryView;
 
 	/**
-	 * Add a table view
+	 * Add a table view.
 	 */
 	@FXML
 	private void initialize() {
@@ -34,7 +34,7 @@ public class SqlTabController extends Tab {
 	}
 
 	/**
-	 * Execute the query set in the SQLTextQuery
+	 * Execute the query set in the SQLTextQuery.
 	 */
 	public void executeQuery() {
 		Database db = Sqlartan.getInstance().getController().database();
@@ -53,13 +53,11 @@ public class SqlTabController extends Tab {
 	}
 
 	/**
-	 * Set the specific request
+	 * Set the specific request.
 	 *
 	 * @param request the request
 	 */
 	public void setRequest(String request) {
 		SQLTextQuery.setText(request);
 	}
-
-
 }

@@ -5,10 +5,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.Pane;
 
 /**
- * Controller for the About.fxml
+ * Controller for the About.fxml.
  */
 public class About {
-
 
 	@FXML
 	private TextArea description;
@@ -17,8 +16,8 @@ public class About {
 	private Pane mainPane;
 
 	/**
-	 * First method call when FXML loaded
-	 * Used to disable mouse action on the description textArea
+	 * First method call when FXML loaded.
+	 * Used to disable mouse action on the description textArea.
 	 */
 	@FXML
 	private void initialize() {

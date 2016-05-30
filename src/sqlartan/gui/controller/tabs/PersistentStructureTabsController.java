@@ -30,11 +30,10 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	@FXML
 	protected TableColumn<PersistentStructureModel, String> colNull;
 
-
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * Add column to the structure tab
+	 * Add column to the structure tab.
 	 */
 	protected void initialize() throws IOException {
 		super.initialize();
@@ -43,9 +42,9 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		colNull.setCellValueFactory(param -> param.getValue().nullable);
 	}
 
-
 	/**
-	 * Display the structure, if the structure can't be displayed, a popup will ask the user if he want to drop it.
+	 * Display the structure, if the structure can't be displayed, a popup will
+	 * ask the user if he want to drop it.
 	 */
 	@Override
 	protected void displayStructure() {
@@ -59,7 +58,6 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		structureTable.setItems(tableStructures);
 	}
 
-
 	/**
 	 * Display the data table
 	 */
@@ -67,9 +65,9 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		displaySafely(() -> displayTab.setContent(DataTableView.getTableView(structure.selectAll())));
 	}
 
-
 	/**
-	 * Display the stuff safely. If something went wrong, ask the user if he wants to drop the structure
+	 * Display the stuff safely.
+	 * If something went wrong, ask the user if he wants to drop the structure.
 	 *
 	 * @param stuff the stuff to do
 	 */
@@ -91,14 +89,12 @@ public abstract class PersistentStructureTabsController extends TabsController {
 		}
 	}
 
-
 	/**
-	 * Set the structure to use for the structure tab
+	 * Set the structure to use for the structure tab.
 	 *
 	 * @param structure the structure
 	 */
 	public void setStructure(PersistentStructure<?> structure) {
 		this.structure = structure;
 	}
-
 }

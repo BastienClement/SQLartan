@@ -4,7 +4,8 @@ import sqlartan.core.Database;
 import sqlartan.gui.controller.SqlartanController;
 
 /**
- * Used when the TreeItem is a table, the context menu is like the structure menu
+ * Used when the TreeItem is a table, the context menu is like the structure
+ * menu.
  */
 public class ViewTreeItem extends StructureTreeItem {
 
@@ -12,13 +13,13 @@ public class ViewTreeItem extends StructureTreeItem {
 		super(name, controller, database);
 	}
 
-
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Type type() {
 		return Type.VIEW;
 	}
-
 
 	public String toString() {
 		return "V – " + super.toString();

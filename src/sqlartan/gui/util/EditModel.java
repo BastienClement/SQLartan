@@ -18,10 +18,20 @@ public class EditModel implements Comparable<EditModel> {
 		this.text = text;
 	}
 
+	/**
+	 * Return a updated EditModel with a new text
+	 *
+	 * @param text the new text of the EditModel
+	 * @return the updated EditModel
+	 */
 	public EditModel update(String text) {
 		return new EditModel(row, column, text);
 	}
 
+	/**
+	 * Implement compareTo to sort correctly each columns type.
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int compareTo(EditModel o) {
 		Type mine = column.affinity().type;

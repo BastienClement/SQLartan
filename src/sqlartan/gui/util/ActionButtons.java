@@ -8,12 +8,12 @@ import javafx.util.Callback;
 import java.util.function.BiConsumer;
 
 /**
- * This class is used for create dynamic button
+ * This class is used for create dynamic button.
  */
 public class ActionButtons {
 
 	/**
-	 * Create an action button
+	 * Create an action button.
 	 *
 	 * @param label  the label of the button
 	 * @param action the action when the button is pressed

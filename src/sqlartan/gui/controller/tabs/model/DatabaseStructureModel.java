@@ -7,9 +7,8 @@ import sqlartan.core.Table;
 import sqlartan.core.View;
 import static sqlartan.util.Matching.match;
 
-
 /**
- * Represent the model of the structure tab of a database
+ * Represent the model of the structure tab of a database.
  */
 public class DatabaseStructureModel extends StructureModel {
 	public final LongProperty lines;

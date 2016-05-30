@@ -20,7 +20,6 @@ public class DatabaseTreeItem extends CustomTreeItem {
 
 	}
 
-
 	/**
 	 * add vacuum and table menu
 	 * {@inheritDoc}
@@ -40,7 +39,6 @@ public class DatabaseTreeItem extends CustomTreeItem {
 		return new ContextMenu(addTable, export, importItem, vacuum);
 
 	}
-
 
 	/**
 	 * {@inheritDoc}

@@ -30,7 +30,6 @@ public class DatabaseTabsController extends TabsController {
 
 	private ObservableList<DatabaseStructureModel> dbStructs = FXCollections.observableArrayList();
 
-
 	/**
 	 * Add button rename and drop to structure tab
 	 *
@@ -55,7 +54,6 @@ public class DatabaseTabsController extends TabsController {
 		tabPane.getSelectionModel().clearSelection();
 	}
 
-
 	/**
 	 * Display the structure of the database
 	 */
@@ -68,7 +66,6 @@ public class DatabaseTabsController extends TabsController {
 		structureTable.setItems(dbStructs);
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -79,9 +76,8 @@ public class DatabaseTabsController extends TabsController {
 		}
 	}
 
-
 	/**
-	 * Set the database which will be used in this tab
+	 * Set the database which will be used in this tab.
 	 *
 	 * @param database the database to work on
 	 */

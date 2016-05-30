@@ -7,7 +7,7 @@ import sqlartan.core.Database;
 import sqlartan.gui.controller.SqlartanController;
 
 /**
- * Used when the TreeItem is a Attached database
+ * Used when the TreeItem is a Attached database.
  */
 public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 
@@ -15,8 +15,8 @@ public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 		super(name, controller, database);
 	}
 	/**
+	 * Add a detach menu.
 	 * {@inheritDoc}
-	 * Add a detach menu
 	 */
 	@Override
 	public ContextMenu getMenu() {

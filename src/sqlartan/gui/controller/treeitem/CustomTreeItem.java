@@ -21,16 +21,22 @@ public abstract class CustomTreeItem extends TreeItem {
 	}
 
 	/**
-	 * @return a contextMenu
+	 * Return the contextual menu.
+	 *
+	 * @return the contextMenu
 	 */
 	public abstract ContextMenu getMenu();
 
 	/**
-	 * @return the type of the treeItem
+	 * The type of the treeItem
+	 *
+	 * @return the type of the TreeItem
 	 */
 	public abstract Type type();
 
 	/**
+	 * The database used by the TreeItem
+	 *
 	 * @return the database used by the TreeItem
 	 */
 	public Database database() {
@@ -38,6 +44,8 @@ public abstract class CustomTreeItem extends TreeItem {
 	}
 
 	/**
+	 * The name of the TreeItem
+	 *
 	 * @return the name of the TreeItem
 	 */
 	public String name() {

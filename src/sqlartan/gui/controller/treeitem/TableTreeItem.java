@@ -17,8 +17,9 @@ public class TableTreeItem extends StructureTreeItem {
 		super(name, controller, database);
 	}
 
-
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ContextMenu getMenu() {
 		MenuItem truncate = new MenuItem("Truncate");
@@ -32,13 +33,15 @@ public class TableTreeItem extends StructureTreeItem {
 		return res;
 	}
 
-
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Type type() {
 		return Type.TABLE;
 	}
 
+	@Override
 	public String toString() {
 		return "T – " + super.toString();
 	}

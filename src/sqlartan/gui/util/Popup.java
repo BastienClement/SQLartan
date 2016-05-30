@@ -30,9 +30,8 @@ public class Popup {
 		return alert;
 	}
 
-
 	/**
-	 * A error popup
+	 * Create an error popup.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -41,9 +40,8 @@ public class Popup {
 		return alert(title, message, null, Alert.AlertType.ERROR).showAndWait();
 	}
 
-
 	/**
-	 * A warning popup with header
+	 * Create a warning popup with header.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -57,9 +55,8 @@ public class Popup {
 		return alert.showAndWait();
 	}
 
-
 	/**
-	 * A warning popup without header
+	 * Create a warning popup without header.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -70,9 +67,8 @@ public class Popup {
 		return warning(title, message, null, buttonTypes);
 	}
 
-
 	/**
-	 * A information popup
+	 * Create an information popup.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -81,9 +77,8 @@ public class Popup {
 		return alert(title, message, null, Alert.AlertType.INFORMATION).showAndWait();
 	}
 
-
 	/**
-	 * create an TextInputDialog and show it
+	 * Create an TextInputDialog and show it.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -94,9 +89,8 @@ public class Popup {
 		return input(title, message, placeholder, null);
 	}
 
-
 	/**
-	 * create an TextInputDialog with an header and show it
+	 * Create an TextInputDialog with an header and show it.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -112,9 +106,8 @@ public class Popup {
 		return dialog.showAndWait();
 	}
 
-
 	/**
-	 * Create a FileChooser
+	 * Create a FileChooser.
 	 *
 	 * @param title  the title of the window
 	 * @param filter the filter to be applied on the file chooser
@@ -126,7 +119,6 @@ public class Popup {
 		fileChooser.setSelectedExtensionFilter(filter);
 		return fileChooser;
 	}
-
 
 	/**
 	 * Show a save dialog file chooser.
@@ -140,7 +132,6 @@ public class Popup {
 		return Optional.ofNullable(file(title, filter).showSaveDialog(window));
 	}
 
-
 	/**
 	 * Show a browse dialog file chooser.
 	 *
@@ -152,5 +143,4 @@ public class Popup {
 	public static Optional<File> browse(String title, Window window, FileChooser.ExtensionFilter filter) {
 		return Optional.ofNullable(file(title, filter).showOpenDialog(window));
 	}
-
 }

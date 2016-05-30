@@ -9,12 +9,11 @@ import sqlartan.gui.util.Popup;
 import java.io.File;
 
 /**
- * Controller for the AttachedChooser fxml file.
+ * Controller for the AttachedChooser.fxml file.
  * Used to give the user an inferface to attache a database to the main one.
  */
 public class AttachedChooserController {
 
-	private File file = null;
 	private SqlartanController controller;
 
 	@FXML
@@ -30,9 +29,8 @@ public class AttachedChooserController {
 	@FXML
 	private TextField dbName;
 
-
 	/**
-	 * Close the window
+	 * Close the window.
 	 */
 	@FXML
 	private void close() {
@@ -40,7 +38,7 @@ public class AttachedChooserController {
 	}
 
 	/**
-	 * Set the controller
+	 * Set the controller.
 	 *
 	 * @param controller the controller
 	 */
@@ -50,11 +48,11 @@ public class AttachedChooserController {
 
 
 	/**
-	 * Method called by the validate button
+	 * Method called by the validate button.
 	 */
 	@FXML
 	protected void validate() {
-		file = new File(path.getText());
+		File file = new File(path.getText());
 
 		if (!file.getPath().isEmpty() && !dbName.getText().isEmpty()) {
 			controller.attachDatabase(file, dbName.getText());
@@ -65,8 +63,8 @@ public class AttachedChooserController {
 	}
 
 	/**
-	 * Method called by the browse button
-	 * To browse and check the path the user has set
+	 * Method called by the browse button.
+	 * To browse and check the path the user has set.
 	 */
 	@FXML
 	protected void browse() {
@@ -82,6 +80,8 @@ public class AttachedChooserController {
 	}
 
 	/**
+	 * Return the name of the file without his extension
+	 *
 	 * @param file the file
 	 * @return the name of the file without his extension
 	 */

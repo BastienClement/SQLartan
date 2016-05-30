@@ -8,13 +8,15 @@ import sqlartan.core.Affinity;
 import sqlartan.core.util.UncheckedSQLException;
 
 /**
- * Represent a editable cell. When the user double click on a cell, a TextField is created and let the user edit the
- * cell
+ * Represent a editable cell. When the user double click on a cell, a TextField
+ * is created and let the user edit the cell.
  */
 public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 	private TextField textField;
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void startEdit() {
 		if (!isEmpty() && getItem().row.editable()) {
@@ -27,8 +29,9 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 		}
 	}
 
-
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void cancelEdit() {
 		super.cancelEdit();
@@ -36,8 +39,9 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 		setGraphic(null);
 	}
 
-
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void updateItem(EditModel item, boolean empty) {
 		super.updateItem(item, empty);
@@ -54,9 +58,9 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 
 	}
 
-
 	/**
-	 * Create a text field. When the user press enter, the text will be committed and will update the row.
+	 * Create a text field. When the user press enter, the text will be
+	 * committed and will update the row.
 	 */
 	private void createTextField() {
 		textField = new TextField(text());
@@ -79,12 +83,11 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 		});
 	}
 
-
 	/**
+	 * Return a String representation of the item
 	 * @return "" if null, otherwise return the text of the item
 	 */
 	private String text() {
 		return getItem() == null ? "" : getItem().text;
 	}
-
 }

@@ -41,33 +41,38 @@ import static sqlartan.util.Matching.match;
  */
 public class SqlartanController {
 
+	private final String WARNING_COST = " operation is an emulated operation, it can be expensive if the table contains a large volume of data";
 
-	private final String WARNING_COST = " operation is a emulated operation, it can be expensive if the table contains a large volume of data";
-	/**************
-	 * ATTRIBUTES *
-	 **************/
 	private Database database;
 	private TreeItem<CustomTreeItem> mainTreeItem;
 	private Sqlartan sqlartan;
+
 	@FXML
 	private TreeView<CustomTreeItem> treeView;
+
 	@FXML
 	private StackPane stackPane;
+
 	@FXML
 	private Menu detachMenu;
+
 	@FXML
 	private Button reloadButton;
+
 	// TextArea for the request history
 	@FXML
 	private ListView<String> request;
 	private ObservableList<String> requests = FXCollections.observableArrayList();
+
 	@FXML
 	private TitledPane historyPane;
 	private CheckBox displayPragma = new CheckBox("PRAGMA");
+
 	// TablePanes
 	private TabPane databaseTabPane;
 	private TabPane tableTabPane;
 	private TabPane viewTabPane;
+
 	// TabsPaneController
 	private DatabaseTabsController databaseTabsController;
 	private TableTabsController tableTabController;
@@ -75,13 +80,9 @@ public class SqlartanController {
 	@FXML
 	private Menu databaseMenu;
 
-
-	/*****************************
-	 * METHODS called by the GUI*
-	 *****************************/
 	/**
-	 * First method call when FXML loaded
-	 * Load all the tabs and create the history pane
+	 * First method call when FXML loaded.
+	 * Load all the tabs and create the history pane.
 	 */
 	@FXML
 	private void initialize() throws IOException {
@@ -170,10 +171,8 @@ public class SqlartanController {
 		reloadButton.setGraphic(reload);
 	}
 
-
 	/**
-	 * Function called by the GUI
-	 * to create a new database and open or attache it
+	 * Function called by the GUI to create a new database and open or attache it.
 	 */
 	@FXML
 	protected void createDatabase() {
@@ -187,10 +186,8 @@ public class SqlartanController {
 		     });
 	}
 
-
 	/**
-	 * FUnction called by the GUI
-	 * to attache a database
+	 * Function called by the GUI to attache a database.
 	 */
 	@FXML
 	protected void attachButton() {
@@ -216,9 +213,8 @@ public class SqlartanController {
 		}
 	}
 
-
 	/**
-	 * Close the current database
+	 * Close the current database.
 	 */
 	@FXML
 	protected void closeDatabase() {
@@ -231,7 +227,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Close the entry application
+	 * Close the entry application.
 	 */
 	@FXML
 	protected void close() {
@@ -240,7 +236,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Import in the current open database
+	 * Import in the current open database.
 	 */
 	@FXML
 	public void importDatabase(Database database) {
@@ -256,8 +252,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Function called by the GUI
-	 * to display the about window
+	 * Function called by the GUI to display the about window.
 	 */
 	@FXML
 	protected void displayAbout() {
@@ -280,9 +275,8 @@ public class SqlartanController {
 		}
 	}
 
-
 	/**
-	 * To call to refresh the GUI
+	 * To call to refresh the GUI.
 	 */
 	public void refreshView() {
 		if (database != null) {
@@ -292,7 +286,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Refresh the attached database menu
+	 * Refresh the attached database menu.
 	 */
 	private void refreshAttachedDatabase() {
 		detachMenu.getItems().clear();
@@ -304,9 +298,8 @@ public class SqlartanController {
 			        .collect(Collectors.toList()));
 	}
 
-
 	/**
-	 * Refresh the left tree
+	 * Refresh the left tree.
 	 */
 	private void refreshTree() {
 		int selected = treeView.getSelectionModel().getSelectedIndex();
@@ -327,9 +320,8 @@ public class SqlartanController {
 		treeView.getSelectionModel().select(Math.min(selected, nbItem));
 	}
 
-
 	/**
-	 * Get the main database
+	 * Get the main database.
 	 *
 	 * @return the main database
 	 */
@@ -337,9 +329,8 @@ public class SqlartanController {
 		return database;
 	}
 
-
 	/**
-	 * Open a popup with à FileChooser, asking which database to open
+	 * Open a popup with à FileChooser, asking which database to open.
 	 */
 	public void openDatabase() {
 		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
@@ -348,7 +339,7 @@ public class SqlartanController {
 	/**
 	 * Open de main database
 	 *
-	 * @param file: file of the database to open
+	 * @param file: file of the database to open.
 	 */
 	private void openDatabase(File file) {
 		if (database != null && (!database.isClosed()))
@@ -381,9 +372,8 @@ public class SqlartanController {
 		}
 	}
 
-
 	/**
-	 * CellFactory for the history listedView
+	 * CellFactory for the history listedView.
 	 *
 	 * @return the new ListCell
 	 */
@@ -421,7 +411,6 @@ public class SqlartanController {
 		return cells;
 	}
 
-
 	/**
 	 * Called by the mainApp to set the link to the mainApp
 	 *
@@ -430,7 +419,6 @@ public class SqlartanController {
 	public void setApp(Sqlartan sqlartan) {
 		this.sqlartan = sqlartan;
 	}
-
 
 	/**
 	 * Create the tree for a specific database
@@ -472,9 +460,8 @@ public class SqlartanController {
 		return nbItems;
 	}
 
-
 	/**
-	 * Attach a database to the main database
+	 * Attach a database to the main database.
 	 *
 	 * @param file   file of the database
 	 * @param dbName name that will be shown in the treeView
@@ -488,9 +475,8 @@ public class SqlartanController {
 		}
 	}
 
-
 	/**
-	 * Drop a table or a gui
+	 * Drop a table or a gui.
 	 *
 	 * @param structure structure to drop
 	 */
@@ -505,9 +491,8 @@ public class SqlartanController {
 		     });
 	}
 
-
 	/**
-	 * Ask the user the new name of the structure
+	 * Ask the user the new name of the structure.
 	 *
 	 * @param structure the structure to rename
 	 */
@@ -522,9 +507,8 @@ public class SqlartanController {
 		});
 	}
 
-
 	/**
-	 * Add a table to the specified database
+	 * Add a table to the specified database.
 	 *
 	 * @param database the database in where the datable will be added
 	 */
@@ -542,7 +526,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user to specified the column to add, and add it
+	 * Ask the user to specified the column to add, and add it.
 	 *
 	 * @param table the table where adding a column
 	 */
@@ -644,10 +628,10 @@ public class SqlartanController {
 		});
 	}
 
-
 	/**
-	 * Ask the user the new name of the column, if the name is more than 0 characters and isn't the same of the
-	 * structure, rename the specified column from the structure
+	 * Ask the user the new name of the column, if the name is more than 0
+	 * characters and isn't the same of the structure, rename the
+	 * specified column from the structure.
 	 *
 	 * @param structure  the structure where the column is
 	 * @param columnName the name of the column
@@ -664,7 +648,8 @@ public class SqlartanController {
 
 
 	/**
-	 * Ask the user if he's sure to drop the column of a structure, if it's yes, drop the column.
+	 * Ask the user if he's sure to drop the column of a structure, if
+	 * it's yes, drop the column.
 	 *
 	 * @param structure  the structure where the column is
 	 * @param columnName the name of the column
@@ -684,7 +669,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Detach a attachedDatabase from the main attachedDatabase
+	 * Detach a attachedDatabase from the main attachedDatabase.
 	 *
 	 * @param attachedDatabase the attached database to detach
 	 */
@@ -693,9 +678,8 @@ public class SqlartanController {
 		refreshView();
 	}
 
-
 	/**
-	 * Set active the index element in the TreeView
+	 * Set active the index element in the TreeView.
 	 *
 	 * @param index to set active
 	 */
@@ -703,9 +687,9 @@ public class SqlartanController {
 		treeView.getSelectionModel().select(index);
 	}
 
-
 	/**
-	 * Export the database, ask the user what it would like to export (structure, data, or both)
+	 * Export the database, ask the user what it would like to export
+	 * (structure, data, or both).
 	 *
 	 * @param database the database to export
 	 */
@@ -784,9 +768,8 @@ public class SqlartanController {
 		});
 	}
 
-
 	/**
-	 * Vacuum the database and inform the user with a popup
+	 * Vacuum the database and inform the user with a popup.
 	 *
 	 * @param database the database to vacuum
 	 */
@@ -795,9 +778,8 @@ public class SqlartanController {
 		Popup.information("Vacuum", "The database " + database.name() + " get vacuumed");
 	}
 
-
 	/**
-	 * Ask the user the name of the duplicate structure
+	 * Ask the user the name of the duplicate structure.
 	 *
 	 * @param structure the structure to duplicate
 	 */
@@ -812,9 +794,9 @@ public class SqlartanController {
 		});
 	}
 
-
 	/**
-	 * Ask the user if it would like to truncate the database, if it's yes, truncate the table
+	 * Ask the user if it would like to truncate the database, if it's yes,
+	 * truncate the table.
 	 *
 	 * @param table the table to truncate
 	 */
