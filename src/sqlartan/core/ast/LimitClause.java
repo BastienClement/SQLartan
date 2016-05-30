@@ -12,6 +12,9 @@ public class LimitClause implements Node {
 	public Expression expression;
 	public Optional<Expression> offset = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static LimitClause parse(ParserContext context) {
 		LimitClause limit = new LimitClause();
 		context.consume(LIMIT);
@@ -22,6 +25,9 @@ public class LimitClause implements Node {
 		return limit;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(LIMIT).append(expression);

@@ -12,6 +12,9 @@ import static sqlartan.util.Matching.match;
  * This class perform the step of disambiguation and delegates further parsing to concrete implementation
  */
 public abstract class CreateStatement implements Statement {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CreateStatement parse(ParserContext context) {
 		context.begin();
 		context.consume(CREATE);

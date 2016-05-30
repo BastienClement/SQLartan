@@ -11,6 +11,9 @@ import static sqlartan.core.ast.Keyword.DETACH;
 public class DetachStatement implements Statement {
 	public String schema;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DetachStatement parse(ParserContext context) {
 		context.consume(DETACH);
 		context.tryConsume(DATABASE);
@@ -19,6 +22,9 @@ public class DetachStatement implements Statement {
 		return detach;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(DETACH).appendIdentifier(schema);

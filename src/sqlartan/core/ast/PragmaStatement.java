@@ -15,6 +15,9 @@ public abstract class PragmaStatement implements Statement {
 	public Optional<String> schema = Optional.empty();
 	public String pragma;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static PragmaStatement parse(ParserContext context) {
 		context.consume(PRAGMA);
 
@@ -32,6 +35,9 @@ public abstract class PragmaStatement implements Statement {
 		return pragma;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(PRAGMA);
@@ -57,6 +63,9 @@ public abstract class PragmaStatement implements Statement {
 			return set;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -70,6 +79,9 @@ public abstract class PragmaStatement implements Statement {
 	public static class Call extends PragmaStatement {
 		public LiteralValue value;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Call parse(ParserContext context) {
 			context.consume(LEFT_PAREN);
 			Call call = new Call();
@@ -78,6 +90,9 @@ public abstract class PragmaStatement implements Statement {
 			return call;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

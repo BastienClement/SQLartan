@@ -14,6 +14,9 @@ public class BeginStatement implements Statement {
 
 	public Mode mode = Mode.None;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static BeginStatement parse(ParserContext context) {
 		context.consume(BEGIN);
 
@@ -32,6 +35,9 @@ public class BeginStatement implements Statement {
 		return begin;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(BEGIN);

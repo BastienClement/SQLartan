@@ -10,10 +10,16 @@ import static sqlartan.core.ast.Keyword.INDEX;
 public class DropIndexStatement extends DropStatement {
 	public String index;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DropIndexStatement parse(ParserContext context) {
 		return parseDrop(context, INDEX, DropIndexStatement::new, drop -> drop.index = context.consumeIdentifier());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		super.toSQL(sql);

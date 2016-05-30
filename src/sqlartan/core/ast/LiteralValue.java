@@ -15,6 +15,9 @@ import static sqlartan.util.Matching.match;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class LiteralValue extends Expression {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static LiteralValue parse(ParserContext context) {
 		Optional<LiteralValue> literal = match(context.current(), LiteralValue.class)
 			.when(NULL, () -> Null.instance)
@@ -27,6 +30,9 @@ public abstract class LiteralValue extends Expression {
 		return literal.orElseGet(() -> parseValue(context));
 	}
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static LiteralValue parseValue(ParserContext context) {
 		return match(context.current(), LiteralValue.class)
 			.when(Token.Literal.Numeric.class, t -> Numeric.parse(context))
@@ -42,6 +48,9 @@ public abstract class LiteralValue extends Expression {
 		public Sign sign = Sign.None;
 		public String value;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Numeric parse(ParserContext context) {
 			Numeric num = new Numeric();
 			if (context.tryConsume(PLUS)) {
@@ -53,6 +62,9 @@ public abstract class LiteralValue extends Expression {
 			return num;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			if (sign == Sign.Minus) sql.appendUnary(MINUS);
@@ -63,12 +75,18 @@ public abstract class LiteralValue extends Expression {
 	public static class Text extends LiteralValue {
 		public String value;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Text parse(ParserContext context) {
 			Text text = new Text();
 			text.value = context.consume(Token.Literal.Text.class).value;
 			return text;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.appendTextLiteral(value);
@@ -79,6 +97,9 @@ public abstract class LiteralValue extends Expression {
 		public static final Null instance = new Null();
 		private Null() {}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(NULL);
@@ -89,6 +110,9 @@ public abstract class LiteralValue extends Expression {
 		public static final CurrentTime instance = new CurrentTime();
 		private CurrentTime() {}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(CURRENT_TIME);
@@ -99,6 +123,9 @@ public abstract class LiteralValue extends Expression {
 		public static final CurrentDate instance = new CurrentDate();
 		private CurrentDate() {}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(CURRENT_DATE);
@@ -109,6 +136,9 @@ public abstract class LiteralValue extends Expression {
 		public static final CurrentTimestamp instance = new CurrentTimestamp();
 		private CurrentTimestamp() {}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(CURRENT_TIMESTAMP);

@@ -16,6 +16,9 @@ public class ColumnDefinition implements Node {
 	public Optional<TypeDefinition> type = Optional.empty();
 	public List<ColumnConstraint> constraints = new ArrayList<>();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ColumnDefinition parse(ParserContext context) {
 		ColumnDefinition column = new ColumnDefinition();
 		column.name = context.consumeIdentifier();
@@ -24,6 +27,9 @@ public class ColumnDefinition implements Node {
 		return column;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.appendIdentifier(name)

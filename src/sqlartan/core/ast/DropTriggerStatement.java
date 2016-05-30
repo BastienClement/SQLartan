@@ -11,10 +11,16 @@ import static sqlartan.core.ast.Keyword.TRIGGER;
 public class DropTriggerStatement extends DropStatement {
 	public String trigger;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DropTriggerStatement parse(ParserContext context) {
 		return parseDrop(context, TRIGGER, DropTriggerStatement::new, drop -> drop.trigger = context.consumeIdentifier());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		super.toSQL(sql);

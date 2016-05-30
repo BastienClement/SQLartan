@@ -14,6 +14,9 @@ public class AnalyzeStatement implements Statement {
 	public String subject;
 	public boolean ambiguous;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static Statement parse(ParserContext context) {
 		context.consume(ANALYZE);
 		AnalyzeStatement analyze = new AnalyzeStatement();
@@ -29,6 +32,9 @@ public class AnalyzeStatement implements Statement {
 		return analyze;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(ANALYZE);

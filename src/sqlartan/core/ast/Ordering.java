@@ -20,6 +20,9 @@ public enum Ordering implements Node.Enumerated {
 		this.keyword = keyword;
 	}
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static Ordering parse(ParserContext context) {
 		if (context.tryConsume(ASC)) {
 			return Asc;
@@ -30,6 +33,9 @@ public enum Ordering implements Node.Enumerated {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		if (keyword != null) sql.append(keyword);

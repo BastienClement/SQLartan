@@ -18,6 +18,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 	public Optional<String> schema = Optional.empty();
 	public String name;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CreateTableStatement parse(ParserContext context) {
 		context.consume(CREATE);
 		boolean temporary = context.tryConsume(TEMP) || context.tryConsume(TEMPORARY);
@@ -44,6 +47,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 		return create;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(CREATE);
@@ -61,6 +67,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 		public List<TableConstraint> constraints = new ArrayList<>();
 		public boolean withoutRowid;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Def parse(ParserContext context) {
 			Def create = new Def();
 			context.consume(LEFT_PAREN);
@@ -73,6 +82,9 @@ public abstract class CreateTableStatement extends CreateStatement {
 			return create;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -89,12 +101,18 @@ public abstract class CreateTableStatement extends CreateStatement {
 	public static class As extends CreateTableStatement {
 		public SelectStatement select;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static As parse(ParserContext context, boolean t, boolean ine, Optional<String> s, String n) {
 			As create = new As();
 			create.select = SelectStatement.parse(context);
 			return create;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

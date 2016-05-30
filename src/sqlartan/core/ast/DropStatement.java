@@ -15,6 +15,9 @@ public abstract class DropStatement implements Statement {
 	public Optional<String> schema = Optional.empty();
 	protected Keyword type;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DropStatement parse(ParserContext context) {
 		return match(context.next(), DropStatement.class)
 			.when(INDEX, () -> DropIndexStatement.parse(context))
@@ -34,6 +37,9 @@ public abstract class DropStatement implements Statement {
 		return drop;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(DROP, type);

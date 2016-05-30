@@ -29,6 +29,9 @@ public class UpdateStatement implements Statement {
 			this.keywords = keywords;
 		}
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Fallback parse(ParserContext context) {
 			if (context.tryConsume(OR)) {
 				switch (context.consume(Token.Keyword.class).node()) {
@@ -50,6 +53,9 @@ public class UpdateStatement implements Statement {
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(keywords);
@@ -63,6 +69,9 @@ public class UpdateStatement implements Statement {
 	public Optional<OrderByClause> orderBy = Optional.empty();
 	public Optional<LimitClause> limit = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static UpdateStatement parse(ParserContext context) {
 		UpdateStatement update = new UpdateStatement();
 		context.consume(UPDATE);
@@ -82,6 +91,9 @@ public class UpdateStatement implements Statement {
 		return update;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(UPDATE).append(fallback).append(table)
@@ -96,6 +108,9 @@ public class UpdateStatement implements Statement {
 		public String column;
 		public Expression value;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static SetExpression parse(ParserContext context) {
 			SetExpression set = new SetExpression();
 			set.column = context.consumeIdentifier();
@@ -104,6 +119,9 @@ public class UpdateStatement implements Statement {
 			return set;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.appendIdentifier(column).append(EQ).append(value);

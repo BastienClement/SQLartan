@@ -14,6 +14,9 @@ import static sqlartan.core.ast.Operator.RIGHT_PAREN;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class JoinConstraint implements Node {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static JoinConstraint parse(ParserContext context) {
 		if (context.current(ON)) {
 			return On.parse(context);
@@ -28,6 +31,9 @@ public abstract class JoinConstraint implements Node {
 	public static class On extends JoinConstraint {
 		public Expression expression;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static On parse(ParserContext context) {
 			context.consume(ON);
 			On on = new On();
@@ -35,6 +41,9 @@ public abstract class JoinConstraint implements Node {
 			return on;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(ON).append(expression);
@@ -47,6 +56,9 @@ public abstract class JoinConstraint implements Node {
 	public static class Using extends JoinConstraint {
 		public List<String> columns = new ArrayList<>();
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Using parse(ParserContext context) {
 			context.consume(USING, LEFT_PAREN);
 			Using using = new Using();
@@ -55,6 +67,9 @@ public abstract class JoinConstraint implements Node {
 			return using;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(USING, LEFT_PAREN).appendIdentifiers(columns).append(RIGHT_PAREN);

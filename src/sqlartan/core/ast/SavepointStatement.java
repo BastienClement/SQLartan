@@ -16,11 +16,17 @@ public class SavepointStatement implements Statement {
 		this.savepoint = savepoint;
 	}
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static SavepointStatement parse(ParserContext context) {
 		context.consume(SAVEPOINT);
 		return new SavepointStatement(context.consumeIdentifier());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(SAVEPOINT).appendIdentifier(savepoint);

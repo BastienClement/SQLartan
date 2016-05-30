@@ -15,6 +15,9 @@ public class TypeDefinition implements Node {
 	public Optional<LiteralValue.Numeric> length = Optional.empty();
 	public Optional<LiteralValue.Numeric> scale = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static TypeDefinition parse(ParserContext context) {
 		TypeDefinition type = new TypeDefinition();
 		type.name = context.consumeIdentifier();
@@ -35,6 +38,9 @@ public class TypeDefinition implements Node {
 		return type;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.appendIdentifier(name);

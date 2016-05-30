@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Operator.COMMA;
  */
 @SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public class CoreSelectStatement extends SelectStatement.CoreProperties implements SelectStatement.Core {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CoreSelectStatement parse(ParserContext context) {
 		context.consume(SELECT);
 		CoreSelectStatement select = new CoreSelectStatement();

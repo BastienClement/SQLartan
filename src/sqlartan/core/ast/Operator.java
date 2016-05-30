@@ -34,11 +34,17 @@ public enum Operator implements Node.KeywordOrOperator {
 		this.token = Token.Operator.dummyFor(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Token.Operator token() { return token; }
 

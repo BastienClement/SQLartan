@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Keyword.ORDER;
 public class OrderByClause implements Node {
 	public List<OrderingTerm> terms;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static OrderByClause parse(ParserContext context) {
 		OrderByClause orderBy = new OrderByClause();
 		context.consume(ORDER, BY);
@@ -17,6 +20,9 @@ public class OrderByClause implements Node {
 		return orderBy;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(ORDER, BY).append(terms);

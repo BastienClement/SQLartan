@@ -10,6 +10,9 @@ public class WhenClause implements Node {
 	public Expression when;
 	public Expression then;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static WhenClause parse(ParserContext context) {
 		context.consume(WHEN);
 		WhenClause when = new WhenClause();
@@ -19,6 +22,9 @@ public class WhenClause implements Node {
 		return when;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(WHEN).append(when)

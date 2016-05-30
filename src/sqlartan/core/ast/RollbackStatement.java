@@ -12,6 +12,9 @@ import static sqlartan.core.ast.Keyword.*;
 public class RollbackStatement implements Statement {
 	public Optional<String> savepoint = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static RollbackStatement parse(ParserContext context) {
 		context.consume(ROLLBACK);
 		context.tryConsume(TRANSACTION);
@@ -26,6 +29,9 @@ public class RollbackStatement implements Statement {
 		return rollback;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(ROLLBACK);

@@ -13,6 +13,9 @@ public abstract class AlterTableStatement implements Statement {
 	public Optional<String> schema = Optional.empty();
 	public String table;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static AlterTableStatement parse(ParserContext context) {
 		context.consume(ALTER, TABLE);
 		AlterTableStatement alter;
@@ -32,6 +35,9 @@ public abstract class AlterTableStatement implements Statement {
 		return alter;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(ALTER, TABLE)
@@ -45,6 +51,9 @@ public abstract class AlterTableStatement implements Statement {
 	public static class RenameTo extends AlterTableStatement {
 		public String name;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static RenameTo parse(ParserContext context) {
 			context.consume(RENAME, TO);
 			RenameTo rename = new RenameTo();
@@ -52,6 +61,9 @@ public abstract class AlterTableStatement implements Statement {
 			return rename;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -66,6 +78,9 @@ public abstract class AlterTableStatement implements Statement {
 	public static class AddColumn extends AlterTableStatement {
 		public ColumnDefinition column;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static AddColumn parse(ParserContext context) {
 			context.consume(ADD, COLUMN);
 			AddColumn addColumn = new AddColumn();
@@ -73,6 +88,9 @@ public abstract class AlterTableStatement implements Statement {
 			return addColumn;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

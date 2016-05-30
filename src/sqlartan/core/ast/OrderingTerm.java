@@ -15,6 +15,9 @@ public class OrderingTerm implements Node {
 	public Optional<String> collation = Optional.empty();
 	public Ordering ordering = Ordering.None;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	static OrderingTerm parse(ParserContext context) {
 		OrderingTerm ordering = new OrderingTerm();
 		ordering.expression = Expression.parse(context);
@@ -25,6 +28,9 @@ public class OrderingTerm implements Node {
 		return ordering;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(expression);

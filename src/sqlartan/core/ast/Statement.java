@@ -9,6 +9,9 @@ import static sqlartan.util.Matching.match;
  * https://www.sqlite.org/syntaxdiagrams.html#sql-stmt
  */
 public interface Statement extends Node {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	static Statement parse(ParserContext context) {
 		return match(context.current(), Statement.class)
 			.when(EXPLAIN, () -> ExplainStatement.parse(context))

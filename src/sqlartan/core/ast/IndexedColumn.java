@@ -16,6 +16,9 @@ public class IndexedColumn implements Node {
 	public Optional<String> collate = Optional.empty();
 	public Ordering ordering = Ordering.None;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static IndexedColumn parse(ParserContext context) {
 		IndexedColumn column = new IndexedColumn();
 		column.expression = Expression.parse(context);
@@ -28,6 +31,9 @@ public class IndexedColumn implements Node {
 		return column;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(expression);

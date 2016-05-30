@@ -7,6 +7,9 @@ import static sqlartan.core.ast.Keyword.WHERE;
 public class WhereClause implements Node {
 	public Expression expression;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static WhereClause parse(ParserContext context) {
 		WhereClause where = new WhereClause();
 		context.consume(WHERE);
@@ -14,6 +17,9 @@ public class WhereClause implements Node {
 		return where;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(WHERE).append(expression);

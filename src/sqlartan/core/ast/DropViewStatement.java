@@ -10,10 +10,16 @@ import static sqlartan.core.ast.Keyword.VIEW;
 public class DropViewStatement extends DropStatement {
 	public String view;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DropViewStatement parse(ParserContext context) {
 		return parseDrop(context, VIEW, DropViewStatement::new, drop -> drop.view = context.consumeIdentifier());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		super.toSQL(sql);

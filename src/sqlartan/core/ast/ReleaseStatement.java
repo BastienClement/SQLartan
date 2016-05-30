@@ -12,6 +12,9 @@ import static sqlartan.core.ast.Keyword.SAVEPOINT;
 public class ReleaseStatement implements Statement {
 	public String savepoint;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static Statement parse(ParserContext context) {
 		context.consume(RELEASE);
 		context.tryConsume(SAVEPOINT);
@@ -20,6 +23,9 @@ public class ReleaseStatement implements Statement {
 		return release;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(RELEASE).appendIdentifier(savepoint);

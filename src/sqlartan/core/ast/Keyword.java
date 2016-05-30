@@ -48,11 +48,17 @@ public enum Keyword implements Node.KeywordOrOperator {
 		this.token = Token.Keyword.dummyFor(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Token.Keyword token() { return token; }
 

@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Keyword.VACUUM;
 public class VacuumStatement implements Statement {
 	public static final VacuumStatement instance = new VacuumStatement();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static VacuumStatement parse(ParserContext context) {
 		context.consume(VACUUM);
 		return instance;
@@ -17,6 +20,9 @@ public class VacuumStatement implements Statement {
 
 	private VacuumStatement() {}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(VACUUM);

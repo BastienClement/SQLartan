@@ -27,6 +27,9 @@ public class ForeignKeyClause implements Node {
 	public Deferrable deferrable = Deferrable.Undefined;
 	public Initially initially = Initially.Undefined;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ForeignKeyClause parse(ParserContext context) {
 		ForeignKeyClause fk = new ForeignKeyClause();
 		context.consume(REFERENCES);
@@ -75,6 +78,9 @@ public class ForeignKeyClause implements Node {
 		return fk;
 	}
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	private static Action parseAction(ParserContext context) {
 		if (context.tryConsume(SET, NULL)) {
 			return Action.SetNull;
@@ -90,6 +96,9 @@ public class ForeignKeyClause implements Node {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(REFERENCES).appendIdentifier(table);

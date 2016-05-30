@@ -17,6 +17,9 @@ import static sqlartan.util.Matching.match;
 public abstract class TableConstraint implements Node {
 	public Optional<String> name = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static TableConstraint parse(ParserContext context) {
 		String name = null;
 		if (context.tryConsume(CONSTRAINT)) {
@@ -34,6 +37,9 @@ public abstract class TableConstraint implements Node {
 		return constraint;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		name.ifPresent(n -> sql.append(CONSTRAINT).appendIdentifier(n));
@@ -46,6 +52,9 @@ public abstract class TableConstraint implements Node {
 		public List<IndexedColumn> columns;
 		public ConflictClause onConflict;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Index parse(ParserContext context) {
 			Index index = new Index();
 			if (context.tryConsume(PRIMARY, KEY)) {
@@ -61,6 +70,9 @@ public abstract class TableConstraint implements Node {
 			return index;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -80,6 +92,9 @@ public abstract class TableConstraint implements Node {
 	public static class Check extends TableConstraint {
 		public Expression expression;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Check parse(ParserContext context) {
 			Check check = new Check();
 			context.consume(CHECK, LEFT_PAREN);
@@ -88,6 +103,9 @@ public abstract class TableConstraint implements Node {
 			return check;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -99,6 +117,9 @@ public abstract class TableConstraint implements Node {
 		public List<String> columns;
 		public ForeignKeyClause foreignKey;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static ForeignKey parse(ParserContext context) {
 			ForeignKey fk = new ForeignKey();
 			context.consume(FOREIGN, KEY, LEFT_PAREN);
@@ -108,6 +129,9 @@ public abstract class TableConstraint implements Node {
 			return fk;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

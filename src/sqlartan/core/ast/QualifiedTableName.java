@@ -17,6 +17,9 @@ public class QualifiedTableName extends SelectSource {
 	public Indexed indexed = Indexed.Undefined;
 	public String index;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static QualifiedTableName parse(ParserContext context) {
 		return parse(context, false);
 	}
@@ -35,6 +38,9 @@ public class QualifiedTableName extends SelectSource {
 		return table;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.appendSchema(schema).appendIdentifier(name);

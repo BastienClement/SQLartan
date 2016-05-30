@@ -18,6 +18,9 @@ public enum ConflictClause implements Node.Enumerated {
 		this.keyword = keyword;
 	}
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ConflictClause parse(ParserContext context) {
 		if (context.tryConsume(ON, CONFLICT)) {
 			switch (context.consume(Token.Keyword.class).node()) {
@@ -38,6 +41,9 @@ public enum ConflictClause implements Node.Enumerated {
 		return None;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		if (this != None) {

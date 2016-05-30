@@ -30,6 +30,9 @@ public class InsertStatement implements Statement {
 			this.keywords = keywords;
 		}
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Type parse(ParserContext context) {
 			if (context.tryConsume(REPLACE)) {
 				return Replace;
@@ -55,6 +58,9 @@ public class InsertStatement implements Statement {
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(keywords);
@@ -66,6 +72,9 @@ public class InsertStatement implements Statement {
 	public String table;
 	public List<String> columns = new ArrayList<>();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static InsertStatement parse(ParserContext context) {
 		Type type = Type.parse(context);
 		Optional<String> schema = context.optConsumeSchema();
@@ -94,6 +103,9 @@ public class InsertStatement implements Statement {
 		return insert;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(type).append(INTO)
@@ -109,12 +121,18 @@ public class InsertStatement implements Statement {
 	public static class Select extends InsertStatement {
 		public SelectStatement select;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Select parse(ParserContext context) {
 			Select select = new Select();
 			select.select = SelectStatement.parse(context);
 			return select;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);
@@ -129,11 +147,17 @@ public class InsertStatement implements Statement {
 		public static final Default instance = new Default();
 		private Default() {}
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Default parse(ParserContext context) {
 			context.consume(DEFAULT, VALUES);
 			return instance;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

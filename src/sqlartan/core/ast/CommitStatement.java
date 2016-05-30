@@ -11,6 +11,9 @@ import static sqlartan.core.ast.Keyword.*;
 public class CommitStatement implements Statement {
 	public static final CommitStatement instance = new CommitStatement();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CommitStatement parse(ParserContext context) {
 		if (!context.tryConsume(COMMIT)) {
 			context.consume(END);
@@ -21,6 +24,9 @@ public class CommitStatement implements Statement {
 
 	private CommitStatement() {}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(COMMIT);

@@ -31,6 +31,9 @@ public class CreateTriggerStatement extends CreateStatement {
 	public Optional<Expression> when = Optional.empty();
 	public List<Statement> body;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CreateTriggerStatement parse(ParserContext context) {
 		context.consume(CREATE);
 		CreateTriggerStatement trigger = new CreateTriggerStatement();
@@ -97,6 +100,9 @@ public class CreateTriggerStatement extends CreateStatement {
 		return trigger;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(CREATE);

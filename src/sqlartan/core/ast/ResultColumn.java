@@ -12,6 +12,9 @@ import static sqlartan.core.ast.Operator.MUL;
  */
 @SuppressWarnings({ "WeakerAccess", "OptionalUsedAsFieldOrParameterType" })
 public abstract class ResultColumn implements Node {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ResultColumn parse(ParserContext context) {
 		return context.alternatives(
 			Wildcard::parse,
@@ -27,6 +30,9 @@ public abstract class ResultColumn implements Node {
 		public Expression expression;
 		public Optional<String> alias = Optional.empty();
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Expr parse(ParserContext context) {
 			Expr expr = new Expr();
 			expr.expression = Expression.parse(context);
@@ -36,6 +42,9 @@ public abstract class ResultColumn implements Node {
 			return expr;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(expression);
@@ -49,6 +58,9 @@ public abstract class ResultColumn implements Node {
 	public static class Wildcard extends ResultColumn {
 		public static final Wildcard instance = new Wildcard();
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Wildcard parse(ParserContext context) {
 			context.consume(MUL);
 			return instance;
@@ -56,6 +68,9 @@ public abstract class ResultColumn implements Node {
 
 		private Wildcard() {}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(MUL);
@@ -68,6 +83,9 @@ public abstract class ResultColumn implements Node {
 	public static class TableWildcard extends ResultColumn {
 		public String table;
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static TableWildcard parse(ParserContext context) {
 			TableWildcard wildcard = new TableWildcard();
 			wildcard.table = context.consumeIdentifier();
@@ -75,6 +93,9 @@ public abstract class ResultColumn implements Node {
 			return wildcard;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.appendIdentifier(table).append(DOT, MUL);

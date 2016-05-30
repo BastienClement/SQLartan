@@ -10,6 +10,9 @@ import static sqlartan.core.ast.Operator.SEMICOLON;
  * https://www.sqlite.org/syntax/sql-stmt-list.html
  */
 public class StatementList extends ArrayList<Statement> implements Node {
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static StatementList parse(ParserContext context) {
 		StatementList statementList = new StatementList();
 		do {
@@ -19,6 +22,9 @@ public class StatementList extends ArrayList<Statement> implements Node {
 		return statementList;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(this, SEMICOLON);

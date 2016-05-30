@@ -14,9 +14,7 @@ import static sqlartan.core.ast.Keyword.*;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "WeakerAccess" })
 public interface SelectStatement extends Statement {
 	/**
-	 * General SELECT statement parser
-	 * Currently delegates to Simple parser.
-	 * TODO: handle compound selects here
+	 * @see sqlartan.core.ast.parser.Parser
 	 */
 	static SelectStatement parse(ParserContext context) {
 		Compoundable lhs = Core.parse(context);
@@ -82,6 +80,9 @@ public interface SelectStatement extends Statement {
 	 * The core a SELECT statement
 	 */
 	interface Core extends SelectStatement, Compoundable {
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		static Core parse(ParserContext context) {
 			if (context.current(VALUES)) {
 				return ValuesStatement.parse(context);
@@ -99,6 +100,9 @@ public interface SelectStatement extends Statement {
 		public List<Expression> groupBy = new ArrayList<>();
 		public Optional<Expression> having = Optional.empty();
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(SELECT);
@@ -120,6 +124,9 @@ public interface SelectStatement extends Statement {
 		public Optional<OrderByClause> orderBy = Optional.empty();
 		public Optional<LimitClause> limit = Optional.empty();
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			super.toSQL(sql);

@@ -21,6 +21,9 @@ public class CreateViewStatement extends CreateStatement {
 	public List<String> columns = new ArrayList<>();
 	public SelectStatement as;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CreateViewStatement parse(ParserContext context) {
 		context.consume(CREATE);
 		CreateViewStatement create = new CreateViewStatement();
@@ -38,6 +41,9 @@ public class CreateViewStatement extends CreateStatement {
 		return create;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(CREATE);

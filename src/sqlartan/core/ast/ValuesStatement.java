@@ -11,6 +11,9 @@ import static sqlartan.core.ast.Operator.RIGHT_PAREN;
 public class ValuesStatement implements SelectStatement.Core {
 	public List<List<Expression>> values;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ValuesStatement parse(ParserContext context) {
 		ValuesStatement values = new ValuesStatement();
 		context.consume(VALUES);
@@ -27,6 +30,9 @@ public class ValuesStatement implements SelectStatement.Core {
 		return values;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(VALUES)

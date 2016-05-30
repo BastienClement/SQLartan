@@ -21,6 +21,9 @@ public class CreateIndexStatement extends CreateStatement {
 	public List<IndexedColumn> columns;
 	public Optional<WhereClause> where = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static CreateIndexStatement parse(ParserContext context) {
 		context.consume(CREATE);
 		CreateIndexStatement create = new CreateIndexStatement();
@@ -57,6 +60,9 @@ public class CreateIndexStatement extends CreateStatement {
 		return create;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(CREATE);

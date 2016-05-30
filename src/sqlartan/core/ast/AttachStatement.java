@@ -12,6 +12,9 @@ public class AttachStatement implements Statement {
 	public Expression file;
 	public String schema;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static AttachStatement parse(ParserContext context) {
 		context.consume(ATTACH);
 		context.tryConsume(DATABASE);
@@ -22,6 +25,9 @@ public class AttachStatement implements Statement {
 		return attach;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(ATTACH)

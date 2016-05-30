@@ -15,6 +15,9 @@ public class ReindexStatement implements Statement {
 	public Optional<String> schema = Optional.empty();
 	public String target;
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static ReindexStatement parse(ParserContext context) {
 		context.consume(REINDEX);
 		ReindexStatement reindex = new ReindexStatement();
@@ -23,6 +26,9 @@ public class ReindexStatement implements Statement {
 		return reindex;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(REINDEX);

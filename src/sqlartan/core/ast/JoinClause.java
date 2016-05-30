@@ -24,6 +24,9 @@ public class JoinClause extends SelectSource {
 			this.keyword = keyword;
 		}
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Join parse(ParserContext context) {
 			if (context.tryConsume(COMMA)) {
 				return Inner;
@@ -50,6 +53,9 @@ public class JoinClause extends SelectSource {
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(keyword).append(JOIN);
@@ -62,6 +68,9 @@ public class JoinClause extends SelectSource {
 	public SelectSource rhs;
 	public Optional<JoinConstraint> constraint = Optional.empty();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(lhs);

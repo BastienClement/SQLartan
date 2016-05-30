@@ -15,6 +15,9 @@ public class DeleteStatement implements Statement {
 	public Optional<OrderByClause> orderBy = Optional.empty();
 	public Optional<LimitClause> limit = Optional.empty();
 
+	/**
+	 * @see sqlartan.core.ast.parser.Parser
+	 */
 	public static DeleteStatement parse(ParserContext context) {
 		DeleteStatement delete = new DeleteStatement();
 		context.consume(DELETE, FROM);
@@ -31,6 +34,9 @@ public class DeleteStatement implements Statement {
 		return delete;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(DELETE, FROM).append(table)

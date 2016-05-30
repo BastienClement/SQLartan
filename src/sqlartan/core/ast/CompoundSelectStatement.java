@@ -24,6 +24,9 @@ public class CompoundSelectStatement implements SelectStatement, SelectStatement
 			this.keywords  = keywords;
 		}
 
+		/**
+		 * @see sqlartan.core.ast.parser.Parser
+		 */
 		public static Operator parse(ParserContext context) {
 			switch (context.consume(Token.Keyword.class).node()) {
 				case UNION:
@@ -41,6 +44,9 @@ public class CompoundSelectStatement implements SelectStatement, SelectStatement
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void toSQL(Builder sql) {
 			sql.append(keywords);
@@ -54,6 +60,9 @@ public class CompoundSelectStatement implements SelectStatement, SelectStatement
 	public Optional<OrderByClause> orderBy = Optional.empty();
 	public Optional<LimitClause> limit = Optional.empty();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void toSQL(Builder sql) {
 		sql.append(lhs).append(operator).append(rhs);
