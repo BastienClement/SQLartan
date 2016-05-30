@@ -10,7 +10,9 @@ import sqlartan.core.ast.token.Tokenizable;
  */
 public interface Node extends Buildable {
 	/**
-	 * Serialize this node back to a SQL string
+	 * Serialize this node back to a SQL string.
+	 *
+	 * @return a string representation of the node
 	 */
 	default String toSQL() {
 		Builder sql = new Builder();
@@ -29,12 +31,12 @@ public interface Node extends Buildable {
 	}
 
 	/**
-	 * Enumerated nodes
+	 * Enumerated nodes.
 	 */
 	interface Enumerated extends Node {}
 
 	/**
-	 * Common super-type for Keywords and Operators
+	 * Common super-type for Keywords and Operators.
 	 */
 	interface KeywordOrOperator extends Enumerated, Tokenizable<Token.Wrapper<? extends KeywordOrOperator>> {}
 }

@@ -610,7 +610,6 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 *
 	 * @throws SQLException
-	 * @throws IOException
 	 */
 	public String export() throws SQLException {
 		return createSQLTransaction(getTablesSQL() + getTablesDataSQL() + getViewsSQL() + getTriggersSQL());
@@ -622,7 +621,6 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 *
 	 * @throws SQLException
-	 * @throws IOException
 	 */
 	public String exportTablesData() throws SQLException {
 		return createSQLTransaction(getTablesDataSQL());
@@ -634,7 +632,6 @@ public class Database implements AutoCloseable {
 	 * @return the SQL
 	 *
 	 * @throws SQLException
-	 * @throws IOException
 	 */
 	public String exportStructure() throws SQLException {
 		return createSQLTransaction(getTablesSQL() + getViewsSQL() + getTriggersSQL());

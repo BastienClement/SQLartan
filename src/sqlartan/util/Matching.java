@@ -257,7 +257,7 @@ public class Matching<T> {
 	/**
 	 * A matched expression.
 	 * <p>
-	 * This class exposes the same API as Returning<R>, but no more cases
+	 * This class exposes the same API as Returning, but no more cases
 	 * will be tested for matching.
 	 *
 	 * @param <R> the type of result of the match expression

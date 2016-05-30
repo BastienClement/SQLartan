@@ -12,11 +12,24 @@ import java.util.function.Function;
  */
 abstract class ImmutableListImpl<T, U> extends AbstractList<T> implements ImmutableList<T> {
 	/**
+	 * The elements in this ImmutableList
+	 */
+	protected final U[] elements;
+
+	/**
+	 * @param elements the elements of this immutable list
+	 */
+	private ImmutableListImpl(U[] elements) {
+		this.elements = elements;
+	}
+
+	/**
 	 * Constructs a new list from an array of elements.
 	 * The array will be cloned to ensure immutability.
 	 *
 	 * @param elements an array of elements to clone
 	 * @param <U>      the type of elements in the array
+	 * @return a list containing the given elements
 	 */
 	@SuppressWarnings("unchecked")
 	static <U> ImmutableList<U> from(U[] elements) {
@@ -32,6 +45,7 @@ abstract class ImmutableListImpl<T, U> extends AbstractList<T> implements Immuta
 	 *
 	 * @param elements an immutable array of elements
 	 * @param <U>      the type of elements in the array
+	 * @return a list containing the given elements
 	 */
 	static <U> ImmutableList<U> wrap(U[] elements) {
 		return new Simple<>(elements);
@@ -47,21 +61,11 @@ abstract class ImmutableListImpl<T, U> extends AbstractList<T> implements Immuta
 	 * @param mapper   a mapper function
 	 * @param <U>      the type of elements from the array
 	 * @param <R>      the return type of the mapper function
+	 * @return a list containing the given elements with an associated mapping
+	 * function
 	 */
 	static <U, R> ImmutableList<R> mapping(U[] elements, Function<? super U, ? extends R> mapper) {
 		return new Mapping<>(elements, mapper);
-	}
-
-	/**
-	 * The elements in this ImmutableList
-	 */
-	protected final U[] elements;
-
-	/**
-	 * @param elements the elements of this immutable list
-	 */
-	private ImmutableListImpl(U[] elements) {
-		this.elements = elements;
 	}
 
 	/**

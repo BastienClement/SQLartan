@@ -16,6 +16,8 @@ public interface IterableAdapter<T> extends StreamableAdapter<T> {
 	/**
 	 * Returns the characteristics of a Spliterator built from the Iterator
 	 * of the implementer. By default, assume IMMUTABLE and ORDERED.
+	 *
+	 * @return characteristics of the spliterator
 	 */
 	default int spliteratorCharacteristics() {
 		return Spliterator.IMMUTABLE | Spliterator.ORDERED;
