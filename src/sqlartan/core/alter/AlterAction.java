@@ -14,7 +14,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * An alter action structur representing an action which can modify a table structure
+ * An alter action structure representing an action which can modify a table
+ * structure.
  */
 public abstract class AlterAction {
 	/**
@@ -35,7 +36,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * execute action
+	 * Executes the action.
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -45,7 +46,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * Execute the specific action, using inherit
+	 * Executes the specific action, using inheritance.
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -53,9 +54,9 @@ public abstract class AlterAction {
 	protected abstract void executeAction() throws SQLException, ParseException;
 
 	/**
-	 * Update the table definition in the database
+	 * Updates the table definition in the database.
 	 *
-	 * @param tableDefinition
+	 * @param tableDefinition the table definition
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -98,7 +99,9 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * Look in database for table definition
+	 * Looks in database for table definition.
+	 *
+	 * @return the table definition
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -113,7 +116,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * update triggers referancing this table
+	 * Updates triggers referencing this table.
 	 *
 	 * @param trigger
 	 * @throws SQLException
@@ -155,9 +158,11 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * Update statement (select, update, insert, Delete)
+	 * Updates statement (SELECT, UPDATE, INSERT, DELETE).
 	 *
-	 * @param statement
+	 * @param statement the statement
+	 * @return true if the operation was successful
+	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -241,9 +246,11 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * update select statement
+	 * Updates select statement.
 	 *
-	 * @param select
+	 * @param select the select
+	 * @return true if the operation was successful
+	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -374,10 +381,11 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * update from clause
+	 * Updates from clause.
 	 *
-	 * @param source
-	 * @return
+	 * @param source the source
+	 * @return true if the operation was successful
+	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -403,10 +411,11 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * update expression (column)
+	 * Updates expression (column).
 	 *
-	 * @param exp
-	 * @return
+	 * @param exp the expression
+	 * @return true if the operation was successful
+	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -427,9 +436,11 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * Checks if the columns exists.
 	 *
-	 * @param column
+	 * @param column the column
+	 * @return true if the operation was successful
+	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */

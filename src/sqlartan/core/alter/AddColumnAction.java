@@ -7,13 +7,13 @@ import sqlartan.core.ast.token.TokenizeException;
 import java.sql.SQLException;
 
 /**
- * An alter action structur representing an action on table which can add a column to the table
+ * An alter action structure representing an action on table which can add
+ * a column to the table.
  */
 public class AddColumnAction extends AlterColumnAction {
 	/**
-	 *
-	 * @param table
-	 * @param column
+	 * @param table  the table
+	 * @param column the column
 	 * @throws TokenizeException
 	 */
 	AddColumnAction(Table table, TableColumn column) throws TokenizeException {
@@ -21,14 +21,14 @@ public class AddColumnAction extends AlterColumnAction {
 	}
 
 	/**
-	 * execute action, add column to action and save it to database
+	 * Execute action, add column to action and save it to database.
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
 	@Override
 	public void executeAction() throws SQLException, ParseException {
-		String query = "ALTER TABLE " + table.fullName() + "  ADD COLUMN " + getColumnDefinition().toSQL();
+		String query = "ALTER TABLE " + table.fullName() + "  ADD COLUMN " + columnDefinition().toSQL();
 		table.database().execute(query);
 	}
 }

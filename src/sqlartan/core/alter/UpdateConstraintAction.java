@@ -8,20 +8,20 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * An alter action structur representing an action on constraints
+ * An alter action structure representing an action on constraints.
  */
 public abstract class UpdateConstraintAction extends AlterAction {
 	/**
-	 * @param table
+	 * @param table the table
 	 */
 	public UpdateConstraintAction(Table table) {
 		super(table);
 	}
 
 	/**
-	 * update table definition, based on new constraints definitions
+	 * Update table definition, based on new constraints definitions.
 	 *
-	 * @param constraints
+	 * @param constraints the constraints
 	 * @throws SQLException
 	 * @throws ParseException
 	 */

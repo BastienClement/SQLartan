@@ -9,18 +9,19 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * An alter action structur representing an action which can modify a column from a table structure
+ * An alter action structure representing an action which can modify
+ * a column from a table structure.
  */
 public class ModifyColumnAction extends UpdateColumnAction {
 	/**
-	 * the original name of the column
+	 * The original name of the column
 	 */
 	private final String originalName;
 
 	/**
-	 * @param table table of the column
-	 * @param column column to modify
-	 * @param originalName original name of the column
+	 * @param table the table of the column
+	 * @param column the column to modify
+	 * @param originalName the original name of the column
 	 * @throws TokenizeException
 	 */
 	ModifyColumnAction(Table table, TableColumn column, String originalName) throws TokenizeException {
@@ -29,7 +30,7 @@ public class ModifyColumnAction extends UpdateColumnAction {
 	}
 
 	/**
-	 * execute action, modify actual definition and save it in database
+	 * Executes action, modify actual definition and save it in database.
 	 *
 	 * @throws ParseException
 	 * @throws SQLException
@@ -38,7 +39,7 @@ public class ModifyColumnAction extends UpdateColumnAction {
 	public void executeAction() throws ParseException, SQLException {
 		List<ColumnDefinition> columns = getTableDefinition().columns;
 		ColumnDefinition definition = columns.stream().filter(col -> col.name.equals(originalName)).findFirst().get();
-		columns.set(columns.indexOf(definition), getColumnDefinition());
+		columns.set(columns.indexOf(definition), columnDefinition());
 
 		update(columns);
 	}

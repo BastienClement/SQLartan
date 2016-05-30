@@ -12,7 +12,7 @@ import sqlartan.core.ast.token.TokenizeException;
 import java.util.Optional;
 
 /**
- * An alter action structur allowing to modify a column structure.
+ * An alter action structure allowing to modify a column structure.
  */
 public abstract class AlterColumnAction extends AlterAction {
 	/**
@@ -21,14 +21,13 @@ public abstract class AlterColumnAction extends AlterAction {
 	private final TableColumn column;
 
 	/**
-	 * The culumn definition, generated from the column
+	 * The column definition, generated from the column
 	 */
 	protected final ColumnDefinition columnDefinition;
 
 	/**
-	 *
-	 * @param table
-	 * @param column
+	 * @param table  the table
+	 * @param column the column
 	 * @throws TokenizeException
 	 */
 	public AlterColumnAction(Table table, TableColumn column) throws TokenizeException {
@@ -38,28 +37,29 @@ public abstract class AlterColumnAction extends AlterAction {
 	}
 
 	/**
-	 * Get the column
+	 * Gets the column.
 	 *
-	 * @return column
+	 * @return the column
 	 */
 	public TableColumn column() {
 		return column;
 	}
 
 	/**
-	 * Get the column definition
+	 * Gets the column definition.
 	 *
-	 * @return columnDefinition
+	 * @return the column definition
 	 */
-	public ColumnDefinition getColumnDefinition() {
+	public ColumnDefinition columnDefinition() {
 		return columnDefinition;
 	}
 
 	/**
-	 * Generate column definition
+	 * Generates column definition.
+	 *
+	 * @return the column definition
 	 *
 	 * @throws TokenizeException
-	 * @return columnDefinition
 	 */
 	private ColumnDefinition createDefinition() throws TokenizeException {
 		ColumnDefinition definition = new ColumnDefinition();

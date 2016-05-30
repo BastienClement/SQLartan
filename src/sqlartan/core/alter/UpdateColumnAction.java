@@ -10,12 +10,13 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * An alter action structur representing an action on column which woul modify table structure
+ * An alter action structure representing an action on column which would
+ * modify table structure.
  */
 public abstract class UpdateColumnAction extends AlterColumnAction {
 	/**
-	 * @param table
-	 * @param column
+	 * @param table the table
+	 * @param column the column
 	 * @throws TokenizeException
 	 */
 	UpdateColumnAction(Table table, TableColumn column) throws TokenizeException {
@@ -23,9 +24,9 @@ public abstract class UpdateColumnAction extends AlterColumnAction {
 	}
 
 	/**
-	 * update table structure, based on columns definition
+	 * Update table structure, based on columns definition.
 	 *
-	 * @param columns columns definition
+	 * @param columns the columns definition
 	 * @throws SQLException
 	 * @throws ParseException
 	 */

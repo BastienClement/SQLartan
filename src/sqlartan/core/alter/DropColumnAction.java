@@ -9,14 +9,13 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * An alter action structur representing an action which can drop a column from a table structure
+ * An alter action structure representing an action which can drop a column
+ * from a table structure.
  */
 public class DropColumnAction extends UpdateColumnAction{
-
 	/**
-	 *
-	 * @param table
-	 * @param column
+	 * @param table the table
+	 * @param column the column
 	 * @throws TokenizeException
 	 */
 	DropColumnAction(Table table, TableColumn column) throws TokenizeException {
@@ -24,7 +23,7 @@ public class DropColumnAction extends UpdateColumnAction{
 	}
 
 	/**
-	 * execute the action, drop the column and save changes to database
+	 * Execute the action, drop the column and save changes to database.
 	 *
 	 * @throws SQLException
 	 * @throws ParseException

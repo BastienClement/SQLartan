@@ -12,8 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * An alter table structur allowing to modify a table structure.
- * Instances of this class are created by calling .alterTable() on a Table object.
+ * An alter table structure allowing to modify a table structure. Instances
+ * of this class are created by calling .alterTable() on a Table object.
  */
 public class AlterTable {
 	/**
@@ -39,7 +39,7 @@ public class AlterTable {
 	}
 
 	/**
-	 * Execute all the actions registred one by one
+	 * Executes all the actions registered one by one.
 	 */
 	public void execute() {
 		// execute all registered actions
@@ -56,14 +56,16 @@ public class AlterTable {
 	}
 
 	/**
-	 * Return all the actions to be executed
+	 * Returns all the actions to be executed.
+	 *
+	 * @return all the actions to be executed.
 	 */
 	public List<AlterAction> actions() {
 		return actions;
 	}
 
 	/**
-	 * Add an action which add a column to the stack
+	 * Adds an action which add a column to the stack.
 	 *
 	 * @param column the column concerned by the action
 	 */
@@ -78,7 +80,7 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add an action which drop a column to the stack
+	 * Adds an action which drop a column to the stack.
 	 *
 	 * @param column the column to drop
 	 */
@@ -97,7 +99,7 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add an action which modify a column to the stack
+	 * Adds an action which modify a column to the stack.
 	 *
 	 * @param column the column to modify
 	 */
@@ -114,9 +116,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add an action which modify the primary key to the stack
+	 * Adds an action which modify the primary key to the stack.
 	 *
-	 * @param columns the columna composing the primary key
+	 * @param columns the column composing the primary key
 	 */
 	public void setPrimaryKey(List<TableColumn> columns) {
 		for (TableColumn column : columns) {
@@ -127,9 +129,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add an action on column to the stack
+	 * Adds an action on column to the stack.
 	 *
-	 * @param column column concerned by the action
+	 * @param column the column concerned by the action
 	 * @param action the action to add
 	 */
 	private void add(TableColumn column, AlterColumnAction action) {
@@ -141,7 +143,7 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add an action to the stack
+	 * Adds an action to the stack.
 	 *
 	 * @param action the action to add
 	 */
@@ -151,9 +153,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * look for unnecessary actions
+	 * looks for unnecessary actions.
 	 *
-	 * @param column
+	 * @param column the column
 	 */
 	private void checkColumnActions(TableColumn column) {
 		AlterColumnAction addAction = findLastAddColumnAction(column);
@@ -165,7 +167,7 @@ public class AlterTable {
 				columnsActions.get(column.name()).remove(dropAction);
 				actions.remove(dropAction);
 			}
-			if (columnsActions.get(column.name()).indexOf(dropAction) < columnsActions.get(column.name()).indexOf(addAction) && table.column(column.name()).isPresent() && compare(dropAction.getColumnDefinition(), addAction.getColumnDefinition())) {
+			if (columnsActions.get(column.name()).indexOf(dropAction) < columnsActions.get(column.name()).indexOf(addAction) && table.column(column.name()).isPresent() && compare(dropAction.columnDefinition(), addAction.columnDefinition())) {
 				columnsActions.get(column.name()).remove(addAction);
 				actions.remove(addAction);
 				columnsActions.get(column.name()).remove(dropAction);
@@ -175,38 +177,41 @@ public class AlterTable {
 	}
 
 	/**
-	 * Retrieve last add action in the stack
+	 * Retrieves the last add action in the stack.
 	 *
-	 * @param column
+	 * @param column the column
+	 * @return the last add action in the stack
 	 */
 	private AlterColumnAction findLastAddColumnAction(TableColumn column) {
 		if (columnsActions.get(column.name()) == null)
 			return null;
-		AlterColumnAction[] addActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof AddColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] addActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof AddColumnAction).toArray(AlterColumnAction[]::new);
 		if (addActions.length == 0)
 			return null;
 		return addActions[addActions.length - 1];
 	}
 
 	/**
-	 * Retrieve last drop action in the stack
+	 * Retrieves the last drop action in the stack.
 	 *
-	 * @param column
+	 * @param column the column
+	 * @return the last drop action in the stack
 	 */
 	private AlterColumnAction findLastDropColumnAction(TableColumn column) {
 		if (columnsActions.get(column.name()) == null)
 			return null;
-		AlterColumnAction[] dropActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof DropColumnAction).toArray(size -> new AlterColumnAction[size]);
+		AlterColumnAction[] dropActions = columnsActions.get(column.name()).stream().filter(action -> action instanceof DropColumnAction).toArray(AlterColumnAction[]::new);
 		if (dropActions.length == 0)
 			return null;
 		return dropActions[dropActions.length - 1];
 	}
 
 	/**
-	 * Compare two columns definitions, with name, type, ...
+	 * Compares two columns definitions, with name, type, ...
 	 *
-	 * @param col1
-	 * @param col2
+	 * @param col1 the first column
+	 * @param col2 the second column
+	 * @return whether col1 is less than col2
 	 */
 	private boolean compare(ColumnDefinition col1, ColumnDefinition col2) {
 		if (!col1.name.equals(col2.name))
