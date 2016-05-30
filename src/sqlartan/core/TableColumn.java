@@ -4,7 +4,7 @@ import sqlartan.core.alter.AlterTable;
 import java.util.Optional;
 
 /**
- * Defines the column of a table
+ * A column of a table
  */
 public class TableColumn extends Column {
 	/**

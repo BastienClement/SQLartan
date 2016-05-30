@@ -173,7 +173,7 @@ public abstract class Result implements ReadOnlyResult, AutoCloseable, IterableS
 	}
 
 	/**
-	 * Result of an SELECT-like statement.
+	 * The result of an SELECT-like statement.
 	 */
 	static class QueryResult extends Result implements IterableAdapter<Row> {
 		/**

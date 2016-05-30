@@ -4,7 +4,7 @@ import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
 
 /**
- * Defines a trigger of a database
+ * A trigger of a database
  */
 public class Trigger
 {
