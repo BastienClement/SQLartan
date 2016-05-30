@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * TODO
+ * An alter action structur representing an action on column which woul modify table structure
  */
 public abstract class UpdateColumnAction extends AlterColumnAction {
 	/**
@@ -23,9 +23,9 @@ public abstract class UpdateColumnAction extends AlterColumnAction {
 	}
 
 	/**
-	 * TODO
+	 * update table structure, based on columns definition
 	 *
-	 * @param columns
+	 * @param columns columns definition
 	 * @throws SQLException
 	 * @throws ParseException
 	 */

@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * TODO
+ * An alter action structur representing an action allowing to modify primary key
  */
 public class PrimaryKeyAction extends AlterAction {
 	/**
-	 * TODO
+	 * columns composing the new primary key
 	 */
 	List<TableColumn> columns;
 
@@ -28,7 +28,7 @@ public class PrimaryKeyAction extends AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * execute the action, set the new primary key and save it in database
 	 *
 	 * @throws SQLException
 	 * @throws ParseException

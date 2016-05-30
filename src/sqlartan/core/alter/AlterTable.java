@@ -12,35 +12,34 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * TODO
+ * An alter table structur allowing to modify a table structure.
+ * Instances of this class are created by calling .alterTable() on a Table object.
  */
 public class AlterTable {
 	/**
-	 * TODO
+	 * The table to modify
 	 */
 	private Table table;
 
 	/**
-	 * Register all actions by grouped by column name
+	 * Register all actions modifying columns grouped by column name
 	 */
 	private HashMap<String, LinkedList<AlterColumnAction>> columnsActions = new HashMap<>();
 
 	/**
-	 * TODO
+	 * All the actions modifying the table
 	 */
 	private List<AlterAction> actions = new LinkedList<>();
 
 	/**
-	 * TODO
-	 *
-	 * @param table
+	 * @param table the table to modify
 	 */
 	public AlterTable(Table table) {
 		this.table = table;
 	}
 
 	/**
-	 * TODO
+	 * Execute all the actions registred one by one
 	 */
 	public void execute() {
 		// execute all registered actions
@@ -57,16 +56,16 @@ public class AlterTable {
 	}
 
 	/**
-	 * TODO
+	 * Return all the actions to be executed
 	 */
 	public List<AlterAction> actions() {
 		return actions;
 	}
 
 	/**
-	 * TODO
+	 * Add an action which add a column to the stack
 	 *
-	 * @param column
+	 * @param column the column concerned by the action
 	 */
 	public void addColumn(TableColumn column) {
 		if (!((!table.column(column.name()).isPresent() && findLastAddColumnAction(column) == null) || findLastDropColumnAction(column) != null))
@@ -79,9 +78,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * TODO
+	 * Add an action which drop a column to the stack
 	 *
-	 * @param column
+	 * @param column the column to drop
 	 */
 	public void dropColumn(TableColumn column) {
 		try {
@@ -98,10 +97,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * TODO
+	 * Add an action which modify a column to the stack
 	 *
-	 * @param columnName
-	 * @param column
+	 * @param column the column to modify
 	 */
 	public void modifyColumn(String columnName, TableColumn column) {
 		try {
@@ -116,9 +114,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * TODO
+	 * Add an action which modify the primary key to the stack
 	 *
-	 * @param columns
+	 * @param columns the columna composing the primary key
 	 */
 	public void setPrimaryKey(List<TableColumn> columns) {
 		for (TableColumn column : columns) {
@@ -129,10 +127,10 @@ public class AlterTable {
 	}
 
 	/**
-	 * Add action to the stack
+	 * Add an action on column to the stack
 	 *
-	 * @param column
-	 * @param action
+	 * @param column column concerned by the action
+	 * @param action the action to add
 	 */
 	private void add(TableColumn column, AlterColumnAction action) {
 		if (!columnsActions.containsKey(column.name()))
@@ -143,9 +141,9 @@ public class AlterTable {
 	}
 
 	/**
-	 * TODO
+	 * Add an action to the stack
 	 *
-	 * @param action
+	 * @param action the action to add
 	 */
 	private void add(AlterAction action) {
 		if (!actions.contains(action))

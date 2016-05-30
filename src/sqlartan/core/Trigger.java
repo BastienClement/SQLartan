@@ -2,8 +2,6 @@ package sqlartan.core;
 
 import sqlartan.core.util.UncheckedSQLException;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Defines a trigger of a database
@@ -21,14 +19,9 @@ public class Trigger
 	private String name;
 
 	/**
-	 * TODO
+	 * sql definition
 	 */
 	private String content;
-
-	/**
-	 * TODO
-	 */
-	private List<TableColumn> columns = new LinkedList<>();
 
 	/**
 	 * Constructs a new trigger on the given table and with the given name and content.

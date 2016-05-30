@@ -7,11 +7,10 @@ import sqlartan.core.ast.token.TokenizeException;
 import java.sql.SQLException;
 
 /**
- * TODO
+ * An alter action structur representing an action on table which can add a column to the table
  */
 public class AddColumnAction extends AlterColumnAction {
 	/**
-	 * TODO
 	 *
 	 * @param table
 	 * @param column
@@ -22,7 +21,7 @@ public class AddColumnAction extends AlterColumnAction {
 	}
 
 	/**
-	 * TODO
+	 * execute action, add column to action and save it to database
 	 *
 	 * @throws SQLException
 	 * @throws ParseException

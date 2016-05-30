@@ -14,30 +14,28 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * TODO
+ * An alter action structur representing an action which can modify a table structure
  */
 public abstract class AlterAction {
 	/**
-	 * TODO
+	 * The table to modify
 	 */
 	protected final Table table;
 
 	/**
-	 * TODO
+	 * The old table definition, at start of execution
 	 */
 	private CreateTableStatement.Def oldTableDefinition;
 
 	/**
-	 * TODO
-	 *
-	 * @param table
+	 * @param table the table to modify
 	 */
 	public AlterAction(Table table) {
 		this.table = table;
 	}
 
 	/**
-	 * TODO
+	 * execute action
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -47,7 +45,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * Execute the specific action, using inherit
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -55,7 +53,7 @@ public abstract class AlterAction {
 	protected abstract void executeAction() throws SQLException, ParseException;
 
 	/**
-	 * TODO
+	 * Update the table definition in the database
 	 *
 	 * @param tableDefinition
 	 * @throws SQLException
@@ -100,7 +98,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * Look in database for table definition
 	 *
 	 * @throws SQLException
 	 * @throws ParseException
@@ -115,7 +113,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * update triggers referancing this table
 	 *
 	 * @param trigger
 	 * @throws SQLException
@@ -157,7 +155,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * Update statement (select, update, insert, Delete)
 	 *
 	 * @param statement
 	 * @throws SQLException
@@ -243,7 +241,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * update select statement
 	 *
 	 * @param select
 	 * @throws SQLException
@@ -376,7 +374,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * update from clause
 	 *
 	 * @param source
 	 * @return
@@ -405,7 +403,7 @@ public abstract class AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * update expression (column)
 	 *
 	 * @param exp
 	 * @return

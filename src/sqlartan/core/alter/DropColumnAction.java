@@ -9,12 +9,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * TODO
+ * An alter action structur representing an action which can drop a column from a table structure
  */
 public class DropColumnAction extends UpdateColumnAction{
 
 	/**
-	 * TODO
 	 *
 	 * @param table
 	 * @param column
@@ -25,7 +24,7 @@ public class DropColumnAction extends UpdateColumnAction{
 	}
 
 	/**
-	 * TODO
+	 * execute the action, drop the column and save changes to database
 	 *
 	 * @throws SQLException
 	 * @throws ParseException

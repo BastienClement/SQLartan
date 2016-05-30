@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * TODO
+ * An alter action structur representing an action on constraints
  */
 public abstract class UpdateConstraintAction extends AlterAction {
 	/**
@@ -19,7 +19,7 @@ public abstract class UpdateConstraintAction extends AlterAction {
 	}
 
 	/**
-	 * TODO
+	 * update table definition, based on new constraints definitions
 	 *
 	 * @param constraints
 	 * @throws SQLException
