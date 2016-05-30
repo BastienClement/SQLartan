@@ -33,7 +33,7 @@ public abstract class PersistentStructureTabsController extends TabsController {
 
 	/**
 	 * {@inheritDoc}
-	 *
+	 * <p>
 	 * Add column to the structure tab
 	 */
 	protected void initialize() throws IOException {
@@ -50,12 +50,32 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	@Override
 	protected void displayStructure() {
 		ObservableList<PersistentStructureModel> tableStructures = FXCollections.observableArrayList();
-
-		try {
+		displaySafely(() -> {
 			int[] i = { 0 };
 			tableStructures.addAll(structure.columns()
 			                                .map(c -> new PersistentStructureModel(c, ++i[0]))
 			                                .toList());
+		});
+		structureTable.setItems(tableStructures);
+	}
+
+
+	/**
+	 * Display the data table
+	 */
+	protected void displayData() {
+		displaySafely(() -> displayTab.setContent(DataTableView.getTableView(structure.selectAll())));
+	}
+
+
+	/**
+	 * Display the stuff safely. If something went wrong, ask the user if he wants to drop the structure
+	 *
+	 * @param stuff the stuff to do
+	 */
+	private void displaySafely(Runnable stuff) {
+		try {
+			stuff.run();
 		} catch (UncheckedSQLException e) {
 			Platform.runLater(() -> {
 				ButtonType ok = new ButtonType("Yes drop it");
@@ -69,16 +89,6 @@ public abstract class PersistentStructureTabsController extends TabsController {
 				Sqlartan.getInstance().getController().selectTreeIndex(0);
 			});
 		}
-
-		structureTable.setItems(tableStructures);
-	}
-
-
-	/**
-	 * Display the data table
-	 */
-	protected void displayData() {
-		displayTab.setContent(DataTableView.getTableView(structure.selectAll()));
 	}
 
 

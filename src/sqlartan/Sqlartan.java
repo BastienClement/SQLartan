@@ -71,7 +71,7 @@ public class Sqlartan extends Application {
 
 		Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
 			Platform.runLater(() -> {
-				Popup.error("Something went wrong", throwable.getMessage());
+				Popup.error(throwable.getClass().getSimpleName(), throwable.getMessage());
 				throwable.printStackTrace();
 			});
 		});
@@ -93,7 +93,7 @@ public class Sqlartan extends Application {
 		instance = this;
 	}
 
-	
+
 	/**
 	 * @return the primary stage
 	 *
