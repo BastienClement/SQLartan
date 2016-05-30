@@ -21,6 +21,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	 *
 	 * @param elements an array of elements
 	 * @param <U>      the type of elements in the stream
+	 * @return a new immutable containing the given elements
 	 */
 	@SafeVarargs
 	static <U> ImmutableList<U> from(U... elements) {
@@ -32,6 +33,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	 *
 	 * @param collection a collection of elements
 	 * @param <U>        the type of elements in the collection
+	 * @return a new immutable containing the given elements
 	 */
 	@SuppressWarnings("unchecked")
 	static <U> ImmutableList<U> from(Collection<U> collection) {
@@ -43,6 +45,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	 *
 	 * @param stream a stream of elements
 	 * @param <U>    the type of elements in the stream
+	 * @return a new immutable containing the given elements
 	 */
 	@SuppressWarnings("unchecked")
 	static <U> ImmutableList<U> from(Stream<U> stream) {
@@ -58,6 +61,7 @@ public interface ImmutableList<T> extends List<T>, StreamableAdapter<T>, RandomA
 	 * @param mapper   a mapping function
 	 * @param <U>      the type of elements from the array
 	 * @param <R>      the type returned by the mapper function
+	 * @return a new immutable containing the given elements
 	 */
 	static <U, R> ImmutableList<R> from(U[] elements, Function<? super U, ? extends R> mapper) {
 		return ImmutableListImpl.mapping(elements, mapper);

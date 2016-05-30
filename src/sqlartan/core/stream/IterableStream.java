@@ -27,6 +27,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param stream the stream to wrap
 	 * @param <U>    the type of elements in the stream
+	 * @return a new IterableStream wrapping the given Stream instance
 	 */
 	static <U> IterableStream<U> from(Stream<U> stream) {
 		return new StreamableAdapter<U>() {
@@ -48,6 +49,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param iterable an iterable to wrap
 	 * @param <U>      the type of elements from the iterable
+	 * @return a new IterableStream wrapping the given Iterable instance
 	 */
 	static <U> IterableStream<U> from(Iterable<U> iterable) {
 		return (IterableAdapter<U>) iterable::iterator;
@@ -60,6 +62,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param supplier a Supplier of independent Stream instances
 	 * @param <U>      the type of elements in the stream
+	 * @return a new IterableStream from a Supplier of independent Stream
 	 */
 	static <U> IterableStream<U> from(Supplier<Stream<U>> supplier) {
 		return (StreamableAdapter<U>) supplier::get;
@@ -74,6 +77,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * @param a   the first stream to concatenate
 	 * @param b   the second stream to concatenate
 	 * @param <U> the super-type of both stream
+	 * @return the concatenation of the two streams
 	 */
 	static <U> IterableStream<U> concat(IterableStream<? extends U> a, IterableStream<? extends U> b) {
 		return IterableStream.from(Stream.concat(a, b));
@@ -81,6 +85,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 
 	/**
 	 * Returns true if this IterableStream can be iterated or consumed multiple times.
+	 *
+	 * @return true if this IterableStream can be iterated or consumed multiple times
 	 */
 	boolean isReiterable();
 
@@ -93,6 +99,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * Calling this method on a non-reiterable IterableStream will consume
 	 * the original stream and constructs an ImmutableList containing every
 	 * elements from the stream.
+	 *
+	 * @return a reiterable copy of this IterableStream
 	 */
 	default IterableStream<T> reiterable() {
 		return isReiterable() ? this : ImmutableList.from(this);
@@ -104,6 +112,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * ImmutableList also implements the IterableStream but is guaranteed
 	 * to be reiterable, implements the List interface and offers random
 	 * access to elements.
+	 *
+	 * @return a list of the values from this stream
 	 */
 	default ImmutableList<T> toList() {
 		return ImmutableList.from(this);
@@ -114,6 +124,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * <p>
 	 * A view is guaranteed to be backed by a Stream pipeline and not a List.
 	 * If called on a Stream, returns itself.
+	 *
+	 * @return a view of this object
 	 */
 	default IterableStream<T> view() { return this; }
 
@@ -125,13 +137,14 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * Performs a reduction on the elements of this stream, using the provided
 	 * identity and accumulation functions.
 	 * <p>
-	 * This function is an alternative to the `T reduce(T, BinaryOperator<T>)`
+	 * This function is an alternative to the `T reduce(T, BinaryOperator)`
 	 * method with a different type for the result but no combiner function.
 	 *
 	 * @param identity    the identity value for the accumulation function
 	 * @param accumulator an associative, non-interfering, stateless function
 	 *                    for incorporating an additional element into a result
 	 * @param <U>         the type of the result
+	 * @return the reduced value
 	 */
 	<U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 
@@ -147,6 +160,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param mapper the mapping function
 	 * @param <R>    the type of the result
+	 * @return the result of the combined map filter operation
 	 */
 	<R> IterableStream<R> mapOptional(Function<? super T, Optional<R>> mapper);
 
@@ -158,6 +172,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param mapper the mapping function
 	 * @param <R>    the type of the result
+	 * @return the first element of this stream after applying the mapper
+	 * function to it
 	 */
 	<R> Optional<R> mapFirstOptional(Function<? super T, ? extends R> mapper);
 
@@ -169,6 +185,8 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 *
 	 * @param mapper the mapping function
 	 * @param <R>    the type of the result
+	 * @return the first element of this stream after applying the mapper
+	 * function to it.
 	 */
 	<R> R mapFirst(Function<? super T, ? extends R> mapper);
 
@@ -176,6 +194,7 @@ public interface IterableStream<T> extends Stream<T>, Iterable<T> {
 	 * Finds the first element of the stream satisfying a predicate, if any.
 	 *
 	 * @param predicate a predicate function
+	 * @return the first element satisfying a predicate, if any
 	 */
 	Optional<T> find(Predicate<? super T> predicate);
 
