@@ -21,7 +21,7 @@ public class DatabaseTreeItem extends CustomTreeItem {
 	}
 
 	/**
-	 * add vacuum and table menu
+	 * Adds vacuum and table menu
 	 * {@inheritDoc}
 	 */
 	@Override

@@ -5,7 +5,7 @@ import sqlartan.core.Row;
 import sqlartan.core.Type;
 
 /**
- * Represent the model for the EditCell.
+ * The model for the EditCell.
  */
 public class EditModel implements Comparable<EditModel> {
 	public final Row row;
@@ -19,7 +19,7 @@ public class EditModel implements Comparable<EditModel> {
 	}
 
 	/**
-	 * Return a updated EditModel with a new text
+	 * Returns an updated EditModel with a new text
 	 *
 	 * @param text the new text of the EditModel
 	 * @return the updated EditModel
@@ -29,7 +29,7 @@ public class EditModel implements Comparable<EditModel> {
 	}
 
 	/**
-	 * Implement compareTo to sort correctly each columns type.
+	 * Implements compareTo to sort correctly each columns type.
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -37,17 +37,21 @@ public class EditModel implements Comparable<EditModel> {
 		Type mine = column.affinity().type;
 		Type other = o.column.affinity().type;
 		if (mine == other) {
-			switch (mine) {
-				case Null:
-					return 0;
-				case Integer:
-					return Integer.parseInt(text) - Integer.parseInt(o.text);
-				case Real:
-					return (int) (Double.parseDouble(text) - Double.parseDouble(o.text));
-				case Text:
-					return text.compareTo(o.text);
-				case Blob:
-					return 0;
+			try {
+				switch (mine) {
+					case Null:
+						return 0;
+					case Integer:
+						return Integer.parseInt(text) - Integer.parseInt(o.text);
+					case Real:
+						return (int) (Double.parseDouble(text) - Double.parseDouble(o.text));
+					case Text:
+						return text.compareTo(o.text);
+					case Blob:
+						return 0;
+				}
+			} catch (Exception e) { // If the format doesn't work, we use the textual one.
+				return text.compareTo(o.text);
 			}
 		}
 

@@ -34,7 +34,7 @@ public abstract class TabsController {
 
 
 	/**
-	 * Initialize tabs structure and sql.
+	 * Initializes tabs structure and sql.
 	 *
 	 * @throws IOException
 	 */
@@ -67,7 +67,7 @@ public abstract class TabsController {
 	protected abstract void displayStructure();
 
 	/**
-	 * Call when a tab is selected, refresh the controller.
+	 * Calls when a tab is selected, refresh the controller.
 	 *
 	 * @param selected the selected tab
 	 */
@@ -81,7 +81,7 @@ public abstract class TabsController {
 	}
 
 	/**
-	 * Set the text in the sqlTab.
+	 * Sets the text in the sqlTab.
 	 *
 	 * @param request the request to put
 	 */
@@ -90,7 +90,7 @@ public abstract class TabsController {
 	}
 
 	/**
-	 * Select the sql tab.
+	 * Selects the sql tab.
 	 */
 	public void selectSqlTab() {
 		tabPane.getSelectionModel().selectFirst();

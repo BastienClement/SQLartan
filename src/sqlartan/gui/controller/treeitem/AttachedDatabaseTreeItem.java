@@ -15,7 +15,7 @@ public class AttachedDatabaseTreeItem extends DatabaseTreeItem {
 		super(name, controller, database);
 	}
 	/**
-	 * Add a detach menu.
+	 * Adds a detach menu.
 	 * {@inheritDoc}
 	 */
 	@Override

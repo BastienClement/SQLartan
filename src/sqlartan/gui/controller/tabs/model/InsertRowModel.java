@@ -1,6 +1,5 @@
 package sqlartan.gui.controller.tabs.model;
 
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Represent the data to be insert in a new row of a table.
+ * The data to be insert in a new row of a table.
  */
 public class InsertRowModel {
 	public final StringProperty name;
@@ -42,7 +41,7 @@ public class InsertRowModel {
 	}
 
 	/**
-	 * Make an object table with the good type for the sql insertion.
+	 * Makes an object table with the good type for the sql insertion.
 	 *
 	 * @param list the list of InsertRowModel to get in array
 	 * @return the object table

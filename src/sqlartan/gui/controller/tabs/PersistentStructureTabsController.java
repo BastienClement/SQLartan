@@ -31,9 +31,8 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	protected TableColumn<PersistentStructureModel, String> colNull;
 
 	/**
+	 * Adds column to the structure tab.
 	 * {@inheritDoc}
-	 * <p>
-	 * Add column to the structure tab.
 	 */
 	protected void initialize() throws IOException {
 		super.initialize();
@@ -43,7 +42,7 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	}
 
 	/**
-	 * Display the structure, if the structure can't be displayed, a popup will
+	 * Displays the structure, if the structure can't be displayed, a popup will
 	 * ask the user if he want to drop it.
 	 */
 	@Override
@@ -59,14 +58,14 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	}
 
 	/**
-	 * Display the data table
+	 * Displays the data table
 	 */
 	protected void displayData() {
 		displaySafely(() -> displayTab.setContent(DataTableView.getTableView(structure.selectAll())));
 	}
 
 	/**
-	 * Display the stuff safely.
+	 * Displays the stuff safely.
 	 * If something went wrong, ask the user if he wants to drop the structure.
 	 *
 	 * @param stuff the stuff to do
@@ -90,7 +89,7 @@ public abstract class PersistentStructureTabsController extends TabsController {
 	}
 
 	/**
-	 * Set the structure to use for the structure tab.
+	 * Sets the structure to use for the structure tab.
 	 *
 	 * @param structure the structure
 	 */

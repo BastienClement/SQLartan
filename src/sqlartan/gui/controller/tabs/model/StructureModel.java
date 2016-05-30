@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Represent the data to be shown in the the structure tab.
+ * The data model to be shown in the the structure tab.
  */
 public abstract class StructureModel {
 	public final StringProperty name;

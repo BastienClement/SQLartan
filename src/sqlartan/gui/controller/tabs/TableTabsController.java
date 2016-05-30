@@ -42,7 +42,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 
 	/**
 	 * {@inheritDoc}
-	 * Create the button rename and drop, complete the structure tab
+	 * Creates the button rename and drop, complete the structure tab
 	 */
 	@FXML
 	protected void initialize() throws IOException {
@@ -75,7 +75,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 	}
 
 	/**
-	 * Display the insert tab.
+	 * Displays the insert tab.
 	 */
 	private void displayInsertTab() {
 		insertRows.clear();
@@ -84,7 +84,7 @@ public class TableTabsController extends PersistentStructureTabsController {
 	}
 
 	/**
-	 * Insert the data in the table.
+	 * Inserts the data in the table.
 	 */
 	@FXML
 	protected void submitNewData() {

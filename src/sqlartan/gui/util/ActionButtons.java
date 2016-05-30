@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 public class ActionButtons {
 
 	/**
-	 * Create an action button.
+	 * Creates an action button.
 	 *
 	 * @param label  the label of the button
 	 * @param action the action when the button is pressed

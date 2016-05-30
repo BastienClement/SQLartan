@@ -9,8 +9,8 @@ import sqlartan.gui.util.Popup;
 import java.io.File;
 
 /**
- * Controller for the AttachedChooser.fxml file.
- * Used to give the user an inferface to attache a database to the main one.
+ * Controller for the AttachedChooser.fxml
+ * Used to give the user an interface to attache a database to the main one.
  */
 public class AttachedChooserController {
 
@@ -30,7 +30,7 @@ public class AttachedChooserController {
 	private TextField dbName;
 
 	/**
-	 * Close the window.
+	 * Closes the window.
 	 */
 	@FXML
 	private void close() {
@@ -38,7 +38,7 @@ public class AttachedChooserController {
 	}
 
 	/**
-	 * Set the controller.
+	 * Sets the controller.
 	 *
 	 * @param controller the controller
 	 */
@@ -80,7 +80,7 @@ public class AttachedChooserController {
 	}
 
 	/**
-	 * Return the name of the file without his extension
+	 * Returns the name of the file without his extension
 	 *
 	 * @param file the file
 	 * @return the name of the file without his extension

@@ -10,12 +10,12 @@ import sqlartan.core.Result;
 import sqlartan.core.ResultColumn;
 
 /**
- * Represent the data in a TableView.
+ * The data in a TableView.
  */
 public class DataTableView {
 
 	/**
-	 * Return a table view for any result.
+	 * Returns a table view for any result.
 	 * The cells of the table can be edit by clicking on them.
 	 * A text field will be created if the cell is editable.
 	 *

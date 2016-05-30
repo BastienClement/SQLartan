@@ -25,7 +25,7 @@ public abstract class StructureTreeItem extends CustomTreeItem {
 	}
 
 	/**
-	 * Add drop, rename and duplicate menu.
+	 * Adds drop, rename and duplicate menu.
 	 * {@inheritDoc}
 	 */
 	@Override

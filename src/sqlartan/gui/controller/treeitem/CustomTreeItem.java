@@ -28,14 +28,14 @@ public abstract class CustomTreeItem extends TreeItem {
 	public abstract ContextMenu getMenu();
 
 	/**
-	 * The type of the treeItem
+	 * Return the type of the treeItem
 	 *
 	 * @return the type of the TreeItem
 	 */
 	public abstract Type type();
 
 	/**
-	 * The database used by the TreeItem
+	 * Return the database used by the TreeItem
 	 *
 	 * @return the database used by the TreeItem
 	 */
@@ -44,7 +44,7 @@ public abstract class CustomTreeItem extends TreeItem {
 	}
 
 	/**
-	 * The name of the TreeItem
+	 * Return the name of the TreeItem
 	 *
 	 * @return the name of the TreeItem
 	 */

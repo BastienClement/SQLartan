@@ -14,7 +14,7 @@ import java.util.Optional;
 public class Popup {
 
 	/**
-	 * Create an alert with a specific type.
+	 * Creates an alert with a specific type.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -31,7 +31,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create an error popup.
+	 * Shows an error popup.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -41,7 +41,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create a warning popup with header.
+	 * Shows a warning popup with header.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -56,7 +56,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create a warning popup without header.
+	 * Shows a warning popup without header.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -68,7 +68,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create an information popup.
+	 * Shows an information popup.
 	 *
 	 * @param title   the title
 	 * @param message the message
@@ -78,7 +78,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create an TextInputDialog and show it.
+	 * Shows an TextInputDialog and show it.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -90,7 +90,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create an TextInputDialog with an header and show it.
+	 * Creates and shows an TextInputDialog with an header.
 	 *
 	 * @param title       the title
 	 * @param message     the message
@@ -107,7 +107,7 @@ public class Popup {
 	}
 
 	/**
-	 * Create a FileChooser.
+	 * Creates and shows a FileChooser.
 	 *
 	 * @param title  the title of the window
 	 * @param filter the filter to be applied on the file chooser
@@ -121,7 +121,7 @@ public class Popup {
 	}
 
 	/**
-	 * Show a save dialog file chooser.
+	 * Shows a save dialog file chooser.
 	 *
 	 * @param title  the title of the window
 	 * @param window the owner window of the displayed file dialog
@@ -133,7 +133,7 @@ public class Popup {
 	}
 
 	/**
-	 * Show a browse dialog file chooser.
+	 * Shows a browse dialog file chooser.
 	 *
 	 * @param title  the title of the window
 	 * @param window the owner window of the displayed file dialog

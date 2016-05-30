@@ -81,8 +81,7 @@ public class SqlartanController {
 	private Menu databaseMenu;
 
 	/**
-	 * First method call when FXML loaded.
-	 * Load all the tabs and create the history pane.
+	 * Loads all the tabs and create the history pane.
 	 */
 	@FXML
 	private void initialize() throws IOException {
@@ -214,7 +213,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Close the current database.
+	 * Closes the current database.
 	 */
 	@FXML
 	protected void closeDatabase() {
@@ -225,18 +224,16 @@ public class SqlartanController {
 		databaseMenu.setDisable(true);
 	}
 
-
 	/**
-	 * Close the entry application.
+	 * Closes the entry application.
 	 */
 	@FXML
 	protected void close() {
 		Platform.exit();
 	}
 
-
 	/**
-	 * Import in the current open database.
+	 * Imports in the current open database.
 	 */
 	@FXML
 	public void importDatabase(Database database) {
@@ -276,7 +273,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * To call to refresh the GUI.
+	 * Refreshes the GUI.
 	 */
 	public void refreshView() {
 		if (database != null) {
@@ -286,7 +283,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Refresh the attached database menu.
+	 * Refreshes the attached database menu.
 	 */
 	private void refreshAttachedDatabase() {
 		detachMenu.getItems().clear();
@@ -299,7 +296,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Refresh the left tree.
+	 * Refreshes the left tree.
 	 */
 	private void refreshTree() {
 		int selected = treeView.getSelectionModel().getSelectedIndex();
@@ -321,7 +318,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Get the main database.
+	 * Gets the main database.
 	 *
 	 * @return the main database
 	 */
@@ -330,14 +327,14 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Open a popup with à FileChooser, asking which database to open.
+	 * Opens a popup with à FileChooser, asking which database to open.
 	 */
 	public void openDatabase() {
 		Popup.browse("Open SQLite database", sqlartan.getPrimaryStage(), null).ifPresent(this::openDatabase);
 	}
 
 	/**
-	 * Open de main database
+	 * Opens the main database
 	 *
 	 * @param file: file of the database to open.
 	 */
@@ -373,7 +370,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * CellFactory for the history listedView.
+	 * Returns CellFactory for the history listedView.
 	 *
 	 * @return the new ListCell
 	 */
@@ -412,7 +409,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Called by the mainApp to set the link to the mainApp
+	 * Sets the link to the mainApp
 	 *
 	 * @param sqlartan set the reference to the main class
 	 */
@@ -421,7 +418,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Create the tree for a specific database
+	 * Creates the tree for a specific database
 	 *
 	 * @param database the database
 	 * @return the number of item in the created tree
@@ -461,7 +458,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Attach a database to the main database.
+	 * Attaches a database to the main database.
 	 *
 	 * @param file   file of the database
 	 * @param dbName name that will be shown in the treeView
@@ -476,7 +473,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Drop a table or a gui.
+	 * Drops a table or a gui.
 	 *
 	 * @param structure structure to drop
 	 */
@@ -492,7 +489,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user the new name of the structure.
+	 * Asks the user the new name of the structure.
 	 *
 	 * @param structure the structure to rename
 	 */
@@ -508,7 +505,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Add a table to the specified database.
+	 * Adds a table to the specified database.
 	 *
 	 * @param database the database in where the datable will be added
 	 */
@@ -526,7 +523,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user to specified the column to add, and add it.
+	 * Asks the user to specified the column to add, and add it.
 	 *
 	 * @param table the table where adding a column
 	 */
@@ -629,7 +626,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user the new name of the column, if the name is more than 0
+	 * Asks the user the new name of the column, if the name is more than 0
 	 * characters and isn't the same of the structure, rename the
 	 * specified column from the structure.
 	 *
@@ -648,7 +645,7 @@ public class SqlartanController {
 
 
 	/**
-	 * Ask the user if he's sure to drop the column of a structure, if
+	 * Asks the user if he's sure to drop the column of a structure, if
 	 * it's yes, drop the column.
 	 *
 	 * @param structure  the structure where the column is
@@ -669,7 +666,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Detach a attachedDatabase from the main attachedDatabase.
+	 * Detaches a attachedDatabase from the main attachedDatabase.
 	 *
 	 * @param attachedDatabase the attached database to detach
 	 */
@@ -679,7 +676,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Set active the index element in the TreeView.
+	 * Sets active the index element in the TreeView.
 	 *
 	 * @param index to set active
 	 */
@@ -688,7 +685,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Export the database, ask the user what it would like to export
+	 * Exports the database, ask the user what it would like to export
 	 * (structure, data, or both).
 	 *
 	 * @param database the database to export
@@ -769,7 +766,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Vacuum the database and inform the user with a popup.
+	 * Vacuums the database and inform the user with a popup.
 	 *
 	 * @param database the database to vacuum
 	 */
@@ -779,7 +776,7 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user the name of the duplicate structure.
+	 * Asks the user the name of the duplicate structure.
 	 *
 	 * @param structure the structure to duplicate
 	 */
@@ -795,8 +792,8 @@ public class SqlartanController {
 	}
 
 	/**
-	 * Ask the user if it would like to truncate the database, if it's yes,
-	 * truncate the table.
+	 * Asks the user if it would like to truncate the database,
+	 * if it's yes, truncate the table.
 	 *
 	 * @param table the table to truncate
 	 */

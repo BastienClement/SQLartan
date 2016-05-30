@@ -8,7 +8,7 @@ import sqlartan.core.Affinity;
 import sqlartan.core.util.UncheckedSQLException;
 
 /**
- * Represent a editable cell. When the user double click on a cell, a TextField
+ * An editable cell. When the user double click on a cell, a TextField
  * is created and let the user edit the cell.
  */
 public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
@@ -59,7 +59,7 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 	}
 
 	/**
-	 * Create a text field. When the user press enter, the text will be
+	 * Creates a text field. When the user press enter, the text will be
 	 * committed and will update the row.
 	 */
 	private void createTextField() {
@@ -84,7 +84,8 @@ public class EditCell extends TableCell<ObservableList<EditModel>, EditModel> {
 	}
 
 	/**
-	 * Return a String representation of the item
+	 * Returns a String representation of the item.
+	 *
 	 * @return "" if null, otherwise return the text of the item
 	 */
 	private String text() {

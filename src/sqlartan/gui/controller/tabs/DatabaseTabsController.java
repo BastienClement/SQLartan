@@ -77,7 +77,7 @@ public class DatabaseTabsController extends TabsController {
 	}
 
 	/**
-	 * Set the database which will be used in this tab.
+	 * Sets the database which will be used in this tab.
 	 *
 	 * @param database the database to work on
 	 */
