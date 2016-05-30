@@ -14,6 +14,7 @@
     <root id="root">
       <element id="archive" name="SQLartan.jar">
         <element id="module-output" name="SQLartan" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/sqlite-jdbc-3.8.11.2.jar" path-in-jar="/" />
       </element>
     </root>
   </artifact>

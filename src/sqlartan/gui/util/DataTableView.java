@@ -3,6 +3,7 @@ package sqlartan.gui.util;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sqlartan.core.Result;
@@ -34,9 +35,8 @@ public class DataTableView {
 
 		// Add data
 		ObservableList<ObservableList<EditModel>> rows = FXCollections.observableArrayList();
-		result.forEach(row -> rows.add(FXCollections.observableArrayList(
-			result.columns().map(c -> new EditModel(row, c, row.getString())))
-		));
+		result.forEach(row -> rows.add(new SortedList<>(FXCollections.observableArrayList(
+			result.columns().map(c -> new EditModel(row, c, row.getString()))), EditModel::compareTo)));
 		tableView.setEditable(true);
 		tableView.setItems(rows);
 
